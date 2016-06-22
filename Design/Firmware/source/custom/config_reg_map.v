@@ -55,7 +55,7 @@ parameter REG_ADDR_WIDTH                            = 8,
 parameter CORE_DATA_WIDTH                           = 32,
 parameter CORE_BE_WIDTH                             = CORE_DATA_WIDTH/8,
 
-parameter ADC_CLK_FREQ                              = 245.7,
+parameter ADC_CLK_FREQ                              = 245.7
 )
 (
 
@@ -118,7 +118,7 @@ begin
     ch_prf_frac          <= 32'd0;
     ch_tuning_coef       <= 32'b1;
     ch_counter_size      <= 32'd12;
-    ch_freq_offset;
+    ch_freq_offset       <= 32'd1536;
     adc_sample_time      <= 32'd1;
     ddc_duc_bypass       <= 1'b1; // dip_sw(3)
     digital_mode         <= 1'b0;
@@ -157,7 +157,7 @@ always @(posedge clk)
 begin
   if (!rst_n) begin
     wr_valid_reg                                   <= 1'b0;
-    wr_write_err                                   <= 2'b0;
+    wr_err                                   <= 2'b0;
   end else if(wr_cmd & wr_ready_reg) begin
 
     if (addr_up == 4'b0000) begin
