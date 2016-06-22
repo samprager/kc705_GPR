@@ -122,6 +122,6 @@
 *.runs/.jobs/*
 
 #########
-Generated Vivado Project
+Generated Vivado Projects
 #########
-*/*/implement/project_1/*
+*/*/implement/*project_*/*
