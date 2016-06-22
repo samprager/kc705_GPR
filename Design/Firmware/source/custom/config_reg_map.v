@@ -78,7 +78,7 @@ parameter ADC_CLK_FREQ                              = 245.7,
   // Chirp Waveform Configuration registers
   output reg [31:0]                 ch_tuning_coef = 32'b1,
   output reg [31:0]                 ch_counter_size = 32'd12,
-  output reg [31:0]                 ch_freq_offset,
+  output reg [31:0]                 ch_freq_offset = 32'd1536,
 
   // ADC Sample time after chirp data_tx_done -
   output reg [31:0]                 adc_sample_time = 32'd1,
@@ -87,7 +87,7 @@ parameter ADC_CLK_FREQ                              = 245.7,
   output reg digital_mode                           = 1'b0,
   output reg adc_out_dac_in                         = 1'b0,
   output reg external_clock                         = 1'b0,
-  output reg gen_adc_test_pattern 1'b0,
+  output reg gen_adc_test_pattern                   = 1'b0,
 
   // Ethernet Control Signals
   output reg enable_adc_pkt                         = 1'b1,
@@ -109,6 +109,29 @@ wire [3:0] addr_low;
 
 assign wr_ready                                     = wr_ready_reg;
 assign wr_valid                                     = wr_valid_reg;
+
+always @(posedge clk)
+begin
+  if (!rst_n) begin
+  // Chirp Control registers
+    ch_prf_int           <= 32'd10; // prf in sec
+    ch_prf_frac          <= 32'd0;
+    ch_tuning_coef       <= 32'b1;
+    ch_counter_size      <= 32'd12;
+    ch_freq_offset;
+    adc_sample_time      <= 32'd1;
+    ddc_duc_bypass       <= 1'b1; // dip_sw(3)
+    digital_mode         <= 1'b0;
+    adc_out_dac_in       <= 1'b0;
+    external_clock       <= 1'b0;
+    gen_adc_test_pattern <= 1'b0;
+
+    enable_adc_pkt       <= 1'b1;
+    gen_tx_data          <= 1'b0;
+    chk_tx_data          <= 1'b0;
+    mac_speed            <= 2'b10;
+  end
+end
 
 always @(posedge clk)
 begin
