@@ -95,7 +95,11 @@ port (
   chirp_done  : out std_logic;
   chirp_active  : out std_logic;
   chirp_init  : in std_logic;
-  chirp_enable : in std_logic
+  chirp_enable : in std_logic;
+
+  freq_offset_in : in std_logic_vector(31 downto 0);
+  tuning_word_coeff_in : in std_logic_vector(31 downto 0);
+  chirp_count_max_in : in std_logic_vector(31 downto 0)
 );
 end DUC_DDC;
 
@@ -242,14 +246,16 @@ signal phase_acc_long  :std_logic_vector(31 downto 0) := (others=>'0');
 --signal chirp_count  :std_logic_vector(10 downto 0) := (others=>'0');
 
 -- For 4096 sample / chirp use 12 bit counter
-signal chirp_count  :std_logic_vector(11 downto 0) := (others=>'0');
+signal chirp_count  :std_logic_vector(31 downto 0) := (others=>'0');
+
+signal chirp_count_max  :std_logic_vector(31 downto 0) := (11 downto 0 => '1',others=>'0');
 
 -- tuning word coeff = 3 for 46.08 MHz BW, and 4 for 61.44 MHz BW with 2048 samples
 --constant tuning_word_coeff :std_logic_vector(31 downto 0) := (0=> '1',1=>'1',others=>'0');
 --constant tuning_word_coeff :std_logic_vector(31 downto 0) := (2=>'1',others=>'0');
 
 -- tuning word coeff = 1.5 for 46.08 MHz BW, and 2 for 61.44 MHz BW with 4096 samples
-constant tuning_word_coeff :std_logic_vector(31 downto 0) := (0=> '1',others=>'0');
+signal tuning_word_coeff :std_logic_vector(31 downto 0) := (0=> '1',others=>'0');
 
 -- tuning word coeff = 6
 --constant tuning_word_coeff :std_logic_vector(31 downto 0) := (1=> '1',2=>'1',others=>'0');
@@ -262,7 +268,7 @@ constant tuning_word_coeff :std_logic_vector(31 downto 0) := (0=> '1',others=>'0
 
 -- Push the initial freq beyon baseband
 -- min_freq = freq_offset*fclock/2^n
-constant freq_offset  :std_logic_vector(31 downto 0) := (10=>'1',9=>'1',others=>'0');
+signal freq_offset  :std_logic_vector(31 downto 0) := (10=>'1',9=>'1',others=>'0');
 --constant freq_offset  :std_logic_vector(31 downto 0) := (others=>'0');
 
 
@@ -446,8 +452,8 @@ Chirp_Gen: process (clk)    -- 491.52 MHz clock
 
         chirp_count <= (others => '0');
 
-        --tuning_word <= (others => '0');
-        tuning_word(31 downto 0) <= freq_offset(31 downto 0);
+        tuning_word <= (others => '0');
+        --tuning_word(31 downto 0) <= freq_offset(31 downto 0);
         --phase_acc <= (others => '0');
         phase_acc_long <= (others => '0');
         chirp_i  <= (others => '0');
@@ -455,9 +461,15 @@ Chirp_Gen: process (clk)    -- 491.52 MHz clock
 
         chirp_active_r <= '0';
         chirp_done_r  <= '0';
+
+-- Default values
+        tuning_word_coeff <= (0=> '1',others=>'0');
+        freq_offset <= (10=>'1',9=>'1',others=>'0');
+        chirp_count_max <= (11 downto 0 => '1',others => '0');
+
       elsif (chirp_init_r = '1' and chirp_active_r = '0') then
         chirp_count <= (others => '0');
-        tuning_word(31 downto 0) <= freq_offset(31 downto 0);
+        tuning_word(31 downto 0) <= freq_offset_in(31 downto 0);
         phase_acc_long <= (others => '0');
         chirp_i  <= (others => '0');
         chirp_q  <= (others => '0');
@@ -465,8 +477,12 @@ Chirp_Gen: process (clk)    -- 491.52 MHz clock
         chirp_active_r <= '1';
         chirp_done_r <= '0';
 
+        tuning_word_coeff <= tuning_word_coeff_in;
+        freq_offset <= freq_offset_in;
+        chirp_count_max <= chirp_count_max_in;
+
       elsif(chirp_active_r = '1') then
-        chirp_count <= chirp_count + 1;
+        --chirp_count <= chirp_count + 1;
         phase_acc_long(31 downto 0) <= phase_acc_long(31 downto 0) + tuning_word(31 downto 0);
 
         -- if phase_acc_long is unsigned use:
@@ -482,8 +498,9 @@ Chirp_Gen: process (clk)    -- 491.52 MHz clock
         --if (chirp_count(10 downto 0) = "11111111111") then
 
         -- For 4096 samples/ chirp
-        if (chirp_count(11 downto 0) = "111111111111") then
-
+        --if (chirp_count(11 downto 0) = "111111111111") then
+        if (chirp_count = chirp_count_max) then
+            chirp_count <= (others => '0');
             --tuning_word(31 downto 0) <= (others => '0');
 
             tuning_word(31 downto 0) <= freq_offset(31 downto 0);
@@ -493,6 +510,7 @@ Chirp_Gen: process (clk)    -- 491.52 MHz clock
             chirp_done_r <= '1';
             chirp_active_r <= '0';
         else
+            chirp_count <= chirp_count + 1;
             tuning_word(31 downto 0) <= tuning_word(31 downto 0) + tuning_word_coeff;
         end if;
       else

@@ -39,6 +39,9 @@ module radar_pulse_controller #(
   input clk_fmc150,           // 245.76 MHz
   input [3:0] fmc150_status_vector, // {pll_status, mmcm_adac_locked, mmcm_locked, ADC_calibration_good};
 
+  input[31:0] chirp_time_int,
+  input[31:0] chirp_time_frac,
+
   input chirp_ready,          // continuous high when dac ready
   input chirp_active,         // continuous high while chirping
   input chirp_done,           // single pulse when chirp finished
@@ -90,8 +93,6 @@ reg data_tx_enable_int;
 
 wire chirp_prf_speed_sel;
 
-assign chirp_prf_speed_sel = gpio_dip_sw[2];
-
 
 always @(posedge aclk)
 begin
@@ -100,11 +101,12 @@ begin
   else if (gen_state == ACTIVE & (|chirp_count))
     chirp_count <= chirp_count - 1;
   else if (gen_state == IDLE) begin
-    if (chirp_prf_speed_sel)
+  //  if (chirp_prf_speed_sel)
+    if (chirp_time_int == 32'b1)
         chirp_count <= CHIRP_PRF_COUNT_FAST;
-    else 
+    else
         chirp_count <= CHIRP_PRF_COUNT_SLOW;
-   end   
+   end
 end
 
 always @(posedge aclk)

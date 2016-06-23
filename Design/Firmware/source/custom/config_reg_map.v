@@ -77,7 +77,7 @@ parameter ADC_CLK_FREQ                              = 245.7
 
   // Chirp Waveform Configuration registers
   output reg [31:0]                 ch_tuning_coef = 32'b1,
-  output reg [31:0]                 ch_counter_size = 32'd12,
+  output reg [31:0]                 ch_counter_max = 32'h00000fff,
   output reg [31:0]                 ch_freq_offset = 32'd1536,
 
   // ADC Sample time after chirp data_tx_done -
@@ -117,7 +117,7 @@ begin
     ch_prf_int           <= 32'd10; // prf in sec
     ch_prf_frac          <= 32'd0;
     ch_tuning_coef       <= 32'b1;
-    ch_counter_size      <= 32'd12;
+    ch_counter_max      <= 32'h00000fff;
     ch_freq_offset       <= 32'd1536;
     adc_sample_time      <= 32'd1;
     ddc_duc_bypass       <= 1'b1; // dip_sw(3)
@@ -190,7 +190,7 @@ begin
         end
       end else if (addr_low == 4'b0011) begin
         if (&wr_keep[31:0]) begin
-          ch_counter_size                          <= wr_data;
+          ch_counter_max                          <= wr_data;
           wr_valid_reg                             <= 1'b1;
           wr_err                                   <= 2'b0;
         end else begin

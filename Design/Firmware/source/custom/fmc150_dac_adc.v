@@ -41,6 +41,10 @@ module fmc150_dac_adc #
   input  chirp_enable,
   input  adc_enable,
 
+  input [31:0] chirp_freq_offset,
+  input [31:0] chirp_tuning_word_coeff,
+  input [31:0] chirp_count_max,
+
   output clk_out_245_76MHz,
   output clk_245_rst,
 //  output clk_out_491_52MHz,
@@ -168,6 +172,10 @@ module fmc150_dac_adc #
         .chirp_init  (chirp_init),
         .chirp_enable  (chirp_enable),
         .adc_enable    (adc_enable),
+
+        .chirp_freq_offset          (chirp_freq_offset),
+        .chirp_tuning_word_coeff    (chirp_tuning_word_coeff),
+        .chirp_count_max            (chirp_count_max),
 
        .cpu_reset (cpu_reset),       // : in    std_logic; -- CPU RST button, SW7 on KC705
   //     .sysclk_p (sysclk_p),        // : in    std_logic;

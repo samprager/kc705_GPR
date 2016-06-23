@@ -155,6 +155,10 @@ port (
   chirp_enable : in std_logic;
   adc_enable : in std_logic;
 
+  chirp_freq_offset : in std_logic_vector(31 downto 0);
+  chirp_tuning_word_coeff : in std_logic_vector(31 downto 0);
+  chirp_count_max : in std_logic_vector(31 downto 0);
+
   clk_out_245_76MHz     :out std_logic;
   clk_out_491_52MHz     :out std_logic;
   clk_245_rst           :out std_logic;
@@ -434,7 +438,11 @@ port (
   chirp_done  : out std_logic;
   chirp_active  : out std_logic;
   chirp_init  : in std_logic;
-  chirp_enable : in std_logic
+  chirp_enable : in std_logic;
+
+  freq_offset_in : in std_logic_vector(31 downto 0);
+  tuning_word_coeff_in : in std_logic_vector(31 downto 0);
+  chirp_count_max_in : in std_logic_vector(31 downto 0)
 );
 end component duc_ddc;
 
@@ -636,6 +644,10 @@ signal  chirp_active_sig  :  std_logic;
 signal  chirp_init_sig  :  std_logic;
 signal  chirp_enable_sig :  std_logic;
 signal  adc_enable_sig :  std_logic;
+
+signal chirp_freq_offset_sig : std_logic_vector(31 downto 0);
+signal chirp_tuning_word_coeff_sig : std_logic_vector(31 downto 0);
+signal chirp_count_max_sig : std_logic_vector(31 downto 0);
 
 signal  fmc150_status_vector_ila_sig :  std_logic_vector(3 downto 0);
 signal  chirp_ready_ila_sig  :  std_logic_vector(0 downto 0);
@@ -1946,7 +1958,11 @@ port map(
   chirp_done  => chirp_done_sig,
   chirp_active  => chirp_active_sig,
   chirp_init  => chirp_init_sig,
-  chirp_enable => chirp_enable_sig
+  chirp_enable => chirp_enable_sig,
+
+  freq_offset_in => chirp_freq_offset_sig,
+  tuning_word_coeff_in => chirp_tuning_word_coeff_sig,
+  chirp_count_max_in =>  chirp_count_max_sig
 );
 
 duc_dcc_route_ctrl_sig(0) 	<= digital_mode;
@@ -1961,6 +1977,10 @@ chirp_active <= chirp_active_sig;
 -- Inputs from control module
 chirp_init_sig <= chirp_init;
 chirp_enable_sig <= chirp_enable;
+
+chirp_freq_offset_sig <= chirp_freq_offset;
+chirp_tuning_word_coeff_sig <= chirp_tuning_word_coeff;
+chirp_count_max_sig <= chirp_count_max;
 
 ----------------------------------------------------------------------------------------------------
 -- ICON

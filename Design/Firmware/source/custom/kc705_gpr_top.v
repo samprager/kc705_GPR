@@ -252,6 +252,7 @@ function integer clogb2 (input integer size);
     end
   endfunction
 
+
   localparam MIG_AXI_DATA_WIDTH = 512;
 
 // Virtual Fifo Read Channel (axi-4 mm to axis) prog full thresholds
@@ -272,12 +273,12 @@ function integer clogb2 (input integer size);
 
 // TODO: once weights and widths are finalize, replace int comparison with binary comparison:
 // for M00: (AR = 4, Burst = 1024 Bytes, Depth = 256, Width = 64 Bytes)
-//          thresh = 16 KB - 2*4 KB = 8 KB 
-//      ->  count <=  128 
+//          thresh = 16 KB - 2*4 KB = 8 KB
+//      ->  count <=  128
 //      or  prog_full = |counter[31:7]
 // for M01: (AR = 8, Burst = 1024 Bytes, Depth = 1024, Width = 64 Bytes)
-//          thresh = 64 KB - 2*8 KB = 48 KB 
-//      ->  count <=  768 
+//          thresh = 64 KB - 2*8 KB = 48 KB
+//      ->  count <=  768
 //      or  prog_full =  (|counter[31:10]) || (&counter[9:8])
 
   localparam ADC_AXI_DATA_WIDTH = 512;//64;
@@ -404,6 +405,42 @@ wire chirp_done;           // single pulse when chirp finished
 wire chirp_init;          // single pulse to initiate chirp
 wire chirp_enable;        // continuous high while chirp enabled
 wire adc_enable;          // high while adc samples saved
+
+// Chirp Control registers
+wire [31:0]          chirp_freq_offset;
+wire [31:0]    chirp_tuning_word_coeff;
+wire [31:0]            chirp_count_max;
+wire [31:0]                 ch_prf_int; // prf in sec
+wire [31:0]                 ch_prf_frac;
+wire [31:0]                 adc_sample_time;
+
+wire ddc_duc_bypass_ctrl;  // dip_sw(3)
+wire digital_mode_ctrl;
+wire adc_out_dac_in_ctrl;
+wire external_clock_ctrl;
+wire gen_adc_test_pattern_ctrl;
+wire enable_adc_pkt_ctrl;
+wire gen_tx_data_ctrl ;
+wire chk_tx_data_ctrl;
+wire [1:0] mac_speed_ctrl;
+
+reg [3:0] gpio_dip_sw_r = 4'b0;
+reg [3:0] dip_sw_chng = 4'b0;
+
+wire                  reg_map_wr_cmd;
+wire [7:0]           reg_map_wr_addr;
+wire [31:0]           reg_map_wr_data;
+wire [31:0]           reg_map_wr_keep;
+wire                  reg_map_wr_valid;
+wire                  reg_map_wr_ready;
+wire [1:0]            reg_map_reg_map_wr_err;
+
+reg                  reg_map_wr_cmd_r;
+reg                  reg_map_wr_cmd_rr;
+reg [7:0]           reg_map_wr_addr_r;
+reg [31:0]           reg_map_wr_data_r;
+reg [31:0]           reg_map_wr_keep_r;
+
 
 wire data_tx_ready;        // high when ready to transmit
 wire data_tx_active;       // high while data being transmitted
@@ -552,6 +589,8 @@ radar_pulse_controller radar_pulse_controller_inst (
   //input mig_init_calib_complete (init_calib_complete),
 
   .clk_fmc150 (clk_245_76MHz),           // 245.76 MHz
+  .chirp_time_int (ch_prf_int),
+  .chirp_time_frac (ch_prf_frac),
   .fmc150_status_vector (fmc150_status_vector), // {pll_status, mmcm_adac_locked, mmcm_locked, ADC_calibration_good};
   .chirp_ready (chirp_ready),
   .chirp_done (chirp_done),
@@ -647,6 +686,7 @@ assign enable_adc_pkt = gpio_dip_sw[1];//!gpio_dip_sw[0]&gpio_dip_sw[1];
 assign gen_tx_data = 1'b0; //gpio_dip_sw[1];
 assign chk_tx_data = 1'b0; //gpio_dip_sw[0];
 assign mac_speed = {gpio_dip_sw[0],~gpio_dip_sw[0]};//{gpio_dip_sw[2],gpio_dip_sw[3]};
+
 assign pause_req_s = gpio_sw_s;      //input gpio switch s
 assign update_speed = gpio_sw_c;      //input gpio switch c
 assign config_board = gpio_sw_w;      //input gpio switch w
@@ -745,6 +785,10 @@ fmc150_dac_adc_inst
      .chirp_enable                        (chirp_enable),
      .adc_enable                          (adc_enable),
 
+     .chirp_freq_offset          (chirp_freq_offset),
+     .chirp_tuning_word_coeff    (chirp_tuning_word_coeff),
+     .chirp_count_max            (chirp_count_max),
+
      .clk_out_245_76MHz                        (clk_245_76MHz),
      .clk_245_rst                               (clk_245_rst),
   //   .clk_out_491_52MHz                       (clk_491_52MHz),
@@ -822,6 +866,121 @@ fmc150_dac_adc_inst
      .prsnt_m2c_l (prsnt_m2c_l)        //             : in    std_logic
 
 );
+
+
+always @(posedge ui_clk) begin
+  if (~aresetn)
+    gpio_dip_sw_r <= 4'b0;
+  else
+    gpio_dip_sw_r <= gpio_dip_sw;
+end
+
+always @(posedge ui_clk) begin
+  if (~aresetn)
+    dip_sw_chng <= 4'b0;
+  else
+    dip_sw_chng <= gpio_dip_sw_r ^ gpio_dip_sw;
+end
+
+always @(posedge  ui_clk) begin
+   if (~aresetn) begin
+       reg_map_wr_cmd_r <= 1'b0;
+   end else begin
+       if (reg_map_ready & !reg_map_wr_cmd_r & |dip_sw_chng[1:0]) begin
+           reg_map_wr_cmd_r <= 1'b1;
+      end else begin
+           reg_map_wr_cmd_r <= 1'b0;
+       end
+   end
+end
+
+always @(posedge  ui_clk) begin
+   if (~aresetn)
+      reg_map_wr_cmd_rr <= 1'b0;
+   else
+       reg_map_wr_cmd_rr <= reg_map_wr_cmd_r;
+end
+
+always @(posedge  ui_clk) begin
+  if (~aresetn) begin
+      reg_map_wr_addr_r <= 8'b0;
+      reg_map_wr_data_r <= 32'b0;
+      reg_map_wr_keep_r <= 32'b0;
+  end else begin
+      // mac speed changed
+      if (reg_map_ready & !reg_map_wr_cmd_r & dip_sw_chng[0]) begin
+          reg_map_wr_addr_r <= 8'h23;
+          reg_map_wr_data_r[1:0] <= {gpio_dip_sw[0],~gpio_dip_sw[0]};
+          reg_map_wr_keep_r[1:0] <= 2'b11;
+      // enable adc pkt changed
+      end else if (reg_map_ready & !reg_map_wr_cmd_r & dip_sw_chng[1]) begin
+        reg_map_wr_addr_r <= 8'h20;
+        reg_map_wr_data_r[0] <= gpio_dip_sw[1];
+        reg_map_wr_keep_r[0] <= 1'b1;
+      // chirp mode changed
+      end else if (reg_map_ready & !reg_map_wr_cmd_r & dip_sw_chng[2]) begin
+      // fast chirp
+        if (gpio_dip_sw[2]) begin
+          reg_map_wr_addr_r <= 8'h00;
+          reg_map_wr_data_r <= 32'd1;     // 1 sec
+          reg_map_wr_keep_r <= 32'hffffffff;
+      // slow chirp
+        end else begin
+          reg_map_wr_addr_r <= 8'h00;
+          reg_map_wr_data_r <= 32'd10;    //10 sec
+          reg_map_wr_keep_r <= 32'hffffffff;
+        end
+      // ddc_duc_bypass cahnged
+      end else if (reg_map_ready & !reg_map_wr_cmd_r & dip_sw_chng[3]) begin
+        reg_map_wr_addr_r <= 8'h10;
+        reg_map_wr_data_r[0] <= gpio_dip_sw[3];
+        reg_map_wr_keep_r[0] <= 1'b1;
+      end
+  end
+end
+
+config_reg_map u_config_reg_map (
+  .rst_n    (aresetn),
+  .clk      (ui_clk),
+
+
+  .wr_cmd             (reg_map_wr_cmd),
+  .wr_addr            (reg_map_wr_addr),
+  .wr_data            (reg_map_wr_data),
+  .wr_keep            (reg_map_wr_keep),
+  .wr_valid           (reg_map_wr_valid),
+  .wr_ready           (reg_map_wr_ready),
+  .reg_map_wr_err             (reg_map_reg_map_wr_err),
+
+  // Chirp Control registers
+  .ch_prf_int (ch_prf_int), // prf in sec
+  .ch_prf_frac (ch_prf_frac),
+  .ch_tuning_coef (chirp_tuning_word_coeff),
+  .ch_counter_max  (chirp_count_max),
+  .ch_freq_offset (chirp_freq_offset),
+
+
+  .adc_sample_time                        (adc_sample_time),
+
+  // FMC150 Mode Control
+  .ddc_duc_bypass                         (ddc_duc_bypass_ctrl),
+  .digital_mode                           (digital_mode_ctrl),
+  .adc_out_dac_in                         (adc_out_dac_in_ctrl),
+  .external_clock                         (external_clock_ctrl),
+  .gen_adc_test_pattern                   (gen_adc_test_pattern_ctrl),
+
+  //  . Control Signals
+  .enable_adc_pkt                         (enable_adc_pkt_ctrl),
+  .gen_tx_data                            (gen_tx_data_ctrl),
+  .chk_tx_data                            (chk_tx_data_ctrl),
+  .mac_speed                              (mac_speed_ctrl)
+
+);
+
+assign reg_map_wr_cmd = reg_map_wr_cmd_r;
+assign reg_map_wr_addr = reg_map_wr_addr_r;
+assign reg_map_wr_data = reg_map_wr_data_r;
+assign reg_map_wr_keep = reg_map_wr_keep_r;
 
 axi_vfifo_ctrl_0 u_axi_vfifo_ctrl_0(
     .aclk(ui_clk),                                          // input wire aclk
@@ -904,7 +1063,7 @@ axis_interconnect_1m2s u_axis_interconnect_1m2s(
     .ARESETN(aresetn),                            // input wire ARESETN
     //  .ACLK(sysclk_bufg),                                  // input wire ACLK
     //  .ARESETN(sysclk_resetn),                            // input wire ARESETN
-    
+
 // S00 AXIS Connection to ADC Module
     .S00_AXIS_ACLK(ui_clk),                // input wire S00_AXIS_ACLK
     .S00_AXIS_ARESETN(aresetn),          // input wire S00_AXIS_ARESETN
@@ -1164,14 +1323,14 @@ ila_axis_adc ila_axis_adc_inst(
      .probe9(S00_ARB_REQ_SUPPRESS),   // input wire S00_ARB_REQ_SUPPRESS
      .probe10(S00_DECODE_ERR),              // output wire S00_DECODE_ERR
      .probe11(S00_FIFO_DATA_COUNT),    // output wire [31 : 0] S00_FIFO_DATA_COUNT
-     
+
      .probe12(s_axis_vfifo_tdata),      // wire [MIG_AXI_DATA_WIDTH-1 : 0]
     .probe13(s_axis_vfifo_tkeep),       // wire [MIG_AXI_DATA_WIDTH/8-1 : 0]
     .probe14(s_axis_vfifo_tstrb),       // wire [MIG_AXI_DATA_WIDTH/8-1 : 0]
     .probe15(s_axis_vfifo_tvalid),
     .probe16(s_axis_vfifo_tready),
     .probe17(s_axis_vfifo_tlast),
-    .probe18(s_axis_vfifo_tid),         
+    .probe18(s_axis_vfifo_tid),
     .probe19(s_axis_vfifo_tdest)
 );
 
