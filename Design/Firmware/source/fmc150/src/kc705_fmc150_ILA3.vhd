@@ -1548,7 +1548,7 @@ begin
   if rising_edge(clk_245_76MHz) then
     if (rst = '1') then
       adc_counter_out_sig <= (others=>'0');
-    elsif (gen_adc_test_pattern = '1') then 
+    elsif (gen_adc_test_pattern = '1') then
         if (adc_test_pattern_valid = '1') then
             adc_counter_out_sig <= adc_counter_out_sig + '1';
         end if;
@@ -1580,7 +1580,6 @@ adc_data_out_q <= adc_data_out_q_sig;
 adc_data_out_valid <= adc_data_out_valid_sig;
 
 adc_counter_out <= adc_counter_out_sig;
-
 
 ------------------------------------------------------------------------------------
 ---- ILA for monitor of ADC calibration
@@ -1954,7 +1953,7 @@ duc_dcc_route_ctrl_sig(0) 	<= digital_mode;
 duc_dcc_route_ctrl_sig(1) 	<= adc_out_dac_in;
 duc_dcc_route_ctrl_sig(2) 	<= ddc_duc_bypass;
 
--- Outputs from DUC DDC Module 
+-- Outputs from DUC DDC Module
 chirp_ready <= chirp_ready_sig;
 chirp_done <= chirp_done_sig;
 chirp_active <= chirp_active_sig;

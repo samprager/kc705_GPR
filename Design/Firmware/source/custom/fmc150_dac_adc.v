@@ -124,9 +124,15 @@ module fmc150_dac_adc #
   wire [31:0] adc_data_iq;
   wire [31:0] adc_counter;
   wire adc_data_valid;
-  wire [63:0] adc_fifo_wr_data;
 
-     wire [12:0]              adc_fifo_wr_data_count;
+  wire [63:0] adc_fifo_wr_tdata;
+  wire       adc_fifo_wr_tvalid;
+  wire       adc_fifo_wr_tlast;
+  reg        adc_fifo_wr_tlast_reg;
+
+
+
+     wire [12:0]              adc_fifo_wr_tdata_count;
      wire [9:0]               adc_fifo_rd_data_count;
      wire                       adc_fifo_wr_ack;
      wire                       adc_fifo_valid;
@@ -137,6 +143,9 @@ module fmc150_dac_adc #
      wire [ADC_AXI_DATA_WIDTH-1:0]  adc_fifo_data_out;
      wire                     adc_fifo_full;
      wire                     adc_fifo_empty;
+
+     reg                      adc_enable_r;
+
 
 
 
@@ -233,6 +242,25 @@ module fmc150_dac_adc #
 
    );
 
+   always @(posedge clk_245_76MHz) begin
+    if (cpu_reset) begin
+      adc_enable_r <= 1'b0;
+      adc_enable_rr <= 1'b0;
+    end else begin
+      adc_enable_r <= adc_enable;
+      adc_enable_rr <= adc_enable_r;
+    end
+   end
+
+   always @(posedge clk_245_76MHz) begin
+    if (cpu_reset)
+      adc_fifo_wr_tlast_reg <= 1'b0;
+    else if (adc_enable_r & !adc_enable)
+      adc_fifo_wr_tlast_reg <= 1'b1;
+    else
+      adc_fifo_wr_tlast_reg <= 1'b0;
+   end
+
 
 // asynchoronous fifo for converting 245.76 MHz 32 bit adc samples (16 i, 16 q)
 // to rd clk domain 64 bit adc samples (i1 q1 i2 q2)
@@ -240,7 +268,7 @@ module fmc150_dac_adc #
    (
    .wr_clk                    (clk_245_76MHz),
    .rd_clk                    (rd_fifo_clk),
-   .wr_data_count             (adc_fifo_wr_data_count),
+   .wr_data_count             (adc_fifo_wr_tdata_count),
    .rd_data_count             (adc_fifo_rd_data_count),
    .wr_ack                    (adc_fifo_wr_ack),
    .valid                     (adc_fifo_valid),
@@ -251,7 +279,7 @@ module fmc150_dac_adc #
    .wr_en                     (adc_fifo_wr_en),
    //.rd_en                     (adc_fifo_rd_en),
    .rd_en                     (adc_fifo_rd_en),
-   .din                       (adc_fifo_wr_data),
+   .din                       (adc_fifo_wr_tdata),
    .dout                      (adc_fifo_data_out),
    .full                      (adc_fifo_full),
    .empty                     (adc_fifo_empty)
@@ -289,10 +317,11 @@ module fmc150_dac_adc #
    //assign adc_fifo_rd_en = 1'b1;
 
    assign adc_data_iq = {adc_data_i,adc_data_q};
-   assign adc_fifo_wr_data = {adc_counter,adc_data_iq};
+   assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
+   assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
+   assign adc_fifo_wr_tlast = adc_fifo_wr_tlast_reg;
 
-
-   assign adc_fifo_wr_en = adc_data_valid & adc_enable;
+   assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
 
 assign rd_fifo_clk = aclk;
 
@@ -302,12 +331,12 @@ assign clk_out_245_76MHz = clk_245_76MHz;
 ila_adc_wr_fifo ila_adc_wr_fifo_inst(
     //.clk (ui_clk),
      .clk(clk_245_76MHz),
-     .probe0(adc_fifo_wr_data),
-     .probe1(adc_fifo_wr_data_count),
+     .probe0(adc_fifo_wr_tdata),
+     .probe1(adc_fifo_wr_tdata_count),
      .probe2(adc_fifo_wr_ack),
-     .probe3(adc_fifo_wr_en),    
-     .probe4(adc_fifo_almost_full),   
-     .probe5(adc_fifo_full)     
+     .probe3(adc_fifo_wr_en),
+     .probe4(adc_fifo_almost_full),
+     .probe5(adc_fifo_full)
 );
 
 ila_adc_rd_fifo ila_adc_rd_fifo_inst(
@@ -316,14 +345,14 @@ ila_adc_rd_fifo ila_adc_rd_fifo_inst(
      .probe0(adc_fifo_data_out),
      .probe1(adc_fifo_rd_data_count),
      .probe2(adc_fifo_valid),
-     .probe3(adc_fifo_rd_en),   
-     .probe4(adc_fifo_almost_empty),   
+     .probe3(adc_fifo_rd_en),
+     .probe4(adc_fifo_almost_empty),
      .probe5(adc_fifo_empty),
-     
+
      .probe6                      (axis_adc_tdata),
      .probe7                     (axis_adc_tvalid),
      .probe8                      (axis_adc_tlast),
-     .probe9                     (axis_adc_tready)     
+     .probe9                     (axis_adc_tready)
 );
 
 
