@@ -125,3 +125,11 @@
 Generated Vivado Projects
 #########
 */*/implement/*project_*/*
+
+#########
+IP Output Products (only need .xci and .coe and .prj files)
+#########
+*/*/ip/*/*
+!*/*/ip/*/*.coe
+!*/*/ip/*/*.xci
+!*/*/ip/*/*.prj
