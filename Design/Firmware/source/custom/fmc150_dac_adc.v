@@ -149,7 +149,7 @@ module fmc150_dac_adc #
      wire                     adc_fifo_empty;
 
      reg                      adc_enable_r;
-
+     reg                      adc_enable_rr;
 
 
 

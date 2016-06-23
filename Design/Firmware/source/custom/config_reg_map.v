@@ -67,7 +67,7 @@ parameter ADC_CLK_FREQ                              = 245.7
   input [7:0]                             wr_addr,
   input [31:0]                            wr_data,
   input [31:0]                            wr_keep,
-  input                                   wr_valid,
+  output                                   wr_valid,
   output                                  wr_ready,
   output reg [1:0]                        wr_err,
 
