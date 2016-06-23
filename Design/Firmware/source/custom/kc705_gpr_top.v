@@ -433,7 +433,7 @@ wire [31:0]           reg_map_wr_data;
 wire [31:0]           reg_map_wr_keep;
 wire                  reg_map_wr_valid;
 wire                  reg_map_wr_ready;
-wire [1:0]            reg_map_reg_map_wr_err;
+wire [1:0]            reg_map_wr_err;
 
 reg                  reg_map_wr_cmd_r;
 reg                  reg_map_wr_cmd_rr;
@@ -891,7 +891,7 @@ always @(posedge  ui_clk) begin
    if (~aresetn) begin
        reg_map_wr_cmd_r <= 1'b0;
    end else begin
-       if (reg_map_ready & !reg_map_wr_cmd_r & |dip_sw_chng[1:0]) begin
+       if (reg_map_wr_ready & !reg_map_wr_cmd_r & |dip_sw_chng[1:0]) begin
            reg_map_wr_cmd_r <= 1'b1;
       end else begin
            reg_map_wr_cmd_r <= 1'b0;
@@ -913,17 +913,17 @@ always @(posedge  ui_clk) begin
       reg_map_wr_keep_r <= 32'b0;
   end else begin
       // mac speed changed
-      if (reg_map_ready & !reg_map_wr_cmd_r & dip_sw_chng[0]) begin
+      if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng[0]) begin
           reg_map_wr_addr_r <= 8'h23;
           reg_map_wr_data_r[1:0] <= {gpio_dip_sw[0],~gpio_dip_sw[0]};
           reg_map_wr_keep_r[1:0] <= 2'b11;
       // enable adc pkt changed
-      end else if (reg_map_ready & !reg_map_wr_cmd_r & dip_sw_chng[1]) begin
+      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng[1]) begin
         reg_map_wr_addr_r <= 8'h20;
         reg_map_wr_data_r[0] <= gpio_dip_sw[1];
         reg_map_wr_keep_r[0] <= 1'b1;
       // chirp mode changed
-      end else if (reg_map_ready & !reg_map_wr_cmd_r & dip_sw_chng[2]) begin
+      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng[2]) begin
       // fast chirp
         if (gpio_dip_sw[2]) begin
           reg_map_wr_addr_r <= 8'h00;
@@ -936,7 +936,7 @@ always @(posedge  ui_clk) begin
           reg_map_wr_keep_r <= 32'hffffffff;
         end
       // ddc_duc_bypass cahnged
-      end else if (reg_map_ready & !reg_map_wr_cmd_r & dip_sw_chng[3]) begin
+      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng[3]) begin
         reg_map_wr_addr_r <= 8'h10;
         reg_map_wr_data_r[0] <= gpio_dip_sw[3];
         reg_map_wr_keep_r[0] <= 1'b1;
@@ -955,7 +955,7 @@ config_reg_map u_config_reg_map (
   .wr_keep            (reg_map_wr_keep),
   .wr_valid           (reg_map_wr_valid),
   .wr_ready           (reg_map_wr_ready),
-  .reg_map_wr_err             (reg_map_reg_map_wr_err),
+  .wr_err             (reg_map_wr_err),
 
   // Chirp Control registers
   .ch_prf_int (ch_prf_int), // prf in sec
