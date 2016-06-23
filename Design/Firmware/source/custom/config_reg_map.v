@@ -1,4 +1,4 @@
-`timescale 1ps / 1ps
+
 //////////////////////////////////////////////////////////////////////////////////
 // Company: MiXIL
 // Engineer: Samuel Prager
@@ -43,7 +43,7 @@
 //-- Push the initial freq beyon baseband:
 //  min_freq = freq_offset*fclock/2^n
 //-------------------------------------------------------------------
-
+`timescale 1 ps/1 ps
 
 
 // -----------------------

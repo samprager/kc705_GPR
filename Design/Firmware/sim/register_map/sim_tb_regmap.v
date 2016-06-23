@@ -18,7 +18,9 @@ module sim_tb_regmap;
   wire                                  wr_valid;
   wire                                  wr_ready;
   wire [1:0]                            wr_err;
-
+  
+  reg                                    wr_cmd_ii;
+  
   wire                                   wr_cmd;
   wire [7:0]                             wr_addr;
   wire [31:0]                            wr_data;
@@ -42,9 +44,6 @@ wire chk_tx_data;
 wire [1:0] mac_speed;
 
 reg enable_write;
-reg [7:0] next_addr;
-reg [31:0] next_data;
-reg [31:0] next_keep;
 
 
  //**************************************************************************//
@@ -75,7 +74,7 @@ reg [31:0] next_keep;
 
 
  initial begin
-      enable_write = 1'b0; // initial value
+      enable_write = 1'b1; // initial value
       @(posedge rst_n_i); // wait for reset
       enable_write = 1'b0;
       repeat(32) @(posedge clk_i);
@@ -109,43 +108,42 @@ reg [31:0] next_keep;
  always @(posedge  clk_i) begin
     if (~rst_n_i) begin
         wr_cmd_i <= 1'b0;
-        wr_addr_i <= 8'b0;
-        wr_data_i <= 32'b0;
-        wr_keep_i <= 32'b0;
     end else begin
         if (wr_ready & enable_write & !wr_cmd_i) begin
             wr_cmd_i <= 1'b1;
-            wr_addr_i <= next_addr;
-            wr_data_i <= next_data;
-            wr_keep_i <= next_keep;
-       end else if (wr_valid) begin
+       end else begin
             wr_cmd_i <= 1'b0;
         end
     end
 end
 
 always @(posedge  clk_i) begin
+    if (~rst_n_i) 
+       wr_cmd_ii <= 1'b0;
+    else
+        wr_cmd_ii <= wr_cmd_i;
+end
+always @(posedge  clk_i) begin
    if (~rst_n_i) begin
-       next_addr <= 8'b0;
-       next_data <= 32'd20;
-       next_keep <= 32'hffffffff;
+       wr_addr_i <= 8'b0;
+       wr_data_i <= 32'd20;
+       wr_keep_i <= 32'hfffffff0;
    end else begin
-       if (wr_valid) begin
-           next_addr <= next_addr + 1;
-           next_data <= next_data + 1;
-           next_keep <= next_keep;
-       end
+       if (wr_valid & wr_cmd_ii) begin
+           wr_addr_i <= wr_addr_i + 1;
+           wr_data_i <= wr_data_i + 1;
+           wr_keep_i <= wr_keep_i;
+       end else if (wr_cmd_ii & (&wr_err))
+           wr_addr_i <= wr_addr_i+1;
+       else if (wr_cmd_ii & (wr_err == 2'b01))
+           wr_keep_i <= wr_keep_i + 1;
+       else if (wr_cmd_ii & (wr_err == 2'b10))
+           wr_keep_i <= {wr_keep_i[31:1],1'b1};   
    end
 end
 
-// initial begin
-//   next_addr <= 8'b0;
-//   next_data <= 32'd0;
-//   next_keep <= 32'h0;
-// end
 
- config_reg_map #(
-) u_regmap_top (
+ config_reg_map  u_regmap_top (
         .clk (clk),
         .rst_n (rst_n),
 
