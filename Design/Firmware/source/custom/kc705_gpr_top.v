@@ -412,8 +412,10 @@ wire [31:0]                 ch_prf_frac;
 wire [31:0]                 adc_sample_time;
 
 wire [7:0] fmc150_ctrl_bus;
+//fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
 
 wire [7:0] ethernet_ctrl_bus;
+// ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
 
 wire                  reg_map_wr_cmd;
 wire [7:0]           reg_map_wr_addr;
@@ -649,6 +651,7 @@ kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
 
   // Main example design controls
   //-----------------------------
+  .ethernet_ctrl_bus (ethernet_ctrl_bus),
   .update_speed         (update_speed),
   //input         serial_command, // tied to pause_req_s
   .config_board         (config_board),
@@ -883,9 +886,9 @@ config_reg_map config_reg_map_inst (
 
   .adc_sample_time                        (adc_sample_time),
 
+
   // FMC150 Mode Control
   .fmc150_ctrl_bus (fmc150_ctrl_bus),
-
 
   //  Ethernet Control Signals
   .ethernet_ctrl_bus (ethernet_ctrl_bus)

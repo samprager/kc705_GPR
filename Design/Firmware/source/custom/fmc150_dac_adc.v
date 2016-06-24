@@ -61,7 +61,7 @@ module fmc150_dac_adc #
   input gpio_sw_n,        //               : in    std_logic;
   input gpio_sw_s,        //               : in    std_logic;
   input gpio_sw_w,        //               : in    std_logic;
-  
+
   input [7:0] fmc150_ctrl_bus,
 
  // --Clock/Data connection to ADC on FMC150 (ADS62P49)
@@ -332,7 +332,8 @@ module fmc150_dac_adc #
    assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
    assign adc_fifo_wr_tlast = adc_fifo_wr_tlast_reg;
 
-   assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
+   assign adc_fifo_wr_en = adc_enable & adc_data_valid;
+   //assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
 
 assign rd_fifo_clk = aclk;
 
