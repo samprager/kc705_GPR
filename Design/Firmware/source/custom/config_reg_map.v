@@ -83,17 +83,19 @@ parameter ADC_CLK_FREQ                              = 245.7
   // ADC Sample time after chirp data_tx_done -
   output reg [31:0]                 adc_sample_time = 0,
   // FMC150 Mode Control
-  output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
-  output reg digital_mode                           = 1'b0,
-  output reg adc_out_dac_in                         = 1'b0,
-  output reg external_clock                         = 1'b0,
-  output reg gen_adc_test_pattern                   = 1'b0,
+  output [7:0] fmc150_ctrl_bus,
+  // output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
+  // output reg digital_mode                           = 1'b0,
+  // output reg adc_out_dac_in                         = 1'b0,
+  // output reg external_clock                         = 1'b0,
+  // output reg gen_adc_test_pattern                   = 1'b0,
 
   // Ethernet Control Signals
-  output reg enable_adc_pkt                         = 1'b1,
-  output reg gen_tx_data                            = 1'b0,
-  output reg chk_tx_data                            = 1'b0,
-  output reg [1:0] mac_speed                        = 2'b10
+  output [7:0] ethernet_ctrl_bus
+  // output reg enable_adc_pkt                         = 1'b1,
+  // output reg gen_tx_data                            = 1'b0,
+  // output reg chk_tx_data                            = 1'b0,
+  // output reg [1:0] mac_speed                        = 2'b10
 
 );
 
@@ -104,11 +106,25 @@ reg [7:0] wr_addr_reg;
 reg [31:0] wr_data_reg;
 reg [31:0] wr_keep_reg;
 
+reg ddc_duc_bypass                         = 1'b1; // dip_sw(3)
+reg digital_mode                           = 1'b0;
+reg adc_out_dac_in                         = 1'b0;
+reg external_clock                         = 1'b0;
+reg gen_adc_test_pattern                   = 1'b0;
+
+reg enable_adc_pkt                         = 1'b1;
+reg gen_tx_data                            = 1'b0;
+reg chk_tx_data                            = 1'b0;
+reg [1:0] mac_speed                        = 2'b10;
+
 wire [3:0] addr_up;
 wire [3:0] addr_low;
 
 assign wr_ready                                     = wr_ready_reg;
 assign wr_valid                                     = wr_valid_reg;
+
+assign fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
+assign ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
 
 
 always @(posedge clk)
@@ -148,12 +164,12 @@ begin
       adc_out_dac_in       <= 1'b0;
       external_clock       <= 1'b0;
       gen_adc_test_pattern <= 1'b0;
-  
+
       enable_adc_pkt       <= 1'b1;
       gen_tx_data          <= 1'b0;
       chk_tx_data          <= 1'b0;
       mac_speed            <= 2'b10;
-      
+
   end else if(wr_cmd & wr_ready_reg) begin
 
     if (addr_up == 4'b0000) begin

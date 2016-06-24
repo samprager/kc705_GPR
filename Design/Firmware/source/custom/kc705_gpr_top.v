@@ -375,12 +375,9 @@ wire         pause_req_s;      //input gpio switch s
 
 // Main example design controls
 //-----------------------------
-wire  [1:0]  mac_speed;    //input mac_speed[0] = dip switch[3]. mac_speed[1] = dip switch[2]
 wire         update_speed;     //input gpio switch c
 wire         config_board;     //input gpio switch w
 wire         reset_error;      //input gpio switch n
-wire         gen_tx_data; // dip switch[1]
-wire         chk_tx_data;   // dip switch[0]
 wire        frame_error;      //output gpio led 0
 wire        frame_errorn;      //output gpio led 1
 wire        activity_flash;     //output gpio led 2
@@ -414,29 +411,9 @@ wire [31:0]                 ch_prf_int; // prf in sec
 wire [31:0]                 ch_prf_frac;
 wire [31:0]                 adc_sample_time;
 
-wire ddc_duc_bypass_ctrl;  // dip_sw(3)
-wire digital_mode_ctrl;
-wire adc_out_dac_in_ctrl;
-wire external_clock_ctrl;
-wire gen_adc_test_pattern_ctrl;
-wire enable_adc_pkt_ctrl;
-wire gen_tx_data_ctrl ;
-wire chk_tx_data_ctrl;
-wire [1:0] mac_speed_ctrl;
-
 wire [7:0] fmc150_ctrl_bus;
-reg [7:0] fmc150_ctrl_bus_reg;
 
 wire [7:0] ethernet_ctrl_bus;
-
-reg [3:0] gpio_dip_sw_r;
-reg [3:0] gpio_dip_sw_rr;
-reg [3:0] gpio_dip_sw_rrr;
-reg [3:0] dip_sw_chng = 4'b0;
-reg [3:0] dip_sw_chng_r = 4'b0;
-reg [15:0] dip_sw_debounce_ctr [3:0];
-
-integer i;
 
 wire                  reg_map_wr_cmd;
 wire [7:0]           reg_map_wr_addr;
@@ -446,11 +423,6 @@ wire                  reg_map_wr_valid;
 wire                  reg_map_wr_ready;
 wire [1:0]            reg_map_wr_err;
 
-reg                  reg_map_wr_cmd_r;
-reg                  reg_map_wr_cmd_rr;
-reg [7:0]           reg_map_wr_addr_r;
-reg [31:0]           reg_map_wr_data_r;
-reg [31:0]           reg_map_wr_keep_r;
 
 
 wire data_tx_ready;        // high when ready to transmit
@@ -573,7 +545,12 @@ wire [1 : 0] vfifo_idle;                     // output from vfifo
 reg     vfifo_mm2s_ch0_full;
 reg     vfifo_mm2s_ch1_full;
 
+// AXI Top Level DMA Signals
+wire dma_start;
+wire dma_done;
+wire dma_status;
 
+reg dma_start_r;
 
 // Start of User Design top instance
 //***************************************************************************
@@ -588,13 +565,6 @@ radar_pulse_controller radar_pulse_controller_inst (
   //.aresetn(sysclk_resetn),
   .aclk(clk_245_76MHz),
   .aresetn(!clk_245_rst),
-  // input gpio_sw_c,
-  // input gpio_sw_e,
-  // input gpio_sw_n,
-  // input gpio_sw_s,
-  // input gpio_sw_w,
-   .gpio_dip_sw(gpio_dip_sw),
-  // output [7:0]  gpio_led,
 
   //input clk_mig,              // 200 MHZ OR 100 MHz
   //input mig_init_calib_complete (init_calib_complete),
@@ -671,7 +641,6 @@ kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
   .pause_req_s         (pause_req_s),
 
   // connections to adc data ports
-  .enable_adc_pkt            (enable_adc_pkt),
   .adc_axis_tdata           (adc_pkt_axis_tdata),
   .adc_axis_tvalid          (adc_pkt_axis_tvalid),
   .adc_axis_tlast           (adc_pkt_axis_tlast),
@@ -680,28 +649,16 @@ kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
 
   // Main example design controls
   //-----------------------------
-  .mac_speed             (mac_speed),       // [1:0]
   .update_speed         (update_speed),
   //input         serial_command, // tied to pause_req_s
   .config_board         (config_board),
   .serial_response        (serial_response),
-  .gen_tx_data         (gen_tx_data),
-  .chk_tx_data         (chk_tx_data),
  // .reset_error         (reset_error),
   .frame_error        (frame_error),
   .frame_errorn        (frame_errorn),
   .activity_flash        (activity_flash),
   .activity_flashn        (activity_flashn)
 );
-//assign enable_adc_pkt = 1'b1;
-//assign enable_adc_pkt = gpio_dip_sw[1];//!gpio_dip_sw[0]&gpio_dip_sw[1];
-//assign gen_tx_data = 1'b0; //gpio_dip_sw[1];
-//assign chk_tx_data = 1'b0; //gpio_dip_sw[0];
-//assign mac_speed = {gpio_dip_sw[0],~gpio_dip_sw[0]};//{gpio_dip_sw[2],gpio_dip_sw[3]};
-assign enable_adc_pkt = enable_adc_pkt_ctrl;//!gpio_dip_sw[0]&gpio_dip_sw[1];
-assign gen_tx_data = gen_tx_data_ctrl;
-assign chk_tx_data = chk_tx_data_ctrl;
-assign mac_speed = mac_speed_ctrl;//{gpio_dip_sw[2],gpio_dip_sw[3]};
 
 
 assign pause_req_s = gpio_sw_s;      //input gpio switch s
@@ -828,7 +785,7 @@ fmc150_dac_adc_inst
      .gpio_sw_n (gpio_sw_n),        //               : in    std_logic;
      .gpio_sw_s (gpio_sw_s),        //               : in    std_logic;
      .gpio_sw_w (gpio_sw_w),        //               : in    std_logic;
-     
+
      .fmc150_ctrl_bus (fmc150_ctrl_bus),
 
     // --Clock/Data connection to ADC on FMC150 (ADS62P49)
@@ -886,131 +843,24 @@ fmc150_dac_adc_inst
 
 );
 
-//assign fmc150_ctrl_bus = fmc150_ctrl_bus_reg;
 
-//always @(posedge clk_245_76MHz) begin
-//  if (cpu_reset)
-//    fmc150_ctrl_bus_reg <= 8'b0;
-//  else
-//    fmc150_ctrl_bus_reg[7:5] <= 3'b0;
-//    fmc150_ctrl_bus_reg[4] <= ddc_duc_bypass_ctrl;
-//    fmc150_ctrl_bus_reg[3] <= digital_mode_ctrl;
-//    fmc150_ctrl_bus_reg[2] <= adc_out_dac_in_ctrl;
-//    fmc150_ctrl_bus_reg[1] <= external_clock_ctrl;
-//    fmc150_ctrl_bus_reg[0] <= gen_adc_test_pattern_ctrl;
-//end
+reg_map_cmd_gen reg_map_cmd_gen (
+  .aclk (s_axi_aclk),
+  .aresetn (s_axi_resetn),
 
-assign fmc150_ctrl_bus = {3'b0,ddc_duc_bypass_ctrl,digital_mode_ctrl,adc_out_dac_in_ctrl,external_clock_ctrl,gen_adc_test_pattern_ctrl};
-assign ethernet_ctrl_bus = {3'b0,enable_adc_pkt_ctrl,gen_tx_data_ctrl,chk_tx_data_ctrl,mac_speed_ctrl};
+  .gpio_dip_sw (gpio_dip_sw),
 
+  .reg_map_wr_cmd               (reg_map_wr_cmd),
+  .reg_map_wr_addr              (reg_map_wr_addr),
+  .reg_map_wr_data              (reg_map_wr_data),
+  .reg_map_wr_keep              (reg_map_wr_keep),
+  .reg_map_wr_valid             (reg_map_wr_valid),
+  .reg_map_wr_ready             (reg_map_wr_ready),
+  .reg_map_wr_err               (reg_map_wr_err)
 
+);
 
-always @(posedge s_axi_aclk) begin
-    gpio_dip_sw_r <= gpio_dip_sw;
-end
-
-always @(posedge s_axi_aclk) begin
-  if (~s_axi_resetn)  
-    dip_sw_chng <= 4'b0;
-  else
-    dip_sw_chng <= gpio_dip_sw_r ^ gpio_dip_sw;
-end
-
-
-// debounce switches
-always @(posedge s_axi_aclk) begin
-  if (~s_axi_resetn) 
-    gpio_dip_sw_rr <= gpio_dip_sw;
-  else begin
-    for (i=0;i<4;i=i+1)begin
-        if (&dip_sw_debounce_ctr[i]) 
-             gpio_dip_sw_rr[i] <= gpio_dip_sw_r[i];    
-    end
-  end  
-end
-
-always @(posedge s_axi_aclk) begin
-  for (i=0;i<4;i=i+1)begin
-    if (~s_axi_resetn) 
-        dip_sw_debounce_ctr[i] <= 16'hffff;
-    else if (dip_sw_chng[i]) 
-        dip_sw_debounce_ctr[i] <= 16'b0;
-     else if (!(&dip_sw_debounce_ctr[i] ))  
-        dip_sw_debounce_ctr[i] <= dip_sw_debounce_ctr[i]+1'b1; 
-   end
-end
-
-always @(posedge s_axi_aclk) begin
-  if (~s_axi_resetn)  
-    dip_sw_chng_r <= 4'b0;
-  else
-    dip_sw_chng_r <= gpio_dip_sw_rrr ^ gpio_dip_sw_rr;
-end
-
-always @(posedge s_axi_aclk) begin
-  if (~s_axi_resetn)  
-    gpio_dip_sw_rrr <= gpio_dip_sw;
-  else
-    gpio_dip_sw_rrr <= gpio_dip_sw_rr;
-end
-
-
-always @(posedge  s_axi_aclk) begin
-   if (~s_axi_resetn) begin
-       reg_map_wr_cmd_r <= 1'b0;
-   end else begin
-       if (reg_map_wr_ready & !reg_map_wr_cmd_r & |dip_sw_chng_r[3:0]) begin
-           reg_map_wr_cmd_r <= 1'b1;
-      end else begin
-           reg_map_wr_cmd_r <= 1'b0;
-       end
-   end
-end
-
-always @(posedge  s_axi_aclk) begin
-   if (~s_axi_resetn)
-      reg_map_wr_cmd_rr <= 1'b0;
-   else
-       reg_map_wr_cmd_rr <= reg_map_wr_cmd_r;
-end
-
-always @(posedge  s_axi_aclk) begin
-  if (~s_axi_resetn) begin
-      reg_map_wr_addr_r <= 8'b0;
-      reg_map_wr_data_r <= 32'b0;
-      reg_map_wr_keep_r <= 32'b0;
-  end else begin
-      // mac speed changed
-      if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[0]) begin
-          reg_map_wr_addr_r <= 8'h23;
-          reg_map_wr_data_r[1:0] <= {gpio_dip_sw_rr[0],~gpio_dip_sw_rr[0]};
-          reg_map_wr_keep_r[1:0] <= 2'b11;
-      // enable adc pkt changed
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[1]) begin
-        reg_map_wr_addr_r <= 8'h20;
-        reg_map_wr_data_r[0] <= gpio_dip_sw_rr[1];
-        reg_map_wr_keep_r[0] <= 1'b1;
-      // chirp mode changed
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[2]) begin
-      // fast chirp
-        reg_map_wr_addr_r <= 8'h00;
-        reg_map_wr_keep_r <= 32'hffffffff;
-        if (gpio_dip_sw_rr[2]) begin
-          reg_map_wr_data_r <= 32'd1;     // 1 sec
-      // slow chirp
-        end else begin
-          reg_map_wr_data_r <= 32'd10;    //10 sec
-        end
-      // ddc_duc_bypass cahnged
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[3]) begin
-        reg_map_wr_addr_r <= 8'h10;
-        reg_map_wr_data_r[0] <= gpio_dip_sw_rr[3];
-        reg_map_wr_keep_r[0] <= 1'b1;
-      end
-  end
-end
-
-config_reg_map u_config_reg_map (
+config_reg_map config_reg_map_inst (
   .rst_n    (s_axi_resetn),
   .clk      (s_axi_aclk),
 
@@ -1034,24 +884,13 @@ config_reg_map u_config_reg_map (
   .adc_sample_time                        (adc_sample_time),
 
   // FMC150 Mode Control
-  .ddc_duc_bypass                         (ddc_duc_bypass_ctrl),
-  .digital_mode                           (digital_mode_ctrl),
-  .adc_out_dac_in                         (adc_out_dac_in_ctrl),
-  .external_clock                         (external_clock_ctrl),
-  .gen_adc_test_pattern                   (gen_adc_test_pattern_ctrl),
+  .fmc150_ctrl_bus (fmc150_ctrl_bus),
 
-  //  . Control Signals
-  .enable_adc_pkt                         (enable_adc_pkt_ctrl),
-  .gen_tx_data                            (gen_tx_data_ctrl),
-  .chk_tx_data                            (chk_tx_data_ctrl),
-  .mac_speed                              (mac_speed_ctrl)
+
+  //  Ethernet Control Signals
+  .ethernet_ctrl_bus (ethernet_ctrl_bus)
 
 );
-
-assign reg_map_wr_cmd = reg_map_wr_cmd_r;
-assign reg_map_wr_addr = reg_map_wr_addr_r;
-assign reg_map_wr_data = reg_map_wr_data_r;
-assign reg_map_wr_keep = reg_map_wr_keep_r;
 
 axi_vfifo_ctrl_0 u_axi_vfifo_ctrl_0(
     .aclk(ui_clk),                                          // input wire aclk
@@ -1378,6 +1217,131 @@ always @(posedge sysclk_bufg) begin
  sysclk_reset <= ~sysclk_resetn;
 end
 
+axi_dma_0_exdes axi_dma_0_exdes_inst (
+  .clock (ui_clk),
+  .clock_lite (s_axi_clk),
+  .resetn (aresetn),
+  .start (dma_start),
+  .done  (dma_done),
+  .status (dma_status)
+);
+assign dma_start = dma_start_r;
+
+always @(posedge ui_clk) begin
+    if (ui_clk_sync_rst)
+        dma_start_r <= 1'b0;
+    else
+        dma_start_r <= 1'b1;
+end
+
+//axi_dma_0 your_instance_name (
+//  .s_axi_lite_aclk(s_axi_lite_aclk),                    // input wire s_axi_lite_aclk
+//  .m_axi_sg_aclk(m_axi_sg_aclk),                        // input wire m_axi_sg_aclk
+//  .m_axi_mm2s_aclk(m_axi_mm2s_aclk),                    // input wire m_axi_mm2s_aclk
+//  .m_axi_s2mm_aclk(m_axi_s2mm_aclk),                    // input wire m_axi_s2mm_aclk
+//  .axi_resetn(axi_resetn),                              // input wire axi_resetn
+//  .s_axi_lite_awvalid(s_axi_lite_awvalid),              // input wire s_axi_lite_awvalid
+//  .s_axi_lite_awready(s_axi_lite_awready),              // output wire s_axi_lite_awready
+//  .s_axi_lite_awaddr(s_axi_lite_awaddr),                // input wire [9 : 0] s_axi_lite_awaddr
+//  .s_axi_lite_wvalid(s_axi_lite_wvalid),                // input wire s_axi_lite_wvalid
+//  .s_axi_lite_wready(s_axi_lite_wready),                // output wire s_axi_lite_wready
+//  .s_axi_lite_wdata(s_axi_lite_wdata),                  // input wire [31 : 0] s_axi_lite_wdata
+//  .s_axi_lite_bresp(s_axi_lite_bresp),                  // output wire [1 : 0] s_axi_lite_bresp
+//  .s_axi_lite_bvalid(s_axi_lite_bvalid),                // output wire s_axi_lite_bvalid
+//  .s_axi_lite_bready(s_axi_lite_bready),                // input wire s_axi_lite_bready
+//  .s_axi_lite_arvalid(s_axi_lite_arvalid),              // input wire s_axi_lite_arvalid
+//  .s_axi_lite_arready(s_axi_lite_arready),              // output wire s_axi_lite_arready
+//  .s_axi_lite_araddr(s_axi_lite_araddr),                // input wire [9 : 0] s_axi_lite_araddr
+//  .s_axi_lite_rvalid(s_axi_lite_rvalid),                // output wire s_axi_lite_rvalid
+//  .s_axi_lite_rready(s_axi_lite_rready),                // input wire s_axi_lite_rready
+//  .s_axi_lite_rdata(s_axi_lite_rdata),                  // output wire [31 : 0] s_axi_lite_rdata
+//  .s_axi_lite_rresp(s_axi_lite_rresp),                  // output wire [1 : 0] s_axi_lite_rresp
+//  .m_axi_sg_awaddr(m_axi_sg_awaddr),                    // output wire [31 : 0] m_axi_sg_awaddr
+//  .m_axi_sg_awlen(m_axi_sg_awlen),                      // output wire [7 : 0] m_axi_sg_awlen
+//  .m_axi_sg_awsize(m_axi_sg_awsize),                    // output wire [2 : 0] m_axi_sg_awsize
+//  .m_axi_sg_awburst(m_axi_sg_awburst),                  // output wire [1 : 0] m_axi_sg_awburst
+//  .m_axi_sg_awprot(m_axi_sg_awprot),                    // output wire [2 : 0] m_axi_sg_awprot
+//  .m_axi_sg_awcache(m_axi_sg_awcache),                  // output wire [3 : 0] m_axi_sg_awcache
+//  .m_axi_sg_awvalid(m_axi_sg_awvalid),                  // output wire m_axi_sg_awvalid
+//  .m_axi_sg_awready(m_axi_sg_awready),                  // input wire m_axi_sg_awready
+//  .m_axi_sg_wdata(m_axi_sg_wdata),                      // output wire [31 : 0] m_axi_sg_wdata
+//  .m_axi_sg_wstrb(m_axi_sg_wstrb),                      // output wire [3 : 0] m_axi_sg_wstrb
+//  .m_axi_sg_wlast(m_axi_sg_wlast),                      // output wire m_axi_sg_wlast
+//  .m_axi_sg_wvalid(m_axi_sg_wvalid),                    // output wire m_axi_sg_wvalid
+//  .m_axi_sg_wready(m_axi_sg_wready),                    // input wire m_axi_sg_wready
+//  .m_axi_sg_bresp(m_axi_sg_bresp),                      // input wire [1 : 0] m_axi_sg_bresp
+//  .m_axi_sg_bvalid(m_axi_sg_bvalid),                    // input wire m_axi_sg_bvalid
+//  .m_axi_sg_bready(m_axi_sg_bready),                    // output wire m_axi_sg_bready
+//  .m_axi_sg_araddr(m_axi_sg_araddr),                    // output wire [31 : 0] m_axi_sg_araddr
+//  .m_axi_sg_arlen(m_axi_sg_arlen),                      // output wire [7 : 0] m_axi_sg_arlen
+//  .m_axi_sg_arsize(m_axi_sg_arsize),                    // output wire [2 : 0] m_axi_sg_arsize
+//  .m_axi_sg_arburst(m_axi_sg_arburst),                  // output wire [1 : 0] m_axi_sg_arburst
+//  .m_axi_sg_arprot(m_axi_sg_arprot),                    // output wire [2 : 0] m_axi_sg_arprot
+//  .m_axi_sg_arcache(m_axi_sg_arcache),                  // output wire [3 : 0] m_axi_sg_arcache
+//  .m_axi_sg_arvalid(m_axi_sg_arvalid),                  // output wire m_axi_sg_arvalid
+//  .m_axi_sg_arready(m_axi_sg_arready),                  // input wire m_axi_sg_arready
+//  .m_axi_sg_rdata(m_axi_sg_rdata),                      // input wire [31 : 0] m_axi_sg_rdata
+//  .m_axi_sg_rresp(m_axi_sg_rresp),                      // input wire [1 : 0] m_axi_sg_rresp
+//  .m_axi_sg_rlast(m_axi_sg_rlast),                      // input wire m_axi_sg_rlast
+//  .m_axi_sg_rvalid(m_axi_sg_rvalid),                    // input wire m_axi_sg_rvalid
+//  .m_axi_sg_rready(m_axi_sg_rready),                    // output wire m_axi_sg_rready
+//  .m_axi_mm2s_araddr(m_axi_mm2s_araddr),                // output wire [31 : 0] m_axi_mm2s_araddr
+//  .m_axi_mm2s_arlen(m_axi_mm2s_arlen),                  // output wire [7 : 0] m_axi_mm2s_arlen
+//  .m_axi_mm2s_arsize(m_axi_mm2s_arsize),                // output wire [2 : 0] m_axi_mm2s_arsize
+//  .m_axi_mm2s_arburst(m_axi_mm2s_arburst),              // output wire [1 : 0] m_axi_mm2s_arburst
+//  .m_axi_mm2s_arprot(m_axi_mm2s_arprot),                // output wire [2 : 0] m_axi_mm2s_arprot
+//  .m_axi_mm2s_arcache(m_axi_mm2s_arcache),              // output wire [3 : 0] m_axi_mm2s_arcache
+//  .m_axi_mm2s_arvalid(m_axi_mm2s_arvalid),              // output wire m_axi_mm2s_arvalid
+//  .m_axi_mm2s_arready(m_axi_mm2s_arready),              // input wire m_axi_mm2s_arready
+//  .m_axi_mm2s_rdata(m_axi_mm2s_rdata),                  // input wire [511 : 0] m_axi_mm2s_rdata
+//  .m_axi_mm2s_rresp(m_axi_mm2s_rresp),                  // input wire [1 : 0] m_axi_mm2s_rresp
+//  .m_axi_mm2s_rlast(m_axi_mm2s_rlast),                  // input wire m_axi_mm2s_rlast
+//  .m_axi_mm2s_rvalid(m_axi_mm2s_rvalid),                // input wire m_axi_mm2s_rvalid
+//  .m_axi_mm2s_rready(m_axi_mm2s_rready),                // output wire m_axi_mm2s_rready
+//  .mm2s_prmry_reset_out_n(mm2s_prmry_reset_out_n),      // output wire mm2s_prmry_reset_out_n
+//  .m_axis_mm2s_tdata(m_axis_mm2s_tdata),                // output wire [511 : 0] m_axis_mm2s_tdata
+//  .m_axis_mm2s_tkeep(m_axis_mm2s_tkeep),                // output wire [63 : 0] m_axis_mm2s_tkeep
+//  .m_axis_mm2s_tvalid(m_axis_mm2s_tvalid),              // output wire m_axis_mm2s_tvalid
+//  .m_axis_mm2s_tready(m_axis_mm2s_tready),              // input wire m_axis_mm2s_tready
+//  .m_axis_mm2s_tlast(m_axis_mm2s_tlast),                // output wire m_axis_mm2s_tlast
+//  .mm2s_cntrl_reset_out_n(mm2s_cntrl_reset_out_n),      // output wire mm2s_cntrl_reset_out_n
+//  .m_axis_mm2s_cntrl_tdata(m_axis_mm2s_cntrl_tdata),    // output wire [31 : 0] m_axis_mm2s_cntrl_tdata
+//  .m_axis_mm2s_cntrl_tkeep(m_axis_mm2s_cntrl_tkeep),    // output wire [3 : 0] m_axis_mm2s_cntrl_tkeep
+//  .m_axis_mm2s_cntrl_tvalid(m_axis_mm2s_cntrl_tvalid),  // output wire m_axis_mm2s_cntrl_tvalid
+//  .m_axis_mm2s_cntrl_tready(m_axis_mm2s_cntrl_tready),  // input wire m_axis_mm2s_cntrl_tready
+//  .m_axis_mm2s_cntrl_tlast(m_axis_mm2s_cntrl_tlast),    // output wire m_axis_mm2s_cntrl_tlast
+//  .m_axi_s2mm_awaddr(m_axi_s2mm_awaddr),                // output wire [31 : 0] m_axi_s2mm_awaddr
+//  .m_axi_s2mm_awlen(m_axi_s2mm_awlen),                  // output wire [7 : 0] m_axi_s2mm_awlen
+//  .m_axi_s2mm_awsize(m_axi_s2mm_awsize),                // output wire [2 : 0] m_axi_s2mm_awsize
+//  .m_axi_s2mm_awburst(m_axi_s2mm_awburst),              // output wire [1 : 0] m_axi_s2mm_awburst
+//  .m_axi_s2mm_awprot(m_axi_s2mm_awprot),                // output wire [2 : 0] m_axi_s2mm_awprot
+//  .m_axi_s2mm_awcache(m_axi_s2mm_awcache),              // output wire [3 : 0] m_axi_s2mm_awcache
+//  .m_axi_s2mm_awvalid(m_axi_s2mm_awvalid),              // output wire m_axi_s2mm_awvalid
+//  .m_axi_s2mm_awready(m_axi_s2mm_awready),              // input wire m_axi_s2mm_awready
+//  .m_axi_s2mm_wdata(m_axi_s2mm_wdata),                  // output wire [511 : 0] m_axi_s2mm_wdata
+//  .m_axi_s2mm_wstrb(m_axi_s2mm_wstrb),                  // output wire [63 : 0] m_axi_s2mm_wstrb
+//  .m_axi_s2mm_wlast(m_axi_s2mm_wlast),                  // output wire m_axi_s2mm_wlast
+//  .m_axi_s2mm_wvalid(m_axi_s2mm_wvalid),                // output wire m_axi_s2mm_wvalid
+//  .m_axi_s2mm_wready(m_axi_s2mm_wready),                // input wire m_axi_s2mm_wready
+//  .m_axi_s2mm_bresp(m_axi_s2mm_bresp),                  // input wire [1 : 0] m_axi_s2mm_bresp
+//  .m_axi_s2mm_bvalid(m_axi_s2mm_bvalid),                // input wire m_axi_s2mm_bvalid
+//  .m_axi_s2mm_bready(m_axi_s2mm_bready),                // output wire m_axi_s2mm_bready
+//  .s2mm_prmry_reset_out_n(s2mm_prmry_reset_out_n),      // output wire s2mm_prmry_reset_out_n
+//  .s_axis_s2mm_tdata(s_axis_s2mm_tdata),                // input wire [511 : 0] s_axis_s2mm_tdata
+//  .s_axis_s2mm_tkeep(s_axis_s2mm_tkeep),                // input wire [63 : 0] s_axis_s2mm_tkeep
+//  .s_axis_s2mm_tvalid(s_axis_s2mm_tvalid),              // input wire s_axis_s2mm_tvalid
+//  .s_axis_s2mm_tready(s_axis_s2mm_tready),              // output wire s_axis_s2mm_tready
+//  .s_axis_s2mm_tlast(s_axis_s2mm_tlast),                // input wire s_axis_s2mm_tlast
+//  .s2mm_sts_reset_out_n(s2mm_sts_reset_out_n),          // output wire s2mm_sts_reset_out_n
+//  .s_axis_s2mm_sts_tdata(s_axis_s2mm_sts_tdata),        // input wire [31 : 0] s_axis_s2mm_sts_tdata
+//  .s_axis_s2mm_sts_tkeep(s_axis_s2mm_sts_tkeep),        // input wire [3 : 0] s_axis_s2mm_sts_tkeep
+//  .s_axis_s2mm_sts_tvalid(s_axis_s2mm_sts_tvalid),      // input wire s_axis_s2mm_sts_tvalid
+//  .s_axis_s2mm_sts_tready(s_axis_s2mm_sts_tready),      // output wire s_axis_s2mm_sts_tready
+//  .s_axis_s2mm_sts_tlast(s_axis_s2mm_sts_tlast),        // input wire s_axis_s2mm_sts_tlast
+//  .mm2s_introut(mm2s_introut),                          // output wire mm2s_introut
+//  .s2mm_introut(s2mm_introut),                          // output wire s2mm_introut
+//  .axi_dma_tstvec(axi_dma_tstvec)                      // output wire [31 : 0] axi_dma_tstvec
+//);
 
 ila_axis_adc ila_axis_adc_inst(
     .clk (ui_clk),

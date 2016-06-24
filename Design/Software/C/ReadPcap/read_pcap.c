@@ -14,7 +14,7 @@
 #include <netdb.h>
 #include <pcap.h>
 
-#define WRITE_LIM 1000
+#define WRITE_LIM 5000
 #define PKT_SIZE 496
 #define HEADER_SIZE 16
 #define SUB_PKT_SIZE 64 // 64 bytes or 512 bits

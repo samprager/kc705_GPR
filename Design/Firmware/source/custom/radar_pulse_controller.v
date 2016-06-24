@@ -25,14 +25,6 @@ module radar_pulse_controller #(
   input aclk,
   input aresetn,
 
-  // input gpio_sw_c,
-  // input gpio_sw_e,
-  // input gpio_sw_n,
-  // input gpio_sw_s,
-  // input gpio_sw_w,
-   input [7:0]  gpio_dip_sw,
-  // output [7:0]  gpio_led,
-
 //  input clk_mig,              // 200 MHZ OR 100 MHz
 //  input mig_init_calib_complete,
 
@@ -41,7 +33,7 @@ module radar_pulse_controller #(
 
   input[31:0] chirp_time_int,
   input[31:0] chirp_time_frac,
-  
+
   input [31:0] adc_sample_time,
 
   input chirp_ready,          // continuous high when dac ready
@@ -98,7 +90,7 @@ wire chirp_prf_speed_sel;
 reg[31:0] chirp_time_int_r = 32'd10;
 reg[31:0] chirp_time_frac_r = 32'b0;
 reg[31:0] adc_sample_time_r = 32'b1;
-  
+
 always @(posedge aclk) begin
       chirp_time_int_r <= chirp_time_int;
       chirp_time_frac_r <= chirp_time_frac;
