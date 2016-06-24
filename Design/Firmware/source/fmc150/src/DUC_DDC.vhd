@@ -247,6 +247,7 @@ signal phase_acc_long  :std_logic_vector(31 downto 0) := (others=>'0');
 
 -- For 4096 sample / chirp use 12 bit counter
 signal chirp_count  :std_logic_vector(31 downto 0) := (others=>'0');
+--signal chirp_count  :std_logic_vector(11 downto 0) := (others=>'0');
 
 signal chirp_count_max  :std_logic_vector(31 downto 0) := (11 downto 0 => '1',others=>'0');
 
@@ -255,10 +256,10 @@ signal chirp_count_max  :std_logic_vector(31 downto 0) := (11 downto 0 => '1',ot
 --constant tuning_word_coeff :std_logic_vector(31 downto 0) := (2=>'1',others=>'0');
 
 -- tuning word coeff = 1.5 for 46.08 MHz BW, and 2 for 61.44 MHz BW with 4096 samples
-signal tuning_word_coeff :std_logic_vector(31 downto 0) := (0=> '1',others=>'0');
 
--- tuning word coeff = 6
---constant tuning_word_coeff :std_logic_vector(31 downto 0) := (1=> '1',2=>'1',others=>'0');
+signal tuning_word_coeff :std_logic_vector(31 downto 0) := (0=> '1',others=>'0');
+--constant tuning_word_coeff :std_logic_vector(31 downto 0) := (0=> '1',others=>'0');
+
 
 -- Try doubling freq slope and number of samples. tuning word coeff = 6
 --constant tuning_word_coeff :std_logic_vector(31 downto 0) := (1=>'1',2=>'1',others=>'0');
@@ -269,7 +270,7 @@ signal tuning_word_coeff :std_logic_vector(31 downto 0) := (0=> '1',others=>'0')
 -- Push the initial freq beyon baseband
 -- min_freq = freq_offset*fclock/2^n
 signal freq_offset  :std_logic_vector(31 downto 0) := (10=>'1',9=>'1',others=>'0');
---constant freq_offset  :std_logic_vector(31 downto 0) := (others=>'0');
+--constant freq_offset  :std_logic_vector(31 downto 0) := (10=>'1',9=>'1',others=>'0');
 
 
 
@@ -499,7 +500,7 @@ Chirp_Gen: process (clk)    -- 491.52 MHz clock
 
         -- For 4096 samples/ chirp
         --if (chirp_count(11 downto 0) = "111111111111") then
-        if (chirp_count = chirp_count_max) then
+        if (chirp_count >= chirp_count_max) then
             chirp_count <= (others => '0');
             --tuning_word(31 downto 0) <= (others => '0');
 
@@ -621,7 +622,7 @@ begin
 			--if_out_i_sig <= dds_dout_i;	-- connect DDS output directly to DAC @ 245.76 MSPS
 			--if_out_q_sig <= dds_dout_q;
 			if_out_i_sig <= chirp_i;	-- connect Chirp DDS output directly to DAC @ 245.76 MSPS
-      if_out_q_sig <= chirp_q;
+            if_out_q_sig <= chirp_q;
 		 end if;
     -- otherwise DUC is used connect the DUC output to the DAC inputs
     else
