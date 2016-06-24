@@ -602,6 +602,7 @@ radar_pulse_controller radar_pulse_controller_inst (
   .clk_fmc150 (clk_245_76MHz),           // 245.76 MHz
   .chirp_time_int (ch_prf_int),
   .chirp_time_frac (ch_prf_frac),
+  .adc_sample_time  (adc_sample_time),
   .fmc150_status_vector (fmc150_status_vector), // {pll_status, mmcm_adac_locked, mmcm_locked, ADC_calibration_good};
   .chirp_ready (chirp_ready),
   .chirp_done (chirp_done),
@@ -923,7 +924,7 @@ always @(posedge s_axi_aclk) begin
   else begin
     for (i=0;i<4;i=i+1)begin
         if (&dip_sw_debounce_ctr[i]) 
-             gpio_dip_sw_rr[i] <= gpio_dip_sw[i];    
+             gpio_dip_sw_rr[i] <= gpio_dip_sw_r[i];    
     end
   end  
 end
@@ -935,9 +936,7 @@ always @(posedge s_axi_aclk) begin
     else if (dip_sw_chng[i]) 
         dip_sw_debounce_ctr[i] <= 16'b0;
      else if (!(&dip_sw_debounce_ctr[i] ))  
-        dip_sw_debounce_ctr[i] <= dip_sw_debounce_ctr[i]+1'b1;
-     else 
-         gpio_dip_sw_rr[i] <= gpio_dip_sw;    
+        dip_sw_debounce_ctr[i] <= dip_sw_debounce_ctr[i]+1'b1; 
    end
 end
 
@@ -984,30 +983,28 @@ always @(posedge  s_axi_aclk) begin
       // mac speed changed
       if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[0]) begin
           reg_map_wr_addr_r <= 8'h23;
-          reg_map_wr_data_r[1:0] <= {gpio_dip_sw[0],~gpio_dip_sw[0]};
+          reg_map_wr_data_r[1:0] <= {gpio_dip_sw_rr[0],~gpio_dip_sw_rr[0]};
           reg_map_wr_keep_r[1:0] <= 2'b11;
       // enable adc pkt changed
       end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[1]) begin
         reg_map_wr_addr_r <= 8'h20;
-        reg_map_wr_data_r[0] <= gpio_dip_sw[1];
+        reg_map_wr_data_r[0] <= gpio_dip_sw_rr[1];
         reg_map_wr_keep_r[0] <= 1'b1;
       // chirp mode changed
       end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[2]) begin
       // fast chirp
-        if (gpio_dip_sw[2]) begin
-          reg_map_wr_addr_r <= 8'h00;
+        reg_map_wr_addr_r <= 8'h00;
+        reg_map_wr_keep_r <= 32'hffffffff;
+        if (gpio_dip_sw_rr[2]) begin
           reg_map_wr_data_r <= 32'd1;     // 1 sec
-          reg_map_wr_keep_r <= 32'hffffffff;
       // slow chirp
         end else begin
-          reg_map_wr_addr_r <= 8'h00;
           reg_map_wr_data_r <= 32'd10;    //10 sec
-          reg_map_wr_keep_r <= 32'hffffffff;
         end
       // ddc_duc_bypass cahnged
       end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[3]) begin
         reg_map_wr_addr_r <= 8'h10;
-        reg_map_wr_data_r[0] <= gpio_dip_sw[3];
+        reg_map_wr_data_r[0] <= gpio_dip_sw_rr[3];
         reg_map_wr_keep_r[0] <= 1'b1;
       end
   end
