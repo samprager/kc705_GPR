@@ -649,6 +649,7 @@ kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
 
   // Main example design controls
   //-----------------------------
+  .ethernet_ctrl_bus (ethernet_ctrl_bus),
   .update_speed         (update_speed),
   //input         serial_command, // tied to pause_req_s
   .config_board         (config_board),

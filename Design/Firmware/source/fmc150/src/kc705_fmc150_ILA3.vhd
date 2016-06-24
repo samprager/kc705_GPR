@@ -1894,21 +1894,21 @@ gpio_led_s <= gpio_sw_s;
 gpio_led_w <= gpio_sw_w;
 
 ----digital_mode   <= gpio_dip_sw(0);
---digital_mode   <= '0';
+digital_mode   <= '0';
 ----adc_out_dac_in <= gpio_dip_sw(1);
---adc_out_dac_in <= '0';
+adc_out_dac_in <= '0';
 ----external_clock <= gpio_dip_sw(2);
---external_clock <= '0';
---ddc_duc_bypass <= gpio_dip_sw(3);
+external_clock <= '0';
+ddc_duc_bypass <= gpio_dip_sw(3);
 
-----gen_adc_test_pattern <= gpio_dip_sw(2);
---gen_adc_test_pattern <= '0';
+--gen_adc_test_pattern <= gpio_dip_sw(2);
+gen_adc_test_pattern <= '0';
 
-ddc_duc_bypass <= fmc150_ctrl_bus(4);
-digital_mode <= fmc150_ctrl_bus(3);
-adc_out_dac_in <= fmc150_ctrl_bus(2);
-external_clock <= fmc150_ctrl_bus(1) ;
-gen_adc_test_pattern <= fmc150_ctrl_bus(0);
+--ddc_duc_bypass <= fmc150_ctrl_bus(4);
+--digital_mode <= fmc150_ctrl_bus(3);
+--adc_out_dac_in <= fmc150_ctrl_bus(2);
+--external_clock <= fmc150_ctrl_bus(1) ;
+--gen_adc_test_pattern <= fmc150_ctrl_bus(0);
 ----------------------------------------------------------------------------------------------------
 -- IDELAYCTRL
 ----------------------------------------------------------------------------------------------------

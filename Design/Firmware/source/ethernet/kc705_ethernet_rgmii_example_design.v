@@ -180,8 +180,6 @@ module kc705_ethernet_rgmii_example_design
       //------------------------------------
       input         pause_req_s,
 
-      input [7:0] ethernet_ctrl_bus,
-
       // data from ADC Data fifo
        input       [7:0]                    adc_axis_tdata,
        input                                adc_axis_tvalid,
@@ -191,6 +189,7 @@ module kc705_ethernet_rgmii_example_design
 
       // Main example design controls
       //-----------------------------
+      input [7:0] ethernet_ctrl_bus,
       input         update_speed,
       //input         serial_command, // tied to pause_req_s
       input         config_board,
