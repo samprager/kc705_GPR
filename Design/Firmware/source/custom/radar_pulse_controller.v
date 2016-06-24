@@ -41,6 +41,8 @@ module radar_pulse_controller #(
 
   input[31:0] chirp_time_int,
   input[31:0] chirp_time_frac,
+  
+  input [31:0] adc_sample_time,
 
   input chirp_ready,          // continuous high when dac ready
   input chirp_active,         // continuous high while chirping
@@ -93,7 +95,15 @@ reg data_tx_enable_int;
 
 wire chirp_prf_speed_sel;
 
-
+reg[31:0] chirp_time_int_r = 32'd10;
+reg[31:0] chirp_time_frac_r = 32'b0;
+reg[31:0] adc_sample_time_r = 32'b1;
+  
+always @(posedge aclk) begin
+      chirp_time_int_r <= chirp_time_int;
+      chirp_time_frac_r <= chirp_time_frac;
+      adc_sample_time_r <= adc_sample_time;
+end
 always @(posedge aclk)
 begin
   if(~aresetn)
@@ -102,7 +112,7 @@ begin
     chirp_count <= chirp_count - 1;
   else if (gen_state == IDLE) begin
   //  if (chirp_prf_speed_sel)
-    if (chirp_time_int == 32'b1)
+    if (chirp_time_int_r == 32'b1)
         chirp_count <= CHIRP_PRF_COUNT_FAST;
     else
         chirp_count <= CHIRP_PRF_COUNT_SLOW;
