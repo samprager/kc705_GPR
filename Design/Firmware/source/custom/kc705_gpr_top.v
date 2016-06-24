@@ -546,11 +546,11 @@ reg     vfifo_mm2s_ch0_full;
 reg     vfifo_mm2s_ch1_full;
 
 // AXI Top Level DMA Signals
-wire dma_start;
-wire dma_done;
-wire dma_status;
+//wire dma_start;
+//wire dma_done;
+//wire dma_status;
 
-reg dma_start_r;
+//reg dma_start_r;
 
 // Start of User Design top instance
 //***************************************************************************
@@ -1217,22 +1217,22 @@ always @(posedge sysclk_bufg) begin
  sysclk_reset <= ~sysclk_resetn;
 end
 
-axi_dma_0_exdes axi_dma_0_exdes_inst (
-  .clock (ui_clk),
-  .clock_lite (s_axi_clk),
-  .resetn (aresetn),
-  .start (dma_start),
-  .done  (dma_done),
-  .status (dma_status)
-);
-assign dma_start = dma_start_r;
+//axi_dma_0_exdes axi_dma_0_exdes_inst (
+//  .clock (ui_clk),
+//  .clock_lite (s_axi_clk),
+//  .resetn (aresetn),
+//  .start (dma_start),
+//  .done  (dma_done),
+//  .status (dma_status)
+//);
+//assign dma_start = dma_start_r;
 
-always @(posedge ui_clk) begin
-    if (ui_clk_sync_rst)
-        dma_start_r <= 1'b0;
-    else
-        dma_start_r <= 1'b1;
-end
+//always @(posedge ui_clk) begin
+//    if (ui_clk_sync_rst)
+//        dma_start_r <= 1'b0;
+//    else
+//        dma_start_r <= 1'b1;
+//end
 
 //axi_dma_0 your_instance_name (
 //  .s_axi_lite_aclk(s_axi_lite_aclk),                    // input wire s_axi_lite_aclk
