@@ -30,10 +30,10 @@
         <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_ATG_STATIC_WR_ADDRESS">0x12A00000</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_ATG_STATIC_RD_ADDRESS">0x13A00000</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_ATG_STATIC_LENGTH">16</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_ATG_SYSTEM_INIT_DATA_MIF">../../imports/example_design/atg_data.coe</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_ATG_SYSTEM_INIT_ADDR_MIF">../../imports/example_design/atg_addr.coe</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_ATG_SYSTEM_INIT_MASK_MIF">../../imports/example_design/atg_mask.coe</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_ATG_SYSTEM_INIT_CTRL_MIF">../../imports/example_design/atg_ctrl.coe</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_ATG_SYSTEM_INIT_DATA_MIF">atg_data.coe</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_ATG_SYSTEM_INIT_ADDR_MIF">atg_addr.coe</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_ATG_SYSTEM_INIT_MASK_MIF">atg_mask.coe</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_ATG_SYSTEM_INIT_CTRL_MIF">atg_ctrl.coe</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_AXIS1_HAS_TKEEP">true</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_AXIS1_HAS_TSTRB">true</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_AXIS2_HAS_TKEEP">true</spirit:configurableElementValue>
@@ -139,7 +139,7 @@
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_STATIC_FREE_RUN">1</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_STATIC_RD_PIPELINE">3</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_STATIC_WR_PIPELINE">3</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_STATIC_TRANGAP">256</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_STATIC_TRANGAP">0</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_STATIC_LENGTH">16</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_SYSTEM_INIT_DATA_MIF">axi_traffic_gen_0_data.mif</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_SYSTEM_INIT_ADDR_MIF">axi_traffic_gen_0_addr.mif</spirit:configurableElementValue>
@@ -149,7 +149,7 @@
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_MIF_ADDR_BITS">4</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_SYSTEM_CMD_MAX_RETRY">2147483647</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_SYSTEM_TEST_MAX_CLKS">2147483647</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_SYSTEM_MAX_CHANNELS">&quot;00000000000000000000000000000001&quot;</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_SYSTEM_MAX_CHANNELS">1</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_SYSTEM_CH1_LOW">0x00000000</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_SYSTEM_CH1_HIGH">0xFFFFFFFF</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ATG_SYSTEM_CH2_LOW">0x00000100</spirit:configurableElementValue>
