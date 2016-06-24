@@ -424,8 +424,19 @@ wire gen_tx_data_ctrl ;
 wire chk_tx_data_ctrl;
 wire [1:0] mac_speed_ctrl;
 
-reg [3:0] gpio_dip_sw_r = 4'b0;
+wire [7:0] fmc150_ctrl_bus;
+reg [7:0] fmc150_ctrl_bus_reg;
+
+wire [7:0] ethernet_ctrl_bus;
+
+reg [3:0] gpio_dip_sw_r;
+reg [3:0] gpio_dip_sw_rr;
+reg [3:0] gpio_dip_sw_rrr;
 reg [3:0] dip_sw_chng = 4'b0;
+reg [3:0] dip_sw_chng_r = 4'b0;
+reg [15:0] dip_sw_debounce_ctr [3:0];
+
+integer i;
 
 wire                  reg_map_wr_cmd;
 wire [7:0]           reg_map_wr_addr;
@@ -816,6 +827,8 @@ fmc150_dac_adc_inst
      .gpio_sw_n (gpio_sw_n),        //               : in    std_logic;
      .gpio_sw_s (gpio_sw_s),        //               : in    std_logic;
      .gpio_sw_w (gpio_sw_w),        //               : in    std_logic;
+     
+     .fmc150_ctrl_bus (fmc150_ctrl_bus),
 
     // --Clock/Data connection to ADC on FMC150 (ADS62P49)
      .clk_ab_p (clk_ab_p),        //                : in    std_logic;
@@ -872,26 +885,82 @@ fmc150_dac_adc_inst
 
 );
 
+//assign fmc150_ctrl_bus = fmc150_ctrl_bus_reg;
 
-always @(posedge ui_clk) begin
-  if (~aresetn)
-    gpio_dip_sw_r <= 4'b0;
-  else
+//always @(posedge clk_245_76MHz) begin
+//  if (cpu_reset)
+//    fmc150_ctrl_bus_reg <= 8'b0;
+//  else
+//    fmc150_ctrl_bus_reg[7:5] <= 3'b0;
+//    fmc150_ctrl_bus_reg[4] <= ddc_duc_bypass_ctrl;
+//    fmc150_ctrl_bus_reg[3] <= digital_mode_ctrl;
+//    fmc150_ctrl_bus_reg[2] <= adc_out_dac_in_ctrl;
+//    fmc150_ctrl_bus_reg[1] <= external_clock_ctrl;
+//    fmc150_ctrl_bus_reg[0] <= gen_adc_test_pattern_ctrl;
+//end
+
+assign fmc150_ctrl_bus = {3'b0,ddc_duc_bypass_ctrl,digital_mode_ctrl,adc_out_dac_in_ctrl,external_clock_ctrl,gen_adc_test_pattern_ctrl};
+assign ethernet_ctrl_bus = {3'b0,enable_adc_pkt_ctrl,gen_tx_data_ctrl,chk_tx_data_ctrl,mac_speed_ctrl};
+
+
+
+always @(posedge s_axi_aclk) begin
     gpio_dip_sw_r <= gpio_dip_sw;
 end
 
-always @(posedge ui_clk) begin
-  if (~aresetn)
+always @(posedge s_axi_aclk) begin
+  if (~s_axi_resetn)  
     dip_sw_chng <= 4'b0;
   else
     dip_sw_chng <= gpio_dip_sw_r ^ gpio_dip_sw;
 end
 
-always @(posedge  ui_clk) begin
-   if (~aresetn) begin
+
+// debounce switches
+always @(posedge s_axi_aclk) begin
+  if (~s_axi_resetn) 
+    gpio_dip_sw_rr <= gpio_dip_sw;
+  else begin
+    for (i=0;i<4;i=i+1)begin
+        if (&dip_sw_debounce_ctr[i]) 
+             gpio_dip_sw_rr[i] <= gpio_dip_sw[i];    
+    end
+  end  
+end
+
+always @(posedge s_axi_aclk) begin
+  for (i=0;i<4;i=i+1)begin
+    if (~s_axi_resetn) 
+        dip_sw_debounce_ctr[i] <= 16'hffff;
+    else if (dip_sw_chng[i]) 
+        dip_sw_debounce_ctr[i] <= 16'b0;
+     else if (!(&dip_sw_debounce_ctr[i] ))  
+        dip_sw_debounce_ctr[i] <= dip_sw_debounce_ctr[i]+1'b1;
+     else 
+         gpio_dip_sw_rr[i] <= gpio_dip_sw;    
+   end
+end
+
+always @(posedge s_axi_aclk) begin
+  if (~s_axi_resetn)  
+    dip_sw_chng_r <= 4'b0;
+  else
+    dip_sw_chng_r <= gpio_dip_sw_rrr ^ gpio_dip_sw_rr;
+end
+
+always @(posedge s_axi_aclk) begin
+  if (~s_axi_resetn)  
+    gpio_dip_sw_rrr <= gpio_dip_sw;
+  else
+    gpio_dip_sw_rrr <= gpio_dip_sw_rr;
+end
+
+
+always @(posedge  s_axi_aclk) begin
+   if (~s_axi_resetn) begin
        reg_map_wr_cmd_r <= 1'b0;
    end else begin
-       if (reg_map_wr_ready & !reg_map_wr_cmd_r & |dip_sw_chng[1:0]) begin
+       if (reg_map_wr_ready & !reg_map_wr_cmd_r & |dip_sw_chng_r[3:0]) begin
            reg_map_wr_cmd_r <= 1'b1;
       end else begin
            reg_map_wr_cmd_r <= 1'b0;
@@ -899,31 +968,31 @@ always @(posedge  ui_clk) begin
    end
 end
 
-always @(posedge  ui_clk) begin
-   if (~aresetn)
+always @(posedge  s_axi_aclk) begin
+   if (~s_axi_resetn)
       reg_map_wr_cmd_rr <= 1'b0;
    else
        reg_map_wr_cmd_rr <= reg_map_wr_cmd_r;
 end
 
-always @(posedge  ui_clk) begin
-  if (~aresetn) begin
+always @(posedge  s_axi_aclk) begin
+  if (~s_axi_resetn) begin
       reg_map_wr_addr_r <= 8'b0;
       reg_map_wr_data_r <= 32'b0;
       reg_map_wr_keep_r <= 32'b0;
   end else begin
       // mac speed changed
-      if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng[0]) begin
+      if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[0]) begin
           reg_map_wr_addr_r <= 8'h23;
           reg_map_wr_data_r[1:0] <= {gpio_dip_sw[0],~gpio_dip_sw[0]};
           reg_map_wr_keep_r[1:0] <= 2'b11;
       // enable adc pkt changed
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng[1]) begin
+      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[1]) begin
         reg_map_wr_addr_r <= 8'h20;
         reg_map_wr_data_r[0] <= gpio_dip_sw[1];
         reg_map_wr_keep_r[0] <= 1'b1;
       // chirp mode changed
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng[2]) begin
+      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[2]) begin
       // fast chirp
         if (gpio_dip_sw[2]) begin
           reg_map_wr_addr_r <= 8'h00;
@@ -936,7 +1005,7 @@ always @(posedge  ui_clk) begin
           reg_map_wr_keep_r <= 32'hffffffff;
         end
       // ddc_duc_bypass cahnged
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng[3]) begin
+      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[3]) begin
         reg_map_wr_addr_r <= 8'h10;
         reg_map_wr_data_r[0] <= gpio_dip_sw[3];
         reg_map_wr_keep_r[0] <= 1'b1;
@@ -945,8 +1014,8 @@ always @(posedge  ui_clk) begin
 end
 
 config_reg_map u_config_reg_map (
-  .rst_n    (aresetn),
-  .clk      (ui_clk),
+  .rst_n    (s_axi_resetn),
+  .clk      (s_axi_aclk),
 
 
   .wr_cmd             (reg_map_wr_cmd),
@@ -1390,6 +1459,29 @@ ila_axis_vfifo   ila_axis_vfifo_inst(
     .probe19(vfifo_idle)                // output wire [1 : 0]
 );
 
+ila_regmap ila_regmap_inst (
+     .clk (s_axi_aclk),
+//.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
+.probe0             (reg_map_wr_cmd),
+.probe1            (reg_map_wr_addr),
+.probe2            (reg_map_wr_data),
+.probe3            (reg_map_wr_keep),
+.probe4           (reg_map_wr_valid),
+.probe5           (reg_map_wr_ready),
+.probe6             (reg_map_wr_err),
 
+// Chirp Control registers
+.probe7 (ch_prf_int), // prf in sec
+.probe8 (ch_prf_frac),
+
+.probe9 (chirp_tuning_word_coeff),
+.probe10  (chirp_count_max),
+.probe11 (chirp_freq_offset),
+
+.probe12                        (adc_sample_time),
+//  . Control Signals
+.probe13                         (ethernet_ctrl_bus),
+.probe14                         (fmc150_ctrl_bus)
+);
 
 endmodule

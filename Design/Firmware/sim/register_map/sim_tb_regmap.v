@@ -161,7 +161,7 @@ end
 
           .adc_sample_time       (adc_sample_time),
           .ch_tuning_coef  (ch_tuning_coef),
-          .ch_counter_size  (ch_counter_size),
+          .ch_counter_max  (ch_counter_size),
           .ch_freq_offset  (ch_freq_offset),
 
         // FMC150 Mode Control

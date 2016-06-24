@@ -61,6 +61,8 @@ module fmc150_dac_adc #
   input gpio_sw_n,        //               : in    std_logic;
   input gpio_sw_s,        //               : in    std_logic;
   input gpio_sw_w,        //               : in    std_logic;
+  
+  input [7:0] fmc150_ctrl_bus,
 
  // --Clock/Data connection to ADC on FMC150 (ADS62P49)
   input clk_ab_p,        //                : in    std_logic;
@@ -195,6 +197,7 @@ module fmc150_dac_adc #
         .gpio_sw_s (gpio_sw_s),        //               : in    std_logic;
         .gpio_sw_w (gpio_sw_w),        //               : in    std_logic;
 
+        .fmc150_ctrl_bus (fmc150_ctrl_bus),
        // --Clock/Data connection to ADC on FMC150 (ADS62P49)
         .clk_ab_p (clk_ab_p),        //                : in    std_logic;
         .clk_ab_n (clk_ab_n),        //                : in    std_logic;
