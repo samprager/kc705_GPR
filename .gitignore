@@ -133,6 +133,3 @@ IP Output Products (only need .xci and .coe and .prj files)
 !*/*/ip/*/*.coe
 !*/*/ip/*/*.xci
 !*/*/ip/*/*.prj
-!*/*/ip/*/*/*.coe
-!*/*/ip/*/*/*.xci
-!*/*/ip/*/*/*.prj
