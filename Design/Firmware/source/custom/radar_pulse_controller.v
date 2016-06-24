@@ -92,9 +92,15 @@ reg[31:0] chirp_time_frac_r = 32'b0;
 reg[31:0] adc_sample_time_r = 32'b1;
 
 always @(posedge aclk) begin
+    if(~aresetn) begin
+        chirp_time_int_r <= 32'd10;
+        chirp_time_frac_r <= 32'b0;
+        adc_sample_time_r <= 32'b0;
+     end else begin   
       chirp_time_int_r <= chirp_time_int;
       chirp_time_frac_r <= chirp_time_frac;
       adc_sample_time_r <= adc_sample_time;
+    end 
 end
 always @(posedge aclk)
 begin

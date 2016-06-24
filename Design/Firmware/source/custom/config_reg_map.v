@@ -72,8 +72,8 @@ parameter ADC_CLK_FREQ                              = 245.7
   output reg [1:0]                        wr_err,
 
   // Chirp Control registers
-  output reg [31:0]                 ch_prf_int = 32'd10, // prf in sec
-  output reg [31:0]                 ch_prf_frac = 0,
+  output reg [31:0]                 ch_prf_int = 32'b10, // prf in sec
+  output reg [31:0]                 ch_prf_frac = 32'b0,
 
   // Chirp Waveform Configuration registers
   output reg [31:0]                 ch_tuning_coef = 32'b1,
@@ -81,7 +81,7 @@ parameter ADC_CLK_FREQ                              = 245.7
   output reg [31:0]                 ch_freq_offset = 32'd1536,
 
   // ADC Sample time after chirp data_tx_done -
-  output reg [31:0]                 adc_sample_time = 0,
+  output reg [31:0]                 adc_sample_time = 32'b0,
   // FMC150 Mode Control
   output [7:0] fmc150_ctrl_bus,
   // output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
