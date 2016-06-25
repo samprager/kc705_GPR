@@ -127,6 +127,7 @@ module kc705_gpr_top #
     input sysclk_n,        // : in    std_logic;
     output [7:0]  gpio_led,        // : out   std_logic_vector(7 downto 0);
     input [7:0]  gpio_dip_sw,   //   : in    std_logic_vector(7 downto 0);
+
     output gpio_led_c,        //       : out   std_logic;
     output gpio_led_e,        //       : out   std_logic;
     output gpio_led_n,       //       : out   std_logic;
@@ -417,6 +418,9 @@ wire [7:0] fmc150_ctrl_bus;
 wire [7:0] ethernet_ctrl_bus;
 // ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
 
+wire [127:0] chirp_parameters;
+// chirp_parameters = {32'b0,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
+
 wire                  reg_map_wr_cmd;
 wire [7:0]           reg_map_wr_addr;
 wire [31:0]           reg_map_wr_data;
@@ -562,19 +566,32 @@ reg     vfifo_mm2s_ch1_full;
 // for connecting the memory controller to system.
 //***************************************************************************
 
-radar_pulse_controller radar_pulse_controller_inst (
-  //.aclk(sysclk_bufg),
-  //.aresetn(sysclk_resetn),
-  .aclk(clk_245_76MHz),
-  .aresetn(!clk_245_rst),
 
-  //input clk_mig,              // 200 MHZ OR 100 MHz
-  //input mig_init_calib_complete (init_calib_complete),
+control_module control_module_inst(
 
+  .aclk (ui_clk),
+  .aresetn (aresetn)
+
+  .s_axi_aclk   (s_axi_aclk),
+  .s_axi_resetn  (s_axi_resetn),
+// for future use
+
+  // input                               eth_ctrl_en,
+  // input [8:0]                         axis_eth_ctrl_tdata,
+  // input [8:0]                         axis_eth_ctrl_tkeep,
+  // input                               axis_eth_ctrl_tvalid,
+  // output                              axis_eth_ctrl_tready,
+
+  .gpio_dip_sw                         (gpio_dip_sw),
+  .gpio_led                         (gpio_led),
+
+//  input clk_mig,              // 200 MHZ OR 100 MHz
+//  input mig_init_calib_complete,
   .clk_fmc150 (clk_245_76MHz),           // 245.76 MHz
-  .chirp_time_int (ch_prf_int),
-  .chirp_time_frac (ch_prf_frac),
-  .adc_sample_time  (adc_sample_time),
+  .resetn_fmc150(!clk_245_rst),
+
+//input clk_mig,              // 200 MHZ OR 100 MHz
+//input mig_init_calib_complete (init_calib_complete),
   .fmc150_status_vector (fmc150_status_vector), // {pll_status, mmcm_adac_locked, mmcm_locked, ADC_calibration_good};
   .chirp_ready (chirp_ready),
   .chirp_done (chirp_done),
@@ -583,12 +600,27 @@ radar_pulse_controller radar_pulse_controller_inst (
   .chirp_enable  (chirp_enable),
   .adc_enable   (adc_enable),
 
-  .clk_eth (gtx_clk_bufg),              // gtx_clk : 125 MHz
-  .data_tx_ready  (1'b1),        // high when ready to transmit
-  .data_tx_active (1'b1),       // high while data being transmitted
-  .data_tx_done   (1'b0),         // single pule when done transmitting
-  .data_tx_init (data_tx_init),        // single pulse to start tx data
-  .data_tx_enable (data_tx_enable)     // continuous high while transmit enabled
+  .chirp_parameters                   (chirp_parameters),
+  //chirp_parameters = {32'b0,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
+
+  //fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
+  .fmc150_ctrl_bus (fmc150_ctrl_bus),
+  // output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
+  // output reg digital_mode                           = 1'b0,
+  // output reg adc_out_dac_in                         = 1'b0,
+  // output reg external_clock                         = 1'b0,
+  // output reg gen_adc_test_pattern                   = 1'b0,
+  // Ethernet Control Signals
+
+  .gtx_clk_bufg (gtx_clk_bufg),
+  .gtx_resetn       (gtx_resetn),
+  .ethernet_ctrl_bus (ethernet_ctrl_bus)
+  // output reg enable_adc_pkt                         = 1'b1, //dip_sw(1)
+  // output reg gen_tx_data                            = 1'b0,
+  // output reg chk_tx_data                            = 1'b0,
+  // output reg [1:0] mac_speed                        = 2'b10 // {dip_sw(0),~dip_sw(0)}
+
+
 );
 
 
@@ -762,9 +794,9 @@ fmc150_dac_adc_inst
      .chirp_enable                        (chirp_enable),
      .adc_enable                          (adc_enable),
 
-     .chirp_freq_offset          (chirp_freq_offset),
-     .chirp_tuning_word_coeff    (chirp_tuning_word_coeff),
-     .chirp_count_max            (chirp_count_max),
+     .chirp_freq_offset          (chirp_parameters[95:64]),
+     .chirp_tuning_word_coeff    (chirp_parameters[63:32]),
+     .chirp_count_max            (chirp_parameters[31:0]),
 
      .clk_out_245_76MHz                        (clk_245_76MHz),
      .clk_245_rst                               (clk_245_rst),
@@ -776,8 +808,8 @@ fmc150_dac_adc_inst
 //    .sysclk_n (sysclk_n),        // : in    std_logic;
 //    .cpu_reset (sysclk_reset),
     .sysclk_bufg (sysclk_bufg),
-    .gpio_led (gpio_led),        // : out   std_logic_vector(7 downto 0);
-    .gpio_dip_sw (gpio_dip_sw),   //   : in    std_logic_vector(7 downto 0);
+//    .gpio_led (gpio_led),        // : out   std_logic_vector(7 downto 0);
+//    .gpio_dip_sw (gpio_dip_sw),   //   : in    std_logic_vector(7 downto 0);
     .gpio_led_c (gpio_led_c),        //       : out   std_logic;
      .gpio_led_e (gpio_led_e),        //       : out   std_logic;
      .gpio_led_n (gpio_led_n),       //       : out   std_logic;
@@ -846,54 +878,6 @@ fmc150_dac_adc_inst
 
 );
 
-
-reg_map_cmd_gen reg_map_cmd_gen (
-  .aclk (s_axi_aclk),
-  .aresetn (s_axi_resetn),
-
-  .gpio_dip_sw (gpio_dip_sw),
-
-  .reg_map_wr_cmd               (reg_map_wr_cmd),
-  .reg_map_wr_addr              (reg_map_wr_addr),
-  .reg_map_wr_data              (reg_map_wr_data),
-  .reg_map_wr_keep              (reg_map_wr_keep),
-  .reg_map_wr_valid             (reg_map_wr_valid),
-  .reg_map_wr_ready             (reg_map_wr_ready),
-  .reg_map_wr_err               (reg_map_wr_err)
-
-);
-
-config_reg_map config_reg_map_inst (
-  .rst_n    (s_axi_resetn),
-  .clk      (s_axi_aclk),
-
-
-  .wr_cmd             (reg_map_wr_cmd),
-  .wr_addr            (reg_map_wr_addr),
-  .wr_data            (reg_map_wr_data),
-  .wr_keep            (reg_map_wr_keep),
-  .wr_valid           (reg_map_wr_valid),
-  .wr_ready           (reg_map_wr_ready),
-  .wr_err             (reg_map_wr_err),
-
-  // Chirp Control registers
-  .ch_prf_int (ch_prf_int), // prf in sec
-  .ch_prf_frac (ch_prf_frac),
-  .ch_tuning_coef (chirp_tuning_word_coeff),
-  .ch_counter_max  (chirp_count_max),
-  .ch_freq_offset (chirp_freq_offset),
-
-
-  .adc_sample_time                        (adc_sample_time),
-
-
-  // FMC150 Mode Control
-  .fmc150_ctrl_bus (fmc150_ctrl_bus),
-
-  //  Ethernet Control Signals
-  .ethernet_ctrl_bus (ethernet_ctrl_bus)
-
-);
 
 axi_vfifo_ctrl_0 u_axi_vfifo_ctrl_0(
     .aclk(ui_clk),                                          // input wire aclk

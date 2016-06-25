@@ -49,8 +49,8 @@ module fmc150_dac_adc #
   output clk_245_rst,
 //  output clk_out_491_52MHz,
 
-  output [7:0]  gpio_led,        // : out   std_logic_vector(7 downto 0);
- input [7:0]  gpio_dip_sw,   //   : in    std_logic_vector(7 downto 0);
+//  output [7:0]  gpio_led,        // : out   std_logic_vector(7 downto 0);
+// input [7:0]  gpio_dip_sw,   //   : in    std_logic_vector(7 downto 0);
   output gpio_led_c,        //       : out   std_logic;
   output gpio_led_e,        //       : out   std_logic;
   output gpio_led_n,       //       : out   std_logic;
@@ -184,8 +184,8 @@ module fmc150_dac_adc #
  //      .sysclk_n (sysclk_n),        // : in    std_logic;
 
        .sysclk_bufg (sysclk_bufg),
-       .gpio_led (gpio_led),        // : out   std_logic_vector(7 downto 0);
-       .gpio_dip_sw (gpio_dip_sw),   //   : in    std_logic_vector(7 downto 0);
+  //     .gpio_led (gpio_led),        // : out   std_logic_vector(7 downto 0);
+  //     .gpio_dip_sw (gpio_dip_sw),   //   : in    std_logic_vector(7 downto 0);
        .gpio_led_c (gpio_led_c),        //       : out   std_logic;
         .gpio_led_e (gpio_led_e),        //       : out   std_logic;
         .gpio_led_n (gpio_led_n),       //       : out   std_logic;
@@ -332,7 +332,7 @@ module fmc150_dac_adc #
    assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
    assign adc_fifo_wr_tlast = adc_fifo_wr_tlast_reg;
 
-   assign adc_fifo_wr_en = adc_enable & adc_data_valid;
+   assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
    //assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
 
 assign rd_fifo_clk = aclk;

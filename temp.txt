@@ -1,0 +1,47 @@
+reg_map_cmd_gen reg_map_cmd_gen (
+  .aclk (s_axi_aclk),
+  .aresetn (s_axi_resetn),
+
+  .gpio_dip_sw (gpio_dip_sw),
+
+  .reg_map_wr_cmd               (reg_map_wr_cmd),
+  .reg_map_wr_addr              (reg_map_wr_addr),
+  .reg_map_wr_data              (reg_map_wr_data),
+  .reg_map_wr_keep              (reg_map_wr_keep),
+  .reg_map_wr_valid             (reg_map_wr_valid),
+  .reg_map_wr_ready             (reg_map_wr_ready),
+  .reg_map_wr_err               (reg_map_wr_err)
+
+);
+
+config_reg_map config_reg_map_inst (
+  .rst_n    (s_axi_resetn),
+  .clk      (s_axi_aclk),
+
+
+  .wr_cmd             (reg_map_wr_cmd),
+  .wr_addr            (reg_map_wr_addr),
+  .wr_data            (reg_map_wr_data),
+  .wr_keep            (reg_map_wr_keep),
+  .wr_valid           (reg_map_wr_valid),
+  .wr_ready           (reg_map_wr_ready),
+  .wr_err             (reg_map_wr_err),
+
+  // Chirp Control registers
+  .ch_prf_int (ch_prf_int), // prf in sec
+  .ch_prf_frac (ch_prf_frac),
+  .ch_tuning_coef (chirp_tuning_word_coeff),
+  .ch_counter_max  (chirp_count_max),
+  .ch_freq_offset (chirp_freq_offset),
+
+
+  .adc_sample_time                        (adc_sample_time),
+
+  // FMC150 Mode Control
+  .fmc150_ctrl_bus (fmc150_ctrl_bus),
+
+
+  //  Ethernet Control Signals
+  .ethernet_ctrl_bus (ethernet_ctrl_bus)
+
+);

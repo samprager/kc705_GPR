@@ -169,8 +169,8 @@ port (
 --  sysclk_p         : in    std_logic;
 --  sysclk_n         : in    std_logic;
   sysclk_bufg         : in    std_logic;
-  gpio_led         : out   std_logic_vector(7 downto 0);
-  gpio_dip_sw      : in    std_logic_vector(7 downto 0);
+  --gpio_led         : out   std_logic_vector(7 downto 0);
+  --gpio_dip_sw      : in    std_logic_vector(7 downto 0);
   gpio_led_c       : out   std_logic;
   gpio_led_e       : out   std_logic;
   gpio_led_n       : out   std_logic;
@@ -181,7 +181,7 @@ port (
   gpio_sw_n        : in    std_logic;
   gpio_sw_s        : in    std_logic;
   gpio_sw_w        : in    std_logic;
-  
+
   fmc150_ctrl_bus   : in std_logic_vector(7 downto 0);
 
   --Clock/Data connection to ADC on FMC150 (ADS62P49)
@@ -1871,15 +1871,15 @@ port map (
 
 --gpio_led(0) <= digital_mode;
 --gpio_led(1) <= adc_out_dac_in;
-gpio_led(0) <= gpio_dip_sw(0);
-gpio_led(1) <= gpio_dip_sw(1);
---gpio_led(2) <= external_clock;
-gpio_led(2) <= gpio_dip_sw(2);
-gpio_led(3) <= ddc_duc_bypass;
-gpio_led(4) <= pll_status;
-gpio_led(5) <= mmcm_adac_locked;
-gpio_led(6) <= mmcm_locked;
-gpio_led(7) <= ADC_calibration_good;
+-- gpio_led(0) <= gpio_dip_sw(0);
+-- gpio_led(1) <= gpio_dip_sw(1);
+-- --gpio_led(2) <= external_clock;
+-- gpio_led(2) <= gpio_dip_sw(2);
+-- gpio_led(3) <= ddc_duc_bypass;
+-- gpio_led(4) <= pll_status;
+-- gpio_led(5) <= mmcm_adac_locked;
+-- gpio_led(6) <= mmcm_locked;
+-- gpio_led(7) <= ADC_calibration_good;
 
 fmc150_status_vector <= fmc150_status_vector_sig;
 fmc150_status_vector_sig <= pll_status & mmcm_adac_locked & mmcm_locked & ADC_calibration_good;
@@ -1894,21 +1894,21 @@ gpio_led_s <= gpio_sw_s;
 gpio_led_w <= gpio_sw_w;
 
 ----digital_mode   <= gpio_dip_sw(0);
-digital_mode   <= '0';
+--digital_mode   <= '0';
 ----adc_out_dac_in <= gpio_dip_sw(1);
-adc_out_dac_in <= '0';
+--adc_out_dac_in <= '0';
 ----external_clock <= gpio_dip_sw(2);
-external_clock <= '0';
-ddc_duc_bypass <= gpio_dip_sw(3);
+--external_clock <= '0';
+--ddc_duc_bypass <= gpio_dip_sw(3);
 
 --gen_adc_test_pattern <= gpio_dip_sw(2);
-gen_adc_test_pattern <= '0';
+--gen_adc_test_pattern <= '0';
 
---ddc_duc_bypass <= fmc150_ctrl_bus(4);
---digital_mode <= fmc150_ctrl_bus(3);
---adc_out_dac_in <= fmc150_ctrl_bus(2);
---external_clock <= fmc150_ctrl_bus(1) ;
---gen_adc_test_pattern <= fmc150_ctrl_bus(0);
+ddc_duc_bypass <= fmc150_ctrl_bus(4);
+digital_mode <= fmc150_ctrl_bus(3);
+adc_out_dac_in <= fmc150_ctrl_bus(2);
+external_clock <= fmc150_ctrl_bus(1) ;
+gen_adc_test_pattern <= fmc150_ctrl_bus(0);
 ----------------------------------------------------------------------------------------------------
 -- IDELAYCTRL
 ----------------------------------------------------------------------------------------------------

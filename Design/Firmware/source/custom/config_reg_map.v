@@ -71,6 +71,7 @@ parameter ADC_CLK_FREQ                              = 245.7
   output                                  wr_ready,
   output reg [1:0]                        wr_err,
 
+  input [7:0]                             gpio_dip_sw,
   // Chirp Control registers
   output reg [31:0]                 ch_prf_int = 32'b10, // prf in sec
   output reg [31:0]                 ch_prf_frac = 32'b0,
@@ -92,10 +93,10 @@ parameter ADC_CLK_FREQ                              = 245.7
 
   // Ethernet Control Signals
   output [7:0] ethernet_ctrl_bus
-  // output reg enable_adc_pkt                         = 1'b1,
+  // output reg enable_adc_pkt                         = 1'b1, //dip_sw(1)
   // output reg gen_tx_data                            = 1'b0,
   // output reg chk_tx_data                            = 1'b0,
-  // output reg [1:0] mac_speed                        = 2'b10
+  // output reg [1:0] mac_speed                        = 2'b10 // {dip_sw(0),~dip_sw(0)}
 
 );
 
@@ -106,16 +107,17 @@ reg [7:0] wr_addr_reg;
 reg [31:0] wr_data_reg;
 reg [31:0] wr_keep_reg;
 
-reg ddc_duc_bypass                         = 1'b1; // dip_sw(3)
-reg digital_mode                           = 1'b0;
-reg adc_out_dac_in                         = 1'b0;
-reg external_clock                         = 1'b0;
-reg gen_adc_test_pattern                   = 1'b0;
+wire ddc_duc_bypass;                        // dip_sw(3)
+wire digital_mode;
+wire adc_out_dac_in;
+wire external_clock;
+wire gen_adc_test_pattern;
 
-reg enable_adc_pkt                         = 1'b1;
-reg gen_tx_data                            = 1'b0;
-reg chk_tx_data                            = 1'b0;
-reg [1:0] mac_speed                        = 2'b10;
+
+wire gen_tx_data;                           // depricated
+wire chk_tx_data;                            // depticated
+wire enable_adc_pkt;                        //dip_sw(1)
+wire [1:0] mac_speed;                        // {dip_sw[0],~dip_sw[0]};
 
 wire [3:0] addr_up;
 wire [3:0] addr_low;
@@ -124,8 +126,17 @@ assign wr_ready                                     = wr_ready_reg;
 assign wr_valid                                     = wr_valid_reg;
 
 assign fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
-assign ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
+assign ddc_duc_bypass = gpio_dip_sw[3];
+assign digital_mode                           = 1'b0;
+assign adc_out_dac_in                         = 1'b0;
+assign external_clock                         = 1'b0;
+assign gen_adc_test_pattern                   = 1'b0;
 
+assign ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
+assign enable_adc_pkt = gpio_dip_sw[1];
+assign mac_speed = {gpio_dip_sw[0],~gpio_dip_sw[0]};
+assign gen_tx_data = 1'b0;
+assign chk_tx_data = 1'b0;
 
 always @(posedge clk)
 begin
@@ -159,16 +170,6 @@ begin
       ch_counter_max      <= 32'h00000fff;
       ch_freq_offset       <= 32'd1536;
       adc_sample_time      <= 32'b0;
-      ddc_duc_bypass       <= 1'b1; // dip_sw(3)
-      digital_mode         <= 1'b0;
-      adc_out_dac_in       <= 1'b0;
-      external_clock       <= 1'b0;
-      gen_adc_test_pattern <= 1'b0;
-
-      enable_adc_pkt       <= 1'b1;
-      gen_tx_data          <= 1'b0;
-      chk_tx_data          <= 1'b0;
-      mac_speed            <= 2'b10;
 
   end else if(wr_cmd & wr_ready_reg) begin
 
@@ -230,100 +231,6 @@ begin
       end else begin
         wr_valid_reg                               <= 1'b0;
         wr_err                                     <= 2'b11;
-      end
-
-    end else if (addr_up == 4'b0001) begin
-      if (addr_low == 4'b0000) begin
-        if (wr_keep[0]) begin
-          ddc_duc_bypass                           <= wr_data[0];
-          wr_valid_reg                             <= 1'b1;
-          wr_err                                   <= 2'b0;
-        end else begin
-          wr_valid_reg                             <= 1'b0;
-          wr_err                                   <= 2'b10;
-        end
-      end else if (addr_low == 4'b0001) begin
-        if (wr_keep[0]) begin
-          digital_mode                             <= wr_data[0];
-          wr_valid_reg                             <= 1'b1;
-          wr_err                                   <= 2'b0;
-        end else begin
-          wr_valid_reg                             <= 1'b0;
-          wr_err                                   <= 2'b10;
-        end
-      end else if (addr_low == 4'b0010) begin
-        if (wr_keep[0]) begin
-          adc_out_dac_in                           <= wr_data[0];
-          wr_valid_reg                             <= 1'b1;
-          wr_err                                   <= 2'b0;
-        end else begin
-          wr_valid_reg                             <= 1'b0;
-          wr_err                                   <= 2'b10;
-        end
-      end else if (addr_low == 4'b0011) begin
-        if (wr_keep[0]) begin
-          external_clock                           <= wr_data[0];
-          wr_valid_reg                             <= 1'b1;
-          wr_err                                   <= 2'b0;
-        end else begin
-          wr_valid_reg                             <= 1'b0;
-          wr_err                                   <= 2'b10;
-        end
-      end else if (addr_low == 4'b0100) begin
-        if (wr_keep[0]) begin
-          gen_adc_test_pattern                     <= wr_data[0];
-          wr_valid_reg                             <= 1'b1;
-          wr_err                                   <= 2'b0;
-        end else begin
-          wr_valid_reg                             <= 1'b0;
-          wr_err                                   <= 2'b10;
-        end
-      end else begin
-        wr_valid_reg                               <= 1'b0;
-        wr_err                                     <= 2'b11;
-      end
-
-    end else if (addr_up == 4'b0010) begin
-      if (addr_low == 4'b0000) begin
-        if (wr_keep[0]) begin
-          enable_adc_pkt                           <= wr_data[0];
-          wr_valid_reg                             <= 1'b1;
-          wr_err                                   <= 2'b0;
-        end else begin
-          wr_valid_reg                             <= 1'b0;
-          wr_err                                   <= 2'b10;
-          wr_err                                   <= 2'b0;
-        end
-      end else if (addr_low == 4'b0001) begin
-        if (wr_keep[0]) begin
-          gen_tx_data                              <= wr_data[0];
-          wr_valid_reg                             <= 1'b1;
-          wr_err                                   <= 2'b0;
-        end else begin
-          wr_valid_reg                             <= 1'b0;
-          wr_err                                   <= 2'b10;
-        end
-      end else if (addr_low == 4'b0010) begin
-        if (wr_keep[0]) begin
-          chk_tx_data                              <= wr_data[0];
-          wr_valid_reg                             <= 1'b1;
-          wr_err                                   <= 2'b0;
-        end else begin
-          wr_valid_reg                             <= 1'b0;
-          wr_err                                   <= 2'b10;
-        end
-      end else if (addr_low == 4'b0011) begin
-        if (&wr_keep[1:0]) begin
-          mac_speed                                <= wr_data[1:0];
-          wr_valid_reg                             <= 1'b1;
-          wr_err                                   <= 2'b0;
-        end else begin
-          wr_valid_reg                             <= 1'b0;
-          wr_err                                   <= 2'b10;
-        end
-      end else begin
-          wr_valid_reg                             <= 1'b0;
-          wr_err                                   <= 2'b11;
       end
     end else begin
       wr_valid_reg                                 <= 1'b0;

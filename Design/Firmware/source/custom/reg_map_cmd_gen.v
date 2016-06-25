@@ -29,6 +29,7 @@ module reg_map_cmd_gen # (
 parameter REG_ADDR_WIDTH                            = 8,
 parameter CORE_DATA_WIDTH                           = 32,
 parameter CORE_BE_WIDTH                             = CORE_DATA_WIDTH/8,
+parameter DEBOUNCE_CTR_SIZE                         = 4,
 
 parameter ADC_CLK_FREQ                              = 245.7
 )
@@ -49,12 +50,13 @@ parameter ADC_CLK_FREQ                              = 245.7
 
 );
 
-reg [3:0] gpio_dip_sw_r;
-reg [3:0] gpio_dip_sw_rr;
-reg [3:0] gpio_dip_sw_rrr;
-reg [3:0] dip_sw_chng = 4'b0;
-reg [3:0] dip_sw_chng_r = 4'b0;
-reg [15:0] dip_sw_debounce_ctr [3:0];
+
+reg [7:0] gpio_dip_sw_r;
+reg [7:0] gpio_dip_sw_rr;
+reg [7:0] gpio_dip_sw_rrr;
+reg [7:0] dip_sw_chng = 8'b0;
+reg [7:0] dip_sw_chng_r = 8'b0;
+reg [DEBOUNCE_CTR_SIZE-1:0]   dip_sw_debounce_ctr [7:0];
 
 reg                  reg_map_wr_cmd_r;
 reg                  reg_map_wr_cmd_rr;
@@ -71,7 +73,7 @@ end
 
 always @(posedge aclk) begin
   if (~aresetn)
-    dip_sw_chng <= 4'b0;
+    dip_sw_chng <= 8'b0;
   else
     dip_sw_chng <= gpio_dip_sw_r ^ gpio_dip_sw;
 end
@@ -82,17 +84,17 @@ always @(posedge aclk) begin
   if (~aresetn)
     gpio_dip_sw_rr <= gpio_dip_sw;
   else begin
-    for (i=0;i<4;i=i+1)begin
-        if (&dip_sw_debounce_ctr[i])
+    for (i=0;i<8;i=i+1)begin
+        if ((!dip_sw_chng[i])&(&dip_sw_debounce_ctr[i]))
              gpio_dip_sw_rr[i] <= gpio_dip_sw_r[i];
     end
   end
 end
 
 always @(posedge aclk) begin
-  for (i=0;i<4;i=i+1)begin
+  for (i=0;i<8;i=i+1)begin
     if (~aresetn)
-        dip_sw_debounce_ctr[i] <= 16'hffff;
+        dip_sw_debounce_ctr[i] <= {DEBOUNCE_CTR_SIZE{1'b1}};
     else if (dip_sw_chng[i])
         dip_sw_debounce_ctr[i] <= 16'b0;
      else if (!(&dip_sw_debounce_ctr[i] ))
@@ -102,7 +104,7 @@ end
 
 always @(posedge aclk) begin
   if (~aresetn)
-    dip_sw_chng_r <= 4'b0;
+    dip_sw_chng_r <= 8'b0;
   else
     dip_sw_chng_r <= gpio_dip_sw_rrr ^ gpio_dip_sw_rr;
 end
@@ -114,12 +116,12 @@ always @(posedge aclk) begin
     gpio_dip_sw_rrr <= gpio_dip_sw_rr;
 end
 
-
+// Only generate commands for switching speed from dip_sw [2]
 always @(posedge  aclk) begin
    if (~aresetn) begin
        reg_map_wr_cmd_r <= 1'b0;
    end else begin
-       if (reg_map_wr_ready & !reg_map_wr_cmd_r & |dip_sw_chng_r[3:0]) begin
+       if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[2]) begin
            reg_map_wr_cmd_r <= 1'b1;
       end else begin
            reg_map_wr_cmd_r <= 1'b0;
@@ -140,18 +142,8 @@ always @(posedge  aclk) begin
       reg_map_wr_data_r <= 32'b0;
       reg_map_wr_keep_r <= 32'b0;
   end else begin
-      // mac speed changed
-      if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[0]) begin
-          reg_map_wr_addr_r <= 8'h23;
-          reg_map_wr_data_r[1:0] <= {gpio_dip_sw_rr[0],~gpio_dip_sw_rr[0]};
-          reg_map_wr_keep_r[1:0] <= 2'b11;
-      // enable adc pkt changed
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[1]) begin
-        reg_map_wr_addr_r <= 8'h20;
-        reg_map_wr_data_r[0] <= gpio_dip_sw_rr[1];
-        reg_map_wr_keep_r[0] <= 1'b1;
       // chirp mode changed
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[2]) begin
+      if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[2]) begin
       // fast chirp
         reg_map_wr_addr_r <= 8'h00;
         reg_map_wr_keep_r <= 32'hffffffff;
@@ -161,11 +153,6 @@ always @(posedge  aclk) begin
         end else begin
           reg_map_wr_data_r <= 32'd10;    //10 sec
         end
-      // ddc_duc_bypass cahnged
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[3]) begin
-        reg_map_wr_addr_r <= 8'h10;
-        reg_map_wr_data_r[0] <= gpio_dip_sw_rr[3];
-        reg_map_wr_keep_r[0] <= 1'b1;
       end
   end
 end

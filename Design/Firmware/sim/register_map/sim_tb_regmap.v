@@ -11,7 +11,20 @@ module sim_tb_regmap;
   wire                               rst_n;
   wire                               clk;
 
-  reg  [3:0]                         gpio_dip_sw;
+  reg                                   wr_cmd_i;
+  reg [7:0]                             wr_addr_i;
+  reg [31:0]                            wr_data_i;
+  reg [31:0]                            wr_keep_i;
+  wire                                  wr_valid;
+  wire                                  wr_ready;
+  wire [1:0]                            wr_err;
+  
+  reg                                    wr_cmd_ii;
+  
+  wire                                   wr_cmd;
+  wire [7:0]                             wr_addr;
+  wire [31:0]                            wr_data;
+  wire [31:0]                            wr_keep;
 
   // Chirp Control registers
 wire [31:0]                 ch_prf_int; // prf in sec
