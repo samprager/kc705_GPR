@@ -570,7 +570,7 @@ reg     vfifo_mm2s_ch1_full;
 control_module control_module_inst(
 
   .aclk (ui_clk),
-  .aresetn (aresetn)
+  .aresetn (aresetn),
 
   .s_axi_aclk   (s_axi_aclk),
   .s_axi_resetn  (s_axi_resetn),

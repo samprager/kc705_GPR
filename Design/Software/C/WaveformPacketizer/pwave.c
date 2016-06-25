@@ -107,11 +107,13 @@ int main(int argc,char **argv) {
     bpf_u_int32 maskp;
     bpf_u_int32 netp;
 
-    dev = pcap_lookupdev(errbuf);
-    printf("dev: %s\n",dev);
-    if(dev == NULL) {
-        fprintf(stderr,"%s\n",errbuf); exit(1);
-    }
+    // dev = pcap_lookupdev(errbuf);
+    // printf("dev: %s\n",dev);
+    // if(dev == NULL) {
+    //     fprintf(stderr,"%s\n",errbuf); exit(1);
+    // }
+
+    dev = "en4";
 
     pcap_lookupnet(dev, &netp, &maskp, errbuf);
     descr = pcap_open_live(dev, BUFSIZ, 1, 1000, errbuf);
@@ -133,7 +135,7 @@ int main(int argc,char **argv) {
 
     }
 
-    pcap_loop(descr,-1,my_callback,NULL);
+    //pcap_loop(descr,-1,my_callback,NULL);
 
     // write a packet
      //define a new packet and for each position set its values
@@ -142,11 +144,13 @@ int main(int argc,char **argv) {
      for (int i=0;i<86;i++) packet[i] = 0xAA;
 
      // Send down the packet
+     for (int i=0;i<1000;i++){
      if (pcap_sendpacket(descr, packet, 86) != 0) {
 
      fprintf(stderr,"\nError sending the packet: %s\n", pcap_geterr(descr));
      return 2;
      }
+   }
 
     return 0;
 }
