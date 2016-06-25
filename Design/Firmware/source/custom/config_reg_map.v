@@ -107,7 +107,8 @@ reg [7:0] wr_addr_reg;
 reg [31:0] wr_data_reg;
 reg [31:0] wr_keep_reg;
 
-wire ddc_duc_bypass;                        // dip_sw(3)
+reg ddc_duc_bypass_r = 1'b1;                        // dip_sw(3)
+wire ddc_duc_bypass;
 wire digital_mode;
 wire adc_out_dac_in;
 wire external_clock;
@@ -115,9 +116,11 @@ wire gen_adc_test_pattern;
 
 
 wire gen_tx_data;                           // depricated
-wire chk_tx_data;                            // depticated
-wire enable_adc_pkt;                        //dip_sw(1)
-wire [1:0] mac_speed;                        // {dip_sw[0],~dip_sw[0]};
+wire chk_tx_data;                          // depticated
+wire enable_adc_pkt;
+wire [1:0] mac_speed;
+reg enable_adc_pkt_r = 1'b1;                        //dip_sw(1)
+reg [1:0] mac_speed_r = 2'b10;                        // {dip_sw[0],~dip_sw[0]};
 
 wire [3:0] addr_up;
 wire [3:0] addr_low;
@@ -126,17 +129,28 @@ assign wr_ready                                     = wr_ready_reg;
 assign wr_valid                                     = wr_valid_reg;
 
 assign fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
-assign ddc_duc_bypass = gpio_dip_sw[3];
+assign ddc_duc_bypass = ddc_duc_bypass_r;
 assign digital_mode                           = 1'b0;
 assign adc_out_dac_in                         = 1'b0;
 assign external_clock                         = 1'b0;
 assign gen_adc_test_pattern                   = 1'b0;
 
 assign ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
-assign enable_adc_pkt = gpio_dip_sw[1];
-assign mac_speed = {gpio_dip_sw[0],~gpio_dip_sw[0]};
+assign enable_adc_pkt = enable_adc_pkt_r;
+assign mac_speed = mac_speed_r;
 assign gen_tx_data = 1'b0;
 assign chk_tx_data = 1'b0;
+
+always @(posedge clk)
+begin
+    ddc_duc_bypass_r <= gpio_dip_sw[3];
+end  
+
+always @(posedge clk)
+begin
+    enable_adc_pkt_r <= gpio_dip_sw[1];
+    mac_speed_r <= {gpio_dip_sw[0],~gpio_dip_sw[0]};
+end  
 
 always @(posedge clk)
 begin
