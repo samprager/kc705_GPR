@@ -568,10 +568,6 @@ reg     vfifo_mm2s_ch1_full;
 
 
 control_module control_module_inst(
-
-  .aclk (ui_clk),
-  .aresetn (aresetn),
-
   .s_axi_aclk   (s_axi_aclk),
   .s_axi_resetn  (s_axi_resetn),
 // for future use
@@ -1405,31 +1401,6 @@ ila_axis_vfifo   ila_axis_vfifo_inst(
     .probe17(vfifo_s2mm_channel_full),    // output wire [1 : 0] vfifo_s2mm_channel_full
     .probe18(vfifo_mm2s_channel_empty),  // output wire [1 : 0] vfifo_mm2s_channel_empty
     .probe19(vfifo_idle)                // output wire [1 : 0]
-);
-
-ila_regmap ila_regmap_inst (
-     .clk (s_axi_aclk),
-//.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
-.probe0             (reg_map_wr_cmd),
-.probe1            (reg_map_wr_addr),
-.probe2            (reg_map_wr_data),
-.probe3            (reg_map_wr_keep),
-.probe4           (reg_map_wr_valid),
-.probe5           (reg_map_wr_ready),
-.probe6             (reg_map_wr_err),
-
-// Chirp Control registers
-.probe7 (ch_prf_int), // prf in sec
-.probe8 (ch_prf_frac),
-
-.probe9 (chirp_tuning_word_coeff),
-.probe10  (chirp_count_max),
-.probe11 (chirp_freq_offset),
-
-.probe12                        (adc_sample_time),
-//  . Control Signals
-.probe13                         (ethernet_ctrl_bus),
-.probe14                         (fmc150_ctrl_bus)
 );
 
 endmodule
