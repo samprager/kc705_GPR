@@ -181,22 +181,24 @@ module kc705_ethernet_rgmii_example_design
       input         pause_req_s,
 
       // data from ADC Data fifo
-       input                                enable_adc_pkt,
+  //     input                                enable_adc_pkt,
        input       [7:0]                    adc_axis_tdata,
        input                                adc_axis_tvalid,
        input                                adc_axis_tlast,
        input                                adc_axis_tuser,
        output                               adc_axis_tready,
 
+      input [7:0] ethernet_ctrl_bus,
       // Main example design controls
       //-----------------------------
-      input  [1:0]  mac_speed,
+    //  input  [1:0]  mac_speed,
+    
       input         update_speed,
       //input         serial_command, // tied to pause_req_s
       input         config_board,
       output        serial_response,
-      input         gen_tx_data,
-      input         chk_tx_data,
+   //   input         gen_tx_data,
+   //   input         chk_tx_data,
       //input         reset_error,
       output        frame_error,
       output        frame_errorn,
@@ -291,6 +293,16 @@ module kc705_ethernet_rgmii_example_design
 
    // signal tie offs
    wire  [7:0]          tx_ifg_delay = 0;    // not used in this example
+
+    wire [1:0] mac_speed;
+    wire gen_tx_data;
+    wire chk_tx_data;
+    wire enable_adc_pkt; 
+    
+    assign enable_adc_pkt = ethernet_ctrl_bus[4];
+    assign gen_tx_data = ethernet_ctrl_bus[3];
+    assign chk_tx_data = ethernet_ctrl_bus[2]; 
+    assign mac_speed = ethernet_ctrl_bus[1:0];  
 
    assign frame_errorn = !frame_error;
    assign activity_flashn = !activity_flash;

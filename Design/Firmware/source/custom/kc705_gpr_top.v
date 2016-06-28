@@ -429,14 +429,6 @@ reg [7:0] fmc150_ctrl_bus_reg;
 
 wire [7:0] ethernet_ctrl_bus;
 
-reg [3:0] gpio_dip_sw_r;
-reg [3:0] gpio_dip_sw_rr;
-reg [3:0] gpio_dip_sw_rrr;
-reg [3:0] dip_sw_chng = 4'b0;
-reg [3:0] dip_sw_chng_r = 4'b0;
-reg [15:0] dip_sw_debounce_ctr [3:0];
-
-integer i;
 
 wire                  reg_map_wr_cmd;
 wire [7:0]           reg_map_wr_addr;
@@ -445,12 +437,6 @@ wire [31:0]           reg_map_wr_keep;
 wire                  reg_map_wr_valid;
 wire                  reg_map_wr_ready;
 wire [1:0]            reg_map_wr_err;
-
-reg                  reg_map_wr_cmd_r;
-reg                  reg_map_wr_cmd_rr;
-reg [7:0]           reg_map_wr_addr_r;
-reg [31:0]           reg_map_wr_data_r;
-reg [31:0]           reg_map_wr_keep_r;
 
 
 wire data_tx_ready;        // high when ready to transmit
@@ -671,22 +657,23 @@ kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
   .pause_req_s         (pause_req_s),
 
   // connections to adc data ports
-  .enable_adc_pkt            (enable_adc_pkt),
+  //.enable_adc_pkt            (enable_adc_pkt),
   .adc_axis_tdata           (adc_pkt_axis_tdata),
   .adc_axis_tvalid          (adc_pkt_axis_tvalid),
   .adc_axis_tlast           (adc_pkt_axis_tlast),
   .adc_axis_tuser           (adc_pkt_axis_tuser),
   .adc_axis_tready          (adc_pkt_axis_tready),
 
+  .ethernet_ctrl_bus        (ethernet_ctrl_bus),
   // Main example design controls
   //-----------------------------
-  .mac_speed             (mac_speed),       // [1:0]
+ // .mac_speed             (mac_speed),       // [1:0]
   .update_speed         (update_speed),
   //input         serial_command, // tied to pause_req_s
   .config_board         (config_board),
   .serial_response        (serial_response),
-  .gen_tx_data         (gen_tx_data),
-  .chk_tx_data         (chk_tx_data),
+ // .gen_tx_data         (gen_tx_data),
+ // .chk_tx_data         (chk_tx_data),
  // .reset_error         (reset_error),
   .frame_error        (frame_error),
   .frame_errorn        (frame_errorn),
@@ -905,110 +892,19 @@ assign ethernet_ctrl_bus = {3'b0,enable_adc_pkt_ctrl,gen_tx_data_ctrl,chk_tx_dat
 
 
 
-always @(posedge s_axi_aclk) begin
-    gpio_dip_sw_r <= gpio_dip_sw;
-end
-
-always @(posedge s_axi_aclk) begin
-  if (~s_axi_resetn)  
-    dip_sw_chng <= 4'b0;
-  else
-    dip_sw_chng <= gpio_dip_sw_r ^ gpio_dip_sw;
-end
-
-
-// debounce switches
-always @(posedge s_axi_aclk) begin
-  if (~s_axi_resetn) 
-    gpio_dip_sw_rr <= gpio_dip_sw;
-  else begin
-    for (i=0;i<4;i=i+1)begin
-        if (&dip_sw_debounce_ctr[i]) 
-             gpio_dip_sw_rr[i] <= gpio_dip_sw_r[i];    
-    end
-  end  
-end
-
-always @(posedge s_axi_aclk) begin
-  for (i=0;i<4;i=i+1)begin
-    if (~s_axi_resetn) 
-        dip_sw_debounce_ctr[i] <= 16'hffff;
-    else if (dip_sw_chng[i]) 
-        dip_sw_debounce_ctr[i] <= 16'b0;
-     else if (!(&dip_sw_debounce_ctr[i] ))  
-        dip_sw_debounce_ctr[i] <= dip_sw_debounce_ctr[i]+1'b1; 
-   end
-end
-
-always @(posedge s_axi_aclk) begin
-  if (~s_axi_resetn)  
-    dip_sw_chng_r <= 4'b0;
-  else
-    dip_sw_chng_r <= gpio_dip_sw_rrr ^ gpio_dip_sw_rr;
-end
-
-always @(posedge s_axi_aclk) begin
-  if (~s_axi_resetn)  
-    gpio_dip_sw_rrr <= gpio_dip_sw;
-  else
-    gpio_dip_sw_rrr <= gpio_dip_sw_rr;
-end
-
-
-always @(posedge  s_axi_aclk) begin
-   if (~s_axi_resetn) begin
-       reg_map_wr_cmd_r <= 1'b0;
-   end else begin
-       if (reg_map_wr_ready & !reg_map_wr_cmd_r & |dip_sw_chng_r[3:0]) begin
-           reg_map_wr_cmd_r <= 1'b1;
-      end else begin
-           reg_map_wr_cmd_r <= 1'b0;
-       end
-   end
-end
-
-always @(posedge  s_axi_aclk) begin
-   if (~s_axi_resetn)
-      reg_map_wr_cmd_rr <= 1'b0;
-   else
-       reg_map_wr_cmd_rr <= reg_map_wr_cmd_r;
-end
-
-always @(posedge  s_axi_aclk) begin
-  if (~s_axi_resetn) begin
-      reg_map_wr_addr_r <= 8'b0;
-      reg_map_wr_data_r <= 32'b0;
-      reg_map_wr_keep_r <= 32'b0;
-  end else begin
-      // mac speed changed
-      if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[0]) begin
-          reg_map_wr_addr_r <= 8'h23;
-          reg_map_wr_data_r[1:0] <= {gpio_dip_sw_rr[0],~gpio_dip_sw_rr[0]};
-          reg_map_wr_keep_r[1:0] <= 2'b11;
-      // enable adc pkt changed
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[1]) begin
-        reg_map_wr_addr_r <= 8'h20;
-        reg_map_wr_data_r[0] <= gpio_dip_sw_rr[1];
-        reg_map_wr_keep_r[0] <= 1'b1;
-      // chirp mode changed
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[2]) begin
-      // fast chirp
-        reg_map_wr_addr_r <= 8'h00;
-        reg_map_wr_keep_r <= 32'hffffffff;
-        if (gpio_dip_sw_rr[2]) begin
-          reg_map_wr_data_r <= 32'd1;     // 1 sec
-      // slow chirp
-        end else begin
-          reg_map_wr_data_r <= 32'd10;    //10 sec
-        end
-      // ddc_duc_bypass cahnged
-      end else if (reg_map_wr_ready & !reg_map_wr_cmd_r & dip_sw_chng_r[3]) begin
-        reg_map_wr_addr_r <= 8'h10;
-        reg_map_wr_data_r[0] <= gpio_dip_sw_rr[3];
-        reg_map_wr_keep_r[0] <= 1'b1;
-      end
-  end
-end
+reg_map_control reg_map_control_inst (
+    .aclk (s_axi_aclk),
+    .aresetn (s_axi_resetn),
+    .gpio_dip_sw (gpio_dip_sw),
+    
+    .reg_map_wr_cmd                  (reg_map_wr_cmd),
+    .reg_map_wr_addr           (reg_map_wr_addr),
+    .reg_map_wr_data           (reg_map_wr_data),
+    .reg_map_wr_keep          (reg_map_wr_keep),
+    .reg_map_wr_valid                  (reg_map_wr_valid),
+    .reg_map_wr_ready                  (reg_map_wr_ready),
+    .reg_map_wr_err            (reg_map_wr_err)
+);
 
 config_reg_map u_config_reg_map (
   .rst_n    (s_axi_resetn),
@@ -1047,11 +943,6 @@ config_reg_map u_config_reg_map (
   .mac_speed                              (mac_speed_ctrl)
 
 );
-
-assign reg_map_wr_cmd = reg_map_wr_cmd_r;
-assign reg_map_wr_addr = reg_map_wr_addr_r;
-assign reg_map_wr_data = reg_map_wr_data_r;
-assign reg_map_wr_keep = reg_map_wr_keep_r;
 
 axi_vfifo_ctrl_0 u_axi_vfifo_ctrl_0(
     .aclk(ui_clk),                                          // input wire aclk
