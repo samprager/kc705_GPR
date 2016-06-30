@@ -129,6 +129,8 @@ wire                  reg_map_wr_valid;
 wire                  reg_map_wr_ready;
 wire [1:0]            reg_map_wr_err;
 
+wire [127:0] chirp_parameters_axiclk;
+
 wire data_tx_ready;        // high when ready to transmit
 wire data_tx_active;       // high while data being transmitted
 wire data_tx_done;         // single pule when done transmitting
