@@ -1538,34 +1538,30 @@ begin
     end if;
 end process;
 
-generate_test_pattern: process (clk_245_76MHz)
-begin
-  if rising_edge(clk_245_76MHz) then
-    if (rst = '1') then
-      adc_test_pattern_i <= (others=>'0');
-      adc_test_pattern_q <= (8=> '1',others=>'0');
-      adc_test_pattern_iq <= (others=>'0');
-      adc_test_pattern_valid <= '0';
-    elsif (gen_adc_test_pattern = '1' and mmcm_adac_locked = '1') then
-      adc_test_pattern_i(7 downto 0) <= adc_test_pattern_i(7 downto 0) + '1';
-      adc_test_pattern_q(7 downto 0) <= adc_test_pattern_q(7 downto 0) + '1';
-      adc_test_pattern_iq <= adc_test_pattern_iq + '1';
-      adc_test_pattern_valid <= '1';
-    else
-      adc_test_pattern_valid <= '0';
-    end if;
-  end if;
-end process generate_test_pattern;
+--generate_test_pattern: process (clk_245_76MHz)
+--begin
+--  if rising_edge(clk_245_76MHz) then
+--    if (rst = '1') then
+--      adc_test_pattern_i <= (others=>'0');
+--      adc_test_pattern_q <= (8=> '1',others=>'0');
+--      adc_test_pattern_iq <= (others=>'0');
+--      adc_test_pattern_valid <= '0';
+--    elsif (gen_adc_test_pattern = '1' and mmcm_adac_locked = '1') then
+--      adc_test_pattern_i(7 downto 0) <= adc_test_pattern_i(7 downto 0) + '1';
+--      adc_test_pattern_q(7 downto 0) <= adc_test_pattern_q(7 downto 0) + '1';
+--      adc_test_pattern_iq <= adc_test_pattern_iq + '1';
+--      adc_test_pattern_valid <= '1';
+--    else
+--      adc_test_pattern_valid <= '0';
+--    end if;
+--  end if;
+--end process generate_test_pattern;
 
 generate_adc_counter: process (clk_245_76MHz)
 begin
   if rising_edge(clk_245_76MHz) then
     if (rst = '1') then
       adc_counter_out_sig <= (others=>'0');
-    elsif (gen_adc_test_pattern = '1') then
-        if (adc_test_pattern_valid = '1') then
-            adc_counter_out_sig <= adc_counter_out_sig + '1';
-        end if;
     elsif (adc_dout_valid = '1') then
       adc_counter_out_sig <= adc_counter_out_sig + '1';
     end if;
@@ -1575,17 +1571,17 @@ end process generate_adc_counter;
 adc_test_pattern_mux: process (clk_245_76MHz)
 begin
   if rising_edge(clk_245_76MHz) then
-    if (gen_adc_test_pattern = '1') then
-      --adc_data_out_i_sig <= adc_test_pattern_i;
-      --adc_data_out_q_sig <= adc_test_pattern_q;
-      adc_data_out_i_sig <= adc_test_pattern_iq(31 downto 16);
-      adc_data_out_q_sig <= adc_test_pattern_iq(15 downto 0);
-      adc_data_out_valid_sig <= adc_test_pattern_valid;
-    else
+--    if (gen_adc_test_pattern = '1') then
+--      --adc_data_out_i_sig <= adc_test_pattern_i;
+--      --adc_data_out_q_sig <= adc_test_pattern_q;
+--      adc_data_out_i_sig <= adc_test_pattern_iq(31 downto 16);
+--      adc_data_out_q_sig <= adc_test_pattern_iq(15 downto 0);
+--      adc_data_out_valid_sig <= adc_test_pattern_valid;
+--    else
       adc_data_out_i_sig <= adc_dout_i;
       adc_data_out_q_sig <= adc_dout_q;
       adc_data_out_valid_sig <= adc_dout_valid;
-		end if;
+--		end if;
   end if;
 end process adc_test_pattern_mux;
 
