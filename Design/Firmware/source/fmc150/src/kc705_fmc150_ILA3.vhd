@@ -2018,7 +2018,11 @@ port map(
 --   tuning_word_coeff_in => chirp_tuning_word_coeff_sig,
 --   chirp_count_max_in =>  chirp_count_max_sig
 -- );
-
+baseband_out_valid_sig <= adc_dout_valid;
+baseband_out_i_sig <= adc_dout_i;
+baseband_out_q_sig <= adc_dout_q;
+ 
+ 
 duc_dcc_route_ctrl_sig(0) 	<= digital_mode;
 duc_dcc_route_ctrl_sig(1) 	<= adc_out_dac_in;
 duc_dcc_route_ctrl_sig(2) 	<= ddc_duc_bypass;
