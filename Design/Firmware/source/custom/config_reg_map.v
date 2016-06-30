@@ -71,7 +71,7 @@ parameter ADC_CLK_FREQ                              = 245.7
   output                                  wr_ready,
   output reg [1:0]                        wr_err,
 
-  input [7:0]                             gpio_dip_sw,
+ // input [7:0]                             gpio_dip_sw,
   // Chirp Control registers
   output reg [31:0]                 ch_prf_int = 32'b10, // prf in sec
   output reg [31:0]                 ch_prf_frac = 32'b0,
@@ -82,7 +82,7 @@ parameter ADC_CLK_FREQ                              = 245.7
   output reg [31:0]                 ch_freq_offset = 32'd1536,
 
   // ADC Sample time after chirp data_tx_done -
-  output reg [31:0]                 adc_sample_time = 32'b0,
+  output reg [31:0]                 adc_sample_time = 32'b1,
   // FMC150 Mode Control
   output [7:0] fmc150_ctrl_bus,
   // output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
@@ -143,13 +143,13 @@ assign chk_tx_data = 1'b0;
 
 always @(posedge clk)
 begin
-    ddc_duc_bypass_r <= gpio_dip_sw[3];
+    ddc_duc_bypass_r <= 1'b1;//gpio_dip_sw[3];
 end
 
 always @(posedge clk)
 begin
-    enable_adc_pkt_r <= gpio_dip_sw[1];
-    mac_speed_r <= {gpio_dip_sw[0],~gpio_dip_sw[0]};
+    enable_adc_pkt_r <= 1'b1;//gpio_dip_sw[1];
+    mac_speed_r <= 2'b10; //{gpio_dip_sw[0],~gpio_dip_sw[0]};
 end  
 
 always @(posedge clk)
@@ -175,15 +175,15 @@ assign addr_low                                     = wr_addr[3:0];
 always @(posedge clk)
 begin
   if (!rst_n) begin
-    wr_valid_reg                                   <= 1'b0;
-    wr_err                                   <= 2'b0;
+        wr_valid_reg                                   <= 1'b0;
+        wr_err                                   <= 2'b0;
       // Chirp Control registers
       ch_prf_int           <= 32'd10; // prf in sec
       ch_prf_frac          <= 32'b0;
       ch_tuning_coef       <= 32'b1;
       ch_counter_max      <= 32'h00000fff;
       ch_freq_offset       <= 32'd1536;
-      adc_sample_time      <= 32'b0;
+      adc_sample_time      <= 32'b1;
 
   end else if(wr_cmd & wr_ready_reg) begin
 

@@ -50,7 +50,7 @@ module fmc150_dac_adc #
 //  output clk_out_491_52MHz,
 
 //  output [7:0]  gpio_led,        // : out   std_logic_vector(7 downto 0);
-// input [7:0]  gpio_dip_sw,   //   : in    std_logic_vector(7 downto 0);
+//  input [7:0]  gpio_dip_sw,   //   : in    std_logic_vector(7 downto 0);
   output gpio_led_c,        //       : out   std_logic;
   output gpio_led_e,        //       : out   std_logic;
   output gpio_led_n,       //       : out   std_logic;

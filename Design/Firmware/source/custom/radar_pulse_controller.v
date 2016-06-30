@@ -35,6 +35,9 @@ module radar_pulse_controller #(
   input[31:0] chirp_time_frac,
 
   input [31:0] adc_sample_time,
+  
+  input [127:0] chirp_parameters_in,
+  output [127:0] chirp_parameters_out,
 
   input chirp_ready,          // continuous high when dac ready
   input chirp_active,         // continuous high while chirping
@@ -90,18 +93,149 @@ wire chirp_prf_speed_sel;
 reg[31:0] chirp_time_int_r = 32'd10;
 reg[31:0] chirp_time_frac_r = 32'b0;
 reg[31:0] adc_sample_time_r = 32'b1;
+reg[31:0] chirp_time_int_rr = 32'd10;
+reg[31:0] chirp_time_frac_rr = 32'b0;
+reg[31:0] adc_sample_time_rr = 32'b1;
+reg[31:0] chirp_time_int_rrr = 32'd10;
+reg[31:0] chirp_time_frac_rrr = 32'b0;
+reg[31:0] adc_sample_time_rrr = 32'b1;
+reg update_chirp_time_int = 1'b0;
+reg update_chirp_time_frac = 1'b0;
+reg update_adc_sample_time = 1'b0; 
 
+reg [31:0] ch_tuning_coef_r = 32'b1;
+reg [31:0] ch_counter_max_r = 32'h00000fff;
+reg [31:0] ch_freq_offset_r = 32'd1536;
+reg [31:0] ch_tuning_coef_rr = 32'b1;
+reg [31:0] ch_counter_max_rr = 32'h00000fff;
+reg [31:0] ch_freq_offset_rr = 32'd1536;
+reg [31:0] ch_tuning_coef_rrr = 32'b1;
+reg [31:0] ch_counter_max_rrr = 32'h00000fff;
+reg [31:0] ch_freq_offset_rrr = 32'd1536;
+reg update_ch_tuning_coef = 1'b0;
+reg update_ch_counter_max = 1'b0;
+reg update_ch_freq_offset = 1'b0; 
+
+reg[31:0] chirp_prf_count_max = CHIRP_PRF_COUNT_SLOW;
+
+assign chirp_parameters_out = {32'b0,ch_freq_offset_rrr,ch_tuning_coef_rrr,ch_counter_max_rrr};
+
+// sync chirp param control inputs from reg map
+always @(posedge clk_fmc150) begin
+    if(~aresetn) begin
+        ch_freq_offset_r <= 32'd1536;        
+        ch_tuning_coef_r <= 32'b1;
+        ch_counter_max_r <= 32'h00000fff;
+        ch_freq_offset_rr <= 32'd1536;        
+        ch_tuning_coef_rr <= 32'b1;
+        ch_counter_max_rr <= 32'h00000fff;
+        ch_freq_offset_rrr <= 32'd1536;
+        ch_tuning_coef_rrr <= 32'b1;
+        ch_counter_max_rrr <= 32'h00000fff;
+        update_ch_freq_offset <= 1'b0; 
+        update_ch_tuning_coef  <= 1'b0;
+        update_ch_counter_max <= 1'b0;
+     end else begin   
+       ch_freq_offset_r <= chirp_parameters_in[95:64];
+       ch_tuning_coef_r <= chirp_parameters_in[63:32];
+       ch_counter_max_r <= chirp_parameters_in[31:0];
+       ch_freq_offset_rr <= ch_freq_offset_r;
+       ch_tuning_coef_rr <= ch_tuning_coef_r;
+       ch_counter_max_rr <= ch_counter_max_r;
+       if (ch_tuning_coef_rrr !== ch_tuning_coef_rr) begin
+           ch_tuning_coef_rrr <= ch_tuning_coef_rr;
+           ch_counter_max_rrr <= ch_counter_max_rrr;
+           ch_freq_offset_rrr <= ch_freq_offset_rrr;
+           update_ch_tuning_coef <= 1'b1;
+           update_ch_counter_max <= 1'b0;
+           update_ch_freq_offset <= 1'b0;
+       end else if (ch_counter_max_rrr !== ch_counter_max_rr) begin
+           ch_tuning_coef_rrr <= ch_tuning_coef_rrr;
+           ch_counter_max_rrr <= ch_counter_max_rr;
+           ch_freq_offset_rrr <= ch_freq_offset_rrr;
+            update_ch_tuning_coef <= 1'b0;
+            update_ch_counter_max <= 1'b1;
+            update_ch_freq_offset <= 1'b0;          
+       end else if (ch_freq_offset_rrr !== ch_freq_offset_rr) begin
+            ch_tuning_coef_rrr <= ch_tuning_coef_rrr;
+            ch_counter_max_rrr <= ch_counter_max_rrr;
+            ch_freq_offset_rrr <= ch_freq_offset_rr;
+            update_ch_tuning_coef <= 1'b0;
+            update_ch_counter_max <= 1'b0;
+            update_ch_freq_offset <= 1'b1; 
+        end else begin
+            ch_tuning_coef_rrr <= ch_tuning_coef_rrr;
+            ch_counter_max_rrr <= ch_counter_max_rrr;
+            ch_freq_offset_rrr <= ch_freq_offset_rrr;
+            update_ch_tuning_coef <= 1'b0;
+            update_ch_counter_max <= 1'b0;
+            update_ch_freq_offset <= 1'b0; 
+         end            
+    end 
+end
+
+ // sync chirp time control inputs from reg map
 always @(posedge aclk) begin
     if(~aresetn) begin
         chirp_time_int_r <= 32'd10;
         chirp_time_frac_r <= 32'b0;
-        adc_sample_time_r <= 32'b0;
+        adc_sample_time_r <= 32'b1;
+        chirp_time_int_rr <= 32'd10;
+        chirp_time_frac_rr <= 32'b0;
+        adc_sample_time_rr <= 32'b1;
+        chirp_time_int_rrr <= 32'd10;
+        chirp_time_frac_rrr <= 32'b0;
+        adc_sample_time_rrr <= 32'b1;
+        update_chirp_time_int <= 1'b0;
+        update_chirp_time_frac <= 1'b0;
+        update_adc_sample_time <= 1'b0; 
      end else begin   
-      chirp_time_int_r <= chirp_time_int;
-      chirp_time_frac_r <= chirp_time_frac;
-      adc_sample_time_r <= adc_sample_time;
+       chirp_time_int_r <= chirp_time_int;
+       chirp_time_frac_r <= chirp_time_frac;
+       adc_sample_time_r <= adc_sample_time;
+       chirp_time_int_rr <= chirp_time_int_r;
+       chirp_time_frac_rr <= chirp_time_frac_r;
+       adc_sample_time_rr <= adc_sample_time_r;
+       if (chirp_time_int_rrr !== chirp_time_int_rr) begin
+            chirp_time_int_rrr <= chirp_time_int_rr;
+            chirp_time_frac_rrr <= chirp_time_frac_rrr;
+            adc_sample_time_rrr <= adc_sample_time_rrr;
+            update_chirp_time_int <= 1'b1;
+            update_chirp_time_frac <= 1'b0;
+            update_adc_sample_time <= 1'b0;
+       end else if (chirp_time_frac_rrr !== chirp_time_frac_rr) begin
+             chirp_time_int_rrr <= chirp_time_int_rrr;
+             chirp_time_frac_rrr <= chirp_time_frac_rr;
+             adc_sample_time_rrr <= adc_sample_time_rrr;
+             update_chirp_time_int <= 1'b0;
+             update_chirp_time_frac <= 1'b1;
+             update_adc_sample_time <= 1'b0;            
+       end else if (adc_sample_time_rrr !== adc_sample_time_rr) begin
+              chirp_time_int_rrr <= chirp_time_int_rrr;
+              chirp_time_frac_rrr <= chirp_time_frac_rrr;
+              adc_sample_time_rrr <= adc_sample_time_rr;
+              update_chirp_time_int <= 1'b0;
+              update_chirp_time_frac <= 1'b0;
+              update_adc_sample_time <= 1'b1;
+        end else begin
+             chirp_time_int_rrr <= chirp_time_int_rrr;
+             chirp_time_frac_rrr <= chirp_time_frac_rrr;
+             adc_sample_time_rrr <= adc_sample_time_rrr;
+             update_chirp_time_int <= 1'b0;
+             update_chirp_time_frac <= 1'b0;
+             update_adc_sample_time <= 1'b0; 
+         end            
     end 
 end
+
+always @(update_chirp_time_int or update_chirp_time_frac)
+begin
+    if (chirp_time_int_rrr == 32'b1)
+        chirp_prf_count_max = CHIRP_PRF_COUNT_FAST;
+    else
+        chirp_prf_count_max = CHIRP_PRF_COUNT_SLOW; 
+ end   
+ 
 always @(posedge aclk)
 begin
   if(~aresetn)
@@ -109,11 +243,13 @@ begin
   else if (gen_state == ACTIVE & (|chirp_count))
     chirp_count <= chirp_count - 1;
   else if (gen_state == IDLE) begin
+        chirp_count <= chirp_prf_count_max;  
   //  if (chirp_prf_speed_sel)
-    if (chirp_time_int_r == 32'b1)
-        chirp_count <= CHIRP_PRF_COUNT_FAST;
-    else
-        chirp_count <= CHIRP_PRF_COUNT_SLOW;
+//    if (chirp_time_int_r == 32'b1)
+//        chirp_count <= CHIRP_PRF_COUNT_FAST;
+//    else
+//        chirp_count <= CHIRP_PRF_COUNT_SLOW;
+
    end
 end
 

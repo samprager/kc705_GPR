@@ -3,6 +3,12 @@ Recreate vivado project:
 In kc705_GPR/Design/Firmware/implementation/ run:
 vivado -source gen_vivado_proj.tcl
 
+Constraining Asynchronous Clocks:
+http://www.xilinx.com/support/answers/44651.html
+
+Additoinal Directive:
+place_design -directive Explore
+
 Clock Generation Error Output:
 
 [Place 30-575] Sub-optimal placement for a clock-capable IO pin and MMCM pair. If this sub optimal condition is acceptable for this design, you may use the CLOCK_DEDICATED_ROUTE constraint in the .xdc file to demote this message to a WARNING. However, the use of this override is highly discouraged. These examples can be used directly in the .xdc file to override this clock rule.

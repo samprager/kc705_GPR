@@ -170,7 +170,7 @@ port (
 --  sysclk_n         : in    std_logic;
   sysclk_bufg         : in    std_logic;
   --gpio_led         : out   std_logic_vector(7 downto 0);
-  --gpio_dip_sw      : in    std_logic_vector(7 downto 0);
+ -- gpio_dip_sw      : in    std_logic_vector(7 downto 0);
   gpio_led_c       : out   std_logic;
   gpio_led_e       : out   std_logic;
   gpio_led_n       : out   std_logic;

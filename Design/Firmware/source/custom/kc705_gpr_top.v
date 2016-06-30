@@ -413,9 +413,11 @@ wire [31:0]                 ch_prf_frac;
 wire [31:0]                 adc_sample_time;
 
 wire [7:0] fmc150_ctrl_bus;
+wire [7:0] fmc150_ctrl_bus_bypass;
 //fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
 
 wire [7:0] ethernet_ctrl_bus;
+wire [7:0] ethernet_ctrl_bus_bypass;
 // ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
 
 wire [127:0] chirp_parameters;
@@ -619,6 +621,11 @@ control_module control_module_inst(
 
 );
 
+assign fmc150_ctrl_bus_bypass = {3'b0,gpio_dip_sw[3],1'b0,1'b0,1'b0,1'b0};
+//fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
+
+assign ethernet_ctrl_bus_bypass = {3'b0,gpio_dip_sw[1],1'b0,1'b0,gpio_dip_sw[0],~gpio_dip_sw[0]};
+// ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
 
 kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
 (
@@ -679,7 +686,8 @@ kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
 
   // Main example design controls
   //-----------------------------
-  .ethernet_ctrl_bus (ethernet_ctrl_bus),
+ // .ethernet_ctrl_bus (ethernet_ctrl_bus),
+  .ethernet_ctrl_bus (ethernet_ctrl_bus_bypass),
   .update_speed         (update_speed),
   //input         serial_command, // tied to pause_req_s
   .config_board         (config_board),
@@ -817,8 +825,8 @@ fmc150_dac_adc_inst
      .gpio_sw_s (gpio_sw_s),        //               : in    std_logic;
      .gpio_sw_w (gpio_sw_w),        //               : in    std_logic;
 
-     .fmc150_ctrl_bus (fmc150_ctrl_bus),
-
+    // .fmc150_ctrl_bus (fmc150_ctrl_bus),
+      .fmc150_ctrl_bus (fmc150_ctrl_bus_bypass),
     // --Clock/Data connection to ADC on FMC150 (ADS62P49)
      .clk_ab_p (clk_ab_p),        //                : in    std_logic;
      .clk_ab_n (clk_ab_n),        //                : in    std_logic;

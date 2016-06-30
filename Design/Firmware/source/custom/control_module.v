@@ -135,8 +135,6 @@ wire data_tx_done;         // single pule when done transmitting
 wire data_tx_init;        // single pulse to start tx data
 wire data_tx_enable;      // continuous high while transmit enabled
 
-assign chirp_parameters = {32'b0,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
-
 assign gpio_led[0] = gpio_dip_sw[0];          // mac speed =  {gpio_dip_sw[0],~gpio_dip_sw[0]};
 assign gpio_led[1] = gpio_dip_sw[1];          // enable adc pkt
 assign gpio_led[2] = gpio_dip_sw[2];          // chirp rate control
@@ -159,6 +157,9 @@ radar_pulse_controller radar_pulse_controller_inst (
   .chirp_time_int (ch_prf_int),
   .chirp_time_frac (ch_prf_frac),
   .adc_sample_time  (adc_sample_time),
+  .chirp_parameters_in (chirp_parameters_axiclk),
+  .chirp_parameters_out (chirp_parameters),
+  
   .fmc150_status_vector (fmc150_status_vector), // {pll_status, mmcm_adac_locked, mmcm_locked, ADC_calibration_good};
   .chirp_ready (chirp_ready),
   .chirp_done (chirp_done),
@@ -175,11 +176,14 @@ radar_pulse_controller radar_pulse_controller_inst (
   .data_tx_enable (data_tx_enable)     // continuous high while transmit enabled
 );
 
+assign chirp_parameters_axiclk = {32'b0,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
+
 reg_map_cmd_gen reg_map_cmd_gen_inst (
   .aclk (s_axi_aclk),
   .aresetn (s_axi_resetn),
 
-  .gpio_dip_sw (gpio_dip_sw),
+ // .gpio_dip_sw (gpio_dip_sw),
+  .gpio_dip_sw ({4'b0,4'b1011}),
 
   .reg_map_wr_cmd               (reg_map_wr_cmd),
   .reg_map_wr_addr              (reg_map_wr_addr),
@@ -204,7 +208,7 @@ config_reg_map config_reg_map_inst (
   .wr_ready           (reg_map_wr_ready),
   .wr_err             (reg_map_wr_err),
 
-  .gpio_dip_sw (gpio_dip_sw),
+ // .gpio_dip_sw (gpio_dip_sw),
   // Chirp Control registers
   .ch_prf_int (ch_prf_int), // prf in sec
   .ch_prf_frac (ch_prf_frac),
