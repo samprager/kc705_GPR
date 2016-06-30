@@ -410,6 +410,32 @@ port (
 );
 end component fmc150_spi_ctrl;
 
+component CHIRP_DDS is
+port (
+	CLOCK           		: in std_logic;
+	CLOCK1           		: in std_logic;
+	CLOCK2           		: in std_logic;
+	RESET           		: in std_logic;
+	IF_FREQ					: in std_logic_vector(27 downto 0);
+
+	IF_OUT_I					: out std_logic_vector(15 downto 0);
+	IF_OUT_Q					: out std_logic_vector(15 downto 0);
+	IF_OUT_VALID			: out std_logic;
+
+	DUC_DCC_ROUTE_CTRL	: in std_logic_vector(2 downto 0);
+
+  chirp_ready  : out std_logic;
+  chirp_done  : out std_logic;
+  chirp_active  : out std_logic;
+  chirp_init  : in std_logic;
+  chirp_enable : in std_logic;
+
+  freq_offset_in : in std_logic_vector(31 downto 0);
+  tuning_word_coeff_in : in std_logic_vector(31 downto 0);
+  chirp_count_max_in : in std_logic_vector(31 downto 0)
+);
+end component CHIRP_DDS;
+
 component DUC_DDC is
 
 port (
@@ -1915,6 +1941,30 @@ port map (
   rdy    => open
 );
 
+CHIRP_DDS_inst : CHIRP_DDS
+port map(
+	clock           		=> clk_491_52mhz,
+	clock1           		=> clk_245_76mhz,
+	clock2					=> clk_15_36mhz,
+	reset						=> rst,
+	if_freq					=> x"0000000",							-- unused / placeholder for I/F frequency for complex mixer
+
+	if_out_i					=> DUC_if_out_i,							-- i data to dac, 16-bit
+	if_out_q					=> DUC_if_out_q,							-- q data to dac, 16-bit,
+
+	duc_dcc_route_ctrl	=> duc_dcc_route_ctrl_sig,			-- control of various mux'es within duc_ddc module
+
+  chirp_ready  =>  chirp_ready_sig,
+  chirp_done  => chirp_done_sig,
+  chirp_active  => chirp_active_sig,
+  chirp_init  => chirp_init_sig,
+  chirp_enable => chirp_enable_sig,
+
+  freq_offset_in => chirp_freq_offset_sig,
+  tuning_word_coeff_in => chirp_tuning_word_coeff_sig,
+  chirp_count_max_in =>  chirp_count_max_sig
+);
+
 ------------------------------------------------------------------------------------------------------
 ---- DUC / DDC
 ------------------------------------------------------------------------------------------------------
@@ -1933,41 +1983,41 @@ port map (
 -- Also contains hardware-based sin/cos wave generator DDS and impulse generator as test signals
 --
 
-DUC_DDC_inst: DUC_DDC
-port map(
-	clock           		=> clk_491_52mhz,
-	clock1           		=> clk_245_76mhz,
-	clock2					=> clk_15_36mhz,
-	reset						=> rst,
-	if_freq					=> x"0000000",							-- unused / placeholder for I/F frequency for complex mixer
-	baseband_in_i			=> "0000000000000000",				-- stub for baseband-side input to duc
-	baseband_in_q			=> "0000000000000000",
-	baseband_in_valid		=> '0',
-	if_in_i					=> adc_dout_i,              		-- i/f-side dual output streams of adc data from iserdes @ 122.88 msps, re-mux'd to 245.76 msps, extended to 16-bits
-	if_in_q					=> adc_dout_q,              		-- i/f-side dual output streams of adc data from iserdes @ 122.88 msps, re-mux'd to 245.76 msps, extended to 16-bits
-	if_in_valid				=> adc_dout_245_76_MSPS_valid,	-- data_valid pulse accompanies re-mux'd 245.76 msps data towards ddc
-
-	if_out_i					=> DUC_if_out_i,							-- i data to dac, 16-bit
-	if_out_q					=> DUC_if_out_q,							-- q data to dac, 16-bit,
---	duc_out_valid														-- data_valid pulse accompanies dac data driven out from fpga @ 245.76 msps, dac3283 set for 2x interpolation in the dac
-																			-- at 245.76 msps, this data_valid is a constant '1', included here for completeness
-	baseband_out_i			=> baseband_out_i_sig,				-- baseband-side output of ddc (245.76 MHz clock domain)
-	baseband_out_q			=> baseband_out_q_sig,
-	baseband_out_valid	=> baseband_out_valid_sig,
-	duc_dcc_route_ctrl	=> duc_dcc_route_ctrl_sig,			-- control of various mux'es within duc_ddc module
-	test_mode				=> '1',									-- set to '1' for test_mode to select dds or impulse, set to '0' to select baseband-side input to duc
-	gpio_sw_c				=> gpio_sw_c,							-- gpio on baseboard triggers impulse generator
-
-  chirp_ready  =>  chirp_ready_sig,
-  chirp_done  => chirp_done_sig,
-  chirp_active  => chirp_active_sig,
-  chirp_init  => chirp_init_sig,
-  chirp_enable => chirp_enable_sig,
-
-  freq_offset_in => chirp_freq_offset_sig,
-  tuning_word_coeff_in => chirp_tuning_word_coeff_sig,
-  chirp_count_max_in =>  chirp_count_max_sig
-);
+-- DUC_DDC_inst: DUC_DDC
+-- port map(
+-- 	clock           		=> clk_491_52mhz,
+-- 	clock1           		=> clk_245_76mhz,
+-- 	clock2					=> clk_15_36mhz,
+-- 	reset						=> rst,
+-- 	if_freq					=> x"0000000",							-- unused / placeholder for I/F frequency for complex mixer
+-- 	baseband_in_i			=> "0000000000000000",				-- stub for baseband-side input to duc
+-- 	baseband_in_q			=> "0000000000000000",
+-- 	baseband_in_valid		=> '0',
+-- 	if_in_i					=> adc_dout_i,              		-- i/f-side dual output streams of adc data from iserdes @ 122.88 msps, re-mux'd to 245.76 msps, extended to 16-bits
+-- 	if_in_q					=> adc_dout_q,              		-- i/f-side dual output streams of adc data from iserdes @ 122.88 msps, re-mux'd to 245.76 msps, extended to 16-bits
+-- 	if_in_valid				=> adc_dout_245_76_MSPS_valid,	-- data_valid pulse accompanies re-mux'd 245.76 msps data towards ddc
+--
+-- 	if_out_i					=> DUC_if_out_i,							-- i data to dac, 16-bit
+-- 	if_out_q					=> DUC_if_out_q,							-- q data to dac, 16-bit,
+-- --	duc_out_valid														-- data_valid pulse accompanies dac data driven out from fpga @ 245.76 msps, dac3283 set for 2x interpolation in the dac
+-- 																			-- at 245.76 msps, this data_valid is a constant '1', included here for completeness
+-- 	baseband_out_i			=> baseband_out_i_sig,				-- baseband-side output of ddc (245.76 MHz clock domain)
+-- 	baseband_out_q			=> baseband_out_q_sig,
+-- 	baseband_out_valid	=> baseband_out_valid_sig,
+-- 	duc_dcc_route_ctrl	=> duc_dcc_route_ctrl_sig,			-- control of various mux'es within duc_ddc module
+-- 	test_mode				=> '1',									-- set to '1' for test_mode to select dds or impulse, set to '0' to select baseband-side input to duc
+-- 	gpio_sw_c				=> gpio_sw_c,							-- gpio on baseboard triggers impulse generator
+--
+--   chirp_ready  =>  chirp_ready_sig,
+--   chirp_done  => chirp_done_sig,
+--   chirp_active  => chirp_active_sig,
+--   chirp_init  => chirp_init_sig,
+--   chirp_enable => chirp_enable_sig,
+--
+--   freq_offset_in => chirp_freq_offset_sig,
+--   tuning_word_coeff_in => chirp_tuning_word_coeff_sig,
+--   chirp_count_max_in =>  chirp_count_max_sig
+-- );
 
 duc_dcc_route_ctrl_sig(0) 	<= digital_mode;
 duc_dcc_route_ctrl_sig(1) 	<= adc_out_dac_in;
