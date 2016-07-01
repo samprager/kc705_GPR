@@ -3,9 +3,9 @@ set_property DCI_CASCADE {32 34} [get_iobanks 33]
 
 #Clock Constraints
 
-create_clock -period 4.069 -name clk_ab_p [get_ports clk_ab_p]
-create_clock -period 5.000 -name sysclk_p [get_ports sysclk_p]
-set_input_jitter sysclk_p 0.050
+create_clock -period 4.06899976730346680 -name clk_ab_p [get_ports clk_ab_p]
+create_clock -period 5.00000000000000000 -name sysclk_p [get_ports sysclk_p]
+set_input_jitter sysclk_p 0.05000000074505806
 
 #set to use clock backbone - this uses a long route to allow the MMCM to be placed in the other half of the device
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets example_clocks/clkin1]
@@ -15,17 +15,13 @@ set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets example_clocks/clkin1]
 
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets fmc150_dac_adc_inst/KC705_fmc150_inst/clk_in1]
 
-set_input_jitter [get_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] 0.041
-set_input_jitter [get_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]] 0.050
+set_input_jitter [get_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] 0.04100000113248825
+set_input_jitter [get_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]] 0.05000000074505806
 
 # Exception paths
 set_clock_groups -physically_exclusive -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]]
 
-set_clock_groups -asynchronous \
--group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]]\
--group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]] \
--group [get_clocks -include_generated_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKIN1]] \
-
+set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKIN1]]
 
 #IO Constraints
 
@@ -242,9 +238,9 @@ set_false_path -from [get_ports gpio_sw_s]
 set_false_path -from [get_ports gpio_sw_w]
 
 # no timing requirements but want the capture flops close to the IO
-set_max_delay -datapath_only -from [get_ports gpio_sw_c] 4.000
+set_max_delay -datapath_only -from [get_ports gpio_sw_c] 4.00000000000000000
 # mdio has timing implications but slow interface so relaxed
-set_input_delay -clock [get_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKOUT1]] 5.000 [get_ports mdio]
+set_input_delay -clock [get_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKOUT1]] 5.00000000000000000 [get_ports mdio]
 
 ## Ignore pause deserialiser as only present to prevent logic stripping
 #set_false_path -from [get_ports ethernet_rgmii_wrapper/pause_req*]
@@ -254,7 +250,7 @@ set_input_delay -clock [get_clocks -of [get_pins example_clocks/clock_generator/
 ############################################################
 # Output Delay constraints
 ############################################################
-set_output_delay -clock [get_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKOUT1]] 1.000 [get_ports mdc]
+set_output_delay -clock [get_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKOUT1]] 1.00000000000000000 [get_ports mdc]
 
 # no timing associated with output
 set_false_path -from [get_cells -hier -filter {name =~ *phy_resetn_int_reg}] -to [get_ports phy_resetn]
@@ -272,8 +268,8 @@ set_false_path -from [get_cells -hier -filter {name =~ *phy_resetn_int_reg}] -to
 ## Ignore paths to resync flops
 #############################################################
 set_false_path -to [get_pins -hier -filter {NAME =~ */reset_sync*/PRE}]
-set_max_delay -datapath_only -from [get_cells ethernet_rgmii_wrapper/tx_stats_toggle_reg] -to [get_cells ethernet_rgmii_wrapper/tx_stats_sync/data_sync_reg0] 6.000
-set_max_delay -datapath_only -from [get_cells ethernet_rgmii_wrapper/rx_stats_toggle_reg] -to [get_cells ethernet_rgmii_wrapper/rx_stats_sync/data_sync_reg0] 6.000
+set_max_delay -datapath_only -from [get_cells ethernet_rgmii_wrapper/tx_stats_toggle_reg] -to [get_cells ethernet_rgmii_wrapper/tx_stats_sync/data_sync_reg0] 6.00000000000000000
+set_max_delay -datapath_only -from [get_cells ethernet_rgmii_wrapper/rx_stats_toggle_reg] -to [get_cells ethernet_rgmii_wrapper/rx_stats_sync/data_sync_reg0] 6.00000000000000000
 
 
 
@@ -284,6 +280,7 @@ set_max_delay -datapath_only -from [get_cells ethernet_rgmii_wrapper/rx_stats_to
 set_property LOC XADC_X0Y0 [get_cells u_mig_7series_1/u_mig_7series_1_mig/temp_mon_enabled.u_tempmon/xadc_supplied_temperature.XADC_inst]
 
 
-set_property FIXED_ROUTE { { IOB_IBUF0 RIOI_I0 RIOI_ILOGIC0_D IOI_ILOGIC0_O RIOI_I2GCLK_TOP0  { HCLK_CMT_CK_IN0 CLK_HROW_BOT_R_CK_BUFG_CASCO22 CLK_HROW_BOT_R_CK_BUFG_CASCO22 CLK_HROW_BOT_R_CK_BUFG_CASCO22 CLK_BUFG_BUFGCTRL11_I0 }  HCLK_CMT_MUX_OUT_FREQ_REF0 HCLK_CMT_FREQ_REF_NS0 PLL_CLK_FREQ_BB_BUFOUT_NS0 MMCM_CLK_FREQ_BB_NS0 CMT_L_LOWER_B_CLK_FREQ_BB3 CMT_LR_LOWER_B_MMCM_CLKIN1 }  } [get_nets example_clocks/clkin1]
+
+set_property FIXED_ROUTE { { IOB_IBUF0 RIOI_I0 RIOI_ILOGIC0_D IOI_ILOGIC0_O RIOI_I2GCLK_TOP0  { HCLK_CMT_CK_IN0 CLK_HROW_BOT_R_CK_BUFG_CASCO20 CLK_HROW_BOT_R_CK_BUFG_CASCO20 CLK_HROW_BOT_R_CK_BUFG_CASCO20 CLK_BUFG_BUFGCTRL10_I0 }  HCLK_CMT_MUX_OUT_FREQ_REF0 HCLK_CMT_FREQ_REF_NS0 PLL_CLK_FREQ_BB_BUFOUT_NS0 MMCM_CLK_FREQ_BB_NS0 CMT_L_LOWER_B_CLK_FREQ_BB3 CMT_LR_LOWER_B_MMCM_CLKIN1 }  } [get_nets example_clocks/clkin1]
 set_property FIXED_ROUTE { { LIOI_IDELAY0_DATAOUT LIOI_ILOGIC0_DDLY IOI_ILOGIC0_O IOI_LOGIC_OUTS18_1 INT_INTERFACE_LOGIC_OUTS_L18 SE6BEG0 SE6BEG0 SE6BEG0 SE6BEG0 SE6BEG0 SE6BEG0 SE6BEG0 LH12 LH12 LH12 LH12 LH12 EE4BEG3 EE4BEG3 SE6BEG3 NE6BEG0 NE6BEG0 NE6BEG0 NE2BEG0 EE2BEG0 ER1BEG1 CLK_L0 CMT_L_LOWER_B_CLK_IN1_INT CMT_LR_LOWER_B_MMCM_CLKIN1 }  } [get_nets fmc150_dac_adc_inst/KC705_fmc150_inst/clk_in1]
 set_property LOC BSCAN_X0Y0 [get_cells dbg_hub/inst/bscan_inst/SERIES7_BSCAN.bscan_inst]
