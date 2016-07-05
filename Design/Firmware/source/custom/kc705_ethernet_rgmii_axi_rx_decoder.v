@@ -51,7 +51,7 @@ module kc705_ethernet_rgmii_axi_rx_decoder #(
     input                                rx_axis_tlast,
     output                               rx_axis_tready,
 
-    output    [7:0] tdata,
+    output    [31:0] tdata,
     output          tvalid,
     output          tlast,
     input           tready
@@ -119,6 +119,11 @@ reg       [7:0]                    wr_fifo_rx_axis_tdata_reg;
 reg                                wr_fifo_rx_axis_tvalid_reg;
 reg                                wr_fifo_rx_axis_tlast_reg;
 
+reg       [31:0]                    wr_fifo32_rx_axis_tdata_reg;
+reg                                wr_fifo32_rx_axis_tvalid_reg;
+reg                                wr_fifo32_rx_axis_tlast_reg;
+wire                                wr_fifo32_rx_axis_tready;
+
 // wire       [7:0]                    wr_fifo_rx_axis_tdata;
 // wire                                wr_fifo_rx_axis_tvalid;
 // wire                                wr_fifo_rx_axis_tlast;
@@ -132,6 +137,8 @@ wire                                wr_fifo_rx_axis_tready;
 reg                       pkt_good;
 reg                       rx_axis_tlast_aligned;
 reg                       prev_tlast_aligned;
+
+reg [1:0]                   width_conv_count;
 
 wire                       axi_treset;
 
@@ -151,6 +158,20 @@ begin
    end
 end
 
+// need a width conversion counter - max size limited to 11 bits
+always @(posedge axi_tclk)
+begin
+   if (axi_treset) begin
+      width_conv_count <= 0;
+   end
+   else if (gen_state == DATA & rx_axis_tready_int & rx_axis_tvalid) begin
+      width_conv_count <= width_conv_count + 1'b1;
+   end
+   else if (gen_state == COUNTER) begin
+      width_conv_count <= 1'b0;
+   end
+end
+
 // need a packet counter - max size limited to 11 bits
 always @(posedge axi_tclk)
 begin
@@ -164,6 +185,7 @@ begin
       byte_count <= pkt_size - PKT_CTR_LEN;
    end
 end
+
 
 // need a smaller count to manage the header insertion
 always @(posedge axi_tclk)
@@ -409,6 +431,42 @@ end
 always @(posedge axi_tclk)
 begin
    if (axi_treset) begin
+      wr_fifo32_rx_axis_tdata_reg <= 0;
+   end
+   else if (gen_state == DATA & rx_axis_tvalid_reg & rx_axis_tready) begin
+      wr_fifo32_rx_axis_tdata_reg[8*width_conv_count +7 -:8] <= rx_axis_tdata[7:0];
+   end
+end
+
+
+// now generate the WR fifo TVALID output
+always @(posedge axi_tclk)
+begin
+   if (axi_treset)
+      wr_fifo32_rx_axis_tvalid_reg <= 0;
+   //else if (gen_state == DATA & !adc_axis_tvalid_reg)
+   //else if (gen_state == DATA & rx_axis_tvalid)
+   else if (gen_state == DATA & rx_axis_tvalid & wr_fifo32_rx_axis_tready & (&width_conv_count))
+      wr_fifo32_rx_axis_tvalid_reg <= 1'b1;
+   else if (wr_fifo32_rx_axis_tready)
+      wr_fifo32_rx_axis_tvalid_reg <= 0;
+end
+
+always @(posedge axi_tclk)
+begin
+   if (axi_treset)
+      wr_fifo32_rx_axis_tlast_reg <= 0;
+   else if (byte_count == 1 & wr_fifo32_rx_axis_tready& (&width_conv_count))
+      wr_fifo32_rx_axis_tlast_reg <= 1;
+   else if (wr_fifo32_rx_axis_tready)
+      wr_fifo32_rx_axis_tlast_reg <= 0;
+end
+
+
+
+always @(posedge axi_tclk)
+begin
+   if (axi_treset) begin
       wr_fifo_rx_axis_tdata_reg <= 0;
    end
    else if (gen_state == DATA & rx_axis_tvalid_reg & rx_axis_tready) begin
@@ -444,16 +502,6 @@ begin
       prev_tlast_aligned <= 1;
    else 
       prev_tlast_aligned <= 0;
-end
-
-always @(posedge axi_tclk)
-begin
-   if (axi_treset)
-      wr_fifo_rx_axis_tlast_reg <= 0;
-   else if (byte_count == 1 & wr_fifo_rx_axis_tready)
-      wr_fifo_rx_axis_tlast_reg <= 1;
-   else if (wr_fifo_rx_axis_tready)
-      wr_fifo_rx_axis_tlast_reg <= 0;
 end
 
 
@@ -500,13 +548,19 @@ begin
 end
 
 
-assign tvalid = wr_fifo_rx_axis_tvalid_reg;
-assign tlast = wr_fifo_rx_axis_tlast_reg;
-assign tdata = wr_fifo_rx_axis_tdata_reg;
+//assign tvalid = wr_fifo_rx_axis_tvalid_reg;
+//assign tlast = wr_fifo_rx_axis_tlast_reg;
+//assign tdata = wr_fifo_rx_axis_tdata_reg;
+
+assign tvalid = wr_fifo32_rx_axis_tvalid_reg;
+assign tlast = wr_fifo32_rx_axis_tlast_reg;
+assign tdata = wr_fifo32_rx_axis_tdata_reg;
 
 assign rx_axis_tready = rx_axis_tready_int;
 
 assign wr_fifo_rx_axis_tready = tready;
+
+assign wr_fifo32_rx_axis_tready = tready;
 
 
 endmodule

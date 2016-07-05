@@ -26,7 +26,7 @@ wire                                rx_axis_tuser;
  wire                               rx_axis_tready;
 
 
- wire  [7:0]       tdata;
+ wire  [31:0]       tdata;
  wire              tvalid;
  wire              tlast;
  wire              tready;
