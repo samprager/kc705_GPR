@@ -22,6 +22,14 @@
 `timescale 1 ps/1 ps
 
 module kc705_ethernet_rgmii_axi_rx_decoder #(
+  parameter               DEST_ADDR      = 48'hda0102030405,
+  parameter               SRC_ADDR       = 48'h5a0102030405,
+  parameter               MAX_SIZE       = 16'd500,
+  parameter               MIN_SIZE       = 16'd500,
+  parameter               ENABLE_VLAN    = 1'b0,
+  parameter               VLAN_ID        = 12'd2,
+  parameter               VLAN_PRIORITY  = 3'd2,
+
     parameter               REG_WIDTH = 4,        // size of data registers in bytes
     parameter               NUM_REG = 6,
     parameter               PKT_SIZE_LEN = 2,     // length of packet size in bytes
@@ -71,7 +79,7 @@ localparam     PKT_ADJUST  = (ENABLE_VLAN) ? 24 : 20;
 localparam     VLAN_HEADER = {8'h81, 8'h00, VLAN_PRIORITY, 1'b0, VLAN_ID};
 
 // generate the require header count compare
-localparam     HEADER_LENGTH = (ENABLE_VLAN) ? 15 : 11;
+localparam     HEADER_LENGTH = (ENABLE_VLAN) ? 16 : 12;
 
 // total offset for command packet header
 localparam    CMD_HEADER_OFFSET = HEADER_LENGTH + PKT_SIZE_LEN + CMD_LENGTH+ PKT_ID_LENGTH;
@@ -120,10 +128,6 @@ wire                                wr_fifo_rx_axis_tready;
 // wire                                rd_fifo_rx_axis_tlast;
 // wire                                rd_fifo_rx_axis_tready;
 
-// rate control signals
-reg         [7:0]          basic_rc_counter;
-reg                        add_credit;
-reg         [12:0]         credit_count;
 
 wire                       axi_treset;
 
@@ -177,11 +181,11 @@ begin
    if (axi_treset) begin
       dest_mac_count <= 4'b0110;
    end
-   else if (gen_state == HEADER & rx_axis_tready_int & rx_axis_tvalid & |dest_mac_count) begin
+   else if (gen_state == HEADER & rx_axis_tready_int & rx_axis_tvalid & |dest_mac_count & |header_count) begin
       dest_mac_count <= dest_mac_count - 1;
    end
    else if (gen_state == SIZE & rx_axis_tready_int & rx_axis_tvalid) begin
-      dest_mac_count <= 4'b0110;;
+      dest_mac_count <= 4'b0110;
    end
 end
 
@@ -236,7 +240,7 @@ begin
    if (axi_treset) begin
       overhead_count <= 0;
    end
-   else if (gen_state == OVERHEAD & |overhead_count & rx_axis_tready_int) begin
+   else if (gen_state == OVERHEAD & |overhead_count & wr_fifo_rx_axis_tready) begin
       overhead_count <= overhead_count - 1;
    end
    else if (gen_state == IDLE) begin
@@ -245,92 +249,41 @@ begin
 end
 
 
-// rate control logic
-
-// first we need an always active counter to provide the credit control
-always @(posedge axi_tclk)
-begin
-   if (axi_treset | !enable_rx_decode)
-      basic_rc_counter     <= 255;
-   else
-      basic_rc_counter     <= basic_rc_counter + 1;
-end
-
-// now we need to set the compare level depending upon the selected speed
-// the credits are applied using a simple less-than check
-always @(posedge axi_tclk)
-begin
-   if (speed[1])
-      if (basic_rc_counter < BW_1G)
-         add_credit        <= 1;
-      else
-         add_credit        <= 0;
-   else if (speed[0])
-      if (basic_rc_counter < BW_100M)
-         add_credit        <= 1;
-      else
-         add_credit        <= 0;
-   else
-      if (basic_rc_counter < BW_10M)
-         add_credit        <= 1;
-      else
-         add_credit        <= 0;
-end
-
-// basic credit counter - -ve value means do not send a frame
-always @(posedge axi_tclk)
-begin
-   if (axi_treset)
-      credit_count         <= 0;
-   else begin
-      // if we are in frame
-      if (gen_state != IDLE) begin
-         if (!add_credit & credit_count[12:10] != 3'b110)  // stop decrementing at -2048
-            credit_count <= credit_count - 1;
-      end
-      else begin
-         if (add_credit & credit_count[12:11] != 2'b01)    // stop incrementing at 2048
-            credit_count <= credit_count + 1;
-      end
-   end
-end
-
 // simple state machine to control the data
 // on the transition from IDLE we reset the counters and increment the packet size
-always @(gen_state or enable_rx_decode or header_count or counter_count or size_count or tready or byte_count or wr_fifo_rx_axis_tvalid_reg or
-         credit_count or overhead_count or rx_axis_tvalid)
+always @(gen_state or enable_rx_decode or header_count or counter_count or size_count or wr_fifo_rx_axis_tready or byte_count or wr_fifo_rx_axis_tvalid_reg or overhead_count or rx_axis_tvalid)
 begin
    next_gen_state = gen_state;
    case (gen_state)
       IDLE : begin
-         if (enable_rx_decode & !wr_fifo_rx_axis_tvalid_reg & !credit_count[12])
+         if (enable_rx_decode & !wr_fifo_rx_axis_tvalid_reg & wr_fifo_rx_axis_tready)
             next_gen_state = HEADER;
       end
       HEADER : begin
-         if (header_count == HEADER_LENGTH & tready)
+         if (header_count == HEADER_LENGTH & rx_axis_tvalid)
             next_gen_state = SIZE;
       end
       SIZE : begin
          // when we enter SIZE header count is initially all 1's
          // it is cleared when we enter SIZE which gives us the required two cycles in this state
-         if (size_count ==  (PKT_SIZE_LEN-1) & tready & rx_axis_tvalid)
+         if (size_count ==  (PKT_SIZE_LEN-1) & rx_axis_tvalid)
             next_gen_state = COUNTER;
       end
       COUNTER : begin
          // when we enter SIZE header count is initially all 1's
          // it is cleared when we enter SIZE which gives us the required two cycles in this state
-         if (counter_count ==  (PKT_CTR_LEN-1) & tready & rx_axis_tvalid)
+         if (counter_count ==  (PKT_CTR_LEN-1)  & rx_axis_tvalid)
             next_gen_state = DATA;
       end
       DATA : begin
          // when an AVB AV channel we want to keep valid asserted to indicate a continuous feed of data
          //   the AVB module is then enitirely resposible for the bandwidth
-         if (byte_count == 1 & tready) begin
+         if (byte_count == 1 & wr_fifo_rx_axis_tready) begin
             next_gen_state = OVERHEAD;
          end
       end
       OVERHEAD : begin
-         if (overhead_count == 1 & tready) begin
+         if (overhead_count == 1 & wr_fifo_rx_axis_tready) begin
             next_gen_state = IDLE;
          end
       end
@@ -355,8 +308,8 @@ begin
    if (axi_treset) begin
       dest_mac_addr <= 0;
    end
-   else if (gen_state == HEADER & (|dest_mac_count) &rx_axis_tvalid_reg & rx_axis_tready) begin
-      dest_mac_addr[8*dest_mac_count-:8] <= rx_axis_tdata[7:0];
+   else if (gen_state == HEADER & |dest_mac_count &rx_axis_tvalid_reg & rx_axis_tready_int) begin
+      dest_mac_addr[8*dest_mac_count-1-:8] <= rx_axis_tdata[7:0];
    end
 end
 
@@ -365,21 +318,34 @@ begin
    if (axi_treset) begin
       src_mac_addr <= 0;
    end
-   else if (gen_state == HEADER & (|src_mac_count) &rx_axis_tvalid_reg & rx_axis_tready) begin
-      src_mac_addr[8*src_mac_count-:8] <= rx_axis_tdata[7:0];
+   else if (gen_state == HEADER & |src_mac_count &(|src_mac_count) &rx_axis_tvalid_reg & rx_axis_tready_int) begin
+      src_mac_addr[8*src_mac_count-1-:8] <= rx_axis_tdata[7:0];
    end
 end
 
+// Does not reverse incoming byte order
 always @(posedge axi_tclk)
 begin
    if (axi_treset) begin
       pkt_size <= 0;
    end
    else if (gen_state == SIZE & rx_axis_tvalid_reg & rx_axis_tready) begin
-      pkt_size[8*size_count+7-:8] <= rx_axis_tdata[7:0];
+      pkt_size[8*(PKT_SIZE_LEN-1-size_count)+7-:8] <= rx_axis_tdata[7:0];
    end
 end
 
+// Reverses incoming byte order
+//always @(posedge axi_tclk)
+//begin
+//   if (axi_treset) begin
+//      pkt_size <= 0;
+//   end
+//   else if (gen_state == SIZE & rx_axis_tvalid_reg & rx_axis_tready) begin
+//      pkt_size[8*size_count+7-:8] <= rx_axis_tdata[7:0];
+//   end
+//end
+
+// Reverses incoming byte order
 always @(posedge axi_tclk)
 begin
    if (axi_treset) begin
@@ -389,6 +355,17 @@ begin
       pkt_counter[8*counter_count+7-:8] <= rx_axis_tdata[7:0];
    end
 end
+
+// Does not reverse incoming byte order
+//always @(posedge axi_tclk)
+//begin
+//   if (axi_treset) begin
+//      pkt_counter <= 0;
+//   end
+//   else if (gen_state == COUNTER & rx_axis_tvalid_reg & rx_axis_tready) begin
+//      pkt_counter[8*(PKT_CTR_LEN-1-counter_count)+7-:8] <= rx_axis_tdata[7:0];
+//   end
+//end
 
 always @(posedge axi_tclk)
 begin
@@ -415,9 +392,9 @@ always @(posedge axi_tclk)
 begin
    if (axi_treset)
       wr_fifo_rx_axis_tlast_reg <= 0;
-   else if (byte_count == 1 & tready)
+   else if (byte_count == 1 & wr_fifo_rx_axis_tready)
       wr_fifo_rx_axis_tlast_reg <= 1;
-   else if (tready)
+   else if (wr_fifo_rx_axis_tready)
       wr_fifo_rx_axis_tlast_reg <= 0;
 end
 
@@ -430,7 +407,7 @@ begin
    //else if (gen_state == DATA & !adc_axis_tvalid_reg)
    else if (gen_state == DATA & rx_axis_tvalid)
       wr_fifo_rx_axis_tvalid_reg <= 1'b1;
-   else if (tready)
+   else if (wr_fifo_rx_axis_tready)
       wr_fifo_rx_axis_tvalid_reg <= 0;
 end
 
@@ -442,11 +419,7 @@ begin
       rx_axis_tready_int <= 0;
    end
    else begin
-   //   if (gen_state == SIZE & header_count == 0)
-//     if (gen_state == SIZE & align_count == 0)
-//         adc_axis_tready_int <= tready;
-//      else if (gen_state == DATA & next_gen_state == DATA)
-    if (next_gen_state == DATA & tready)
+    if (next_gen_state == DATA & wr_fifo_rx_axis_tready)
          rx_axis_tready_int <= 1;
    else if(gen_state == SIZE | gen_state==COUNTER | gen_state == HEADER)
         rx_axis_tready_int <= 1;

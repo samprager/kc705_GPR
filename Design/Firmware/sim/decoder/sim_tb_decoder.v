@@ -109,14 +109,19 @@ wire                                rx_axis_tuser;
 
  always @(posedge  axi_tclk_i) begin
     if (~axi_tresetn_i) begin
-        rx_axis_tdata_reg <= 'b1;
+        rx_axis_tdata_reg <= 'b10;
         rx_axis_tvalid_reg <= 1'b0;
         rx_axis_tlast_reg <= 1'b0;
         rx_axis_tuser_reg <= 1'b0;
     end else begin
         rx_axis_tvalid_reg <= 1'b1;
         if (rx_axis_tready & rx_axis_tvalid)
-            rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;
+            if (rx_axis_tdata_reg == 8'h0d)
+                rx_axis_tdata_reg <= 'b0;
+            else if (rx_axis_tdata_reg == 0)  
+                rx_axis_tdata_reg <= 8'h0f;
+            else      
+                rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;
         if (&rx_axis_tdata_reg[5:0])
             rx_axis_tlast_reg <= 1'b1;
         else
@@ -162,10 +167,18 @@ end
 // end
 
  kc705_ethernet_rgmii_axi_rx_decoder #(
+   //   parameter                            DEST_ADDR       = 48'hda0102030405,
+      .DEST_ADDR       (48'h985aebdb066f),
+      .SRC_ADDR        (48'h5a0102030405),
+      .MAX_SIZE        (16'd500),
+   //   parameter                            MIN_SIZE        = 16'd64,
+     .MIN_SIZE         (16'd500),
+     .ENABLE_VLAN      (1'b0),
+     .VLAN_ID          (12'd2),
+     .VLAN_PRIORITY    (3'd2)
   ) u_decoder_top (
         .axi_tclk (axi_tclk),
         .axi_tresetn (axi_tresetn),
-        .check_resetn(axi_tresetn),
 
         .enable_rx_decode        (1'b1),
         .speed                  (2'b10),
