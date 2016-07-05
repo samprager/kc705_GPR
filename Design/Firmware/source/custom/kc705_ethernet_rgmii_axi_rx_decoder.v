@@ -452,7 +452,7 @@ begin
    else begin
     if (next_gen_state == DATA & wr_fifo_rx_axis_tready)
          rx_axis_tready_int <= 1;
-   else if(gen_state == SIZE | gen_state==COUNTER | gen_state == HEADER | gen_state = NEXT_PKT)
+   else if(gen_state == SIZE | gen_state==COUNTER | gen_state == HEADER | gen_state == NEXT_PKT)
         rx_axis_tready_int <= 1;
     else
         rx_axis_tready_int <= 0;
