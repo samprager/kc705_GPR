@@ -45,6 +45,11 @@ wire                                rx_axis_tuser;
 
  reg                tready_reg;
  reg                rx_axis_tvalid_select;
+ 
+ reg [7:0]         data_counter = 'b0;
+ reg                test_flop = 1'b1;
+ 
+ reg [6*8-1:0]     dest_mac_addr = 48'h5a0102030405;
 
  wire     frame_error;
  wire activity_flash;
@@ -109,25 +114,38 @@ wire                                rx_axis_tuser;
 
  always @(posedge  axi_tclk_i) begin
     if (~axi_tresetn_i) begin
-        rx_axis_tdata_reg <= 'b10;
+        data_counter <= 'b0;
+        rx_axis_tdata_reg <= 'b0;
         rx_axis_tvalid_reg <= 1'b0;
         rx_axis_tlast_reg <= 1'b0;
         rx_axis_tuser_reg <= 1'b0;
-    end else begin
+    end else begin          
         rx_axis_tvalid_reg <= 1'b1;
-        if (rx_axis_tready & rx_axis_tvalid)
-            if (rx_axis_tdata_reg == 8'h0d)
-                rx_axis_tdata_reg <= 'b0;
-            else if (rx_axis_tdata_reg == 0)  
-                rx_axis_tdata_reg <= 8'h0f;
-            else      
-                rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;
-        if (&rx_axis_tdata_reg[5:0])
+        if (rx_axis_tready & rx_axis_tvalid) begin
+            if (data_counter < 8'h06)
+                rx_axis_tdata_reg <= dest_mac_addr[8*(6-data_counter)-1-:8];
+            else if (data_counter == 8'h0c)
+                rx_axis_tdata_reg <= 8'h0;  
+            else if (data_counter == 8'h0d)
+                rx_axis_tdata_reg <= 8'h22; 
+            else 
+                rx_axis_tdata_reg <= data_counter;        
+        end     
+       // if (&rx_axis_tdata_reg[5:0]) begin
+        if ((rx_axis_tdata_reg == (8'h22+8'h0c)) & (data_counter >8'h0f)) begin
             rx_axis_tlast_reg <= 1'b1;
-        else
+            if (test_flop)
+                data_counter <= 0;
+            else 
+                data_counter <= 1'b1;
+            test_flop <= !test_flop;        
+        end else if (rx_axis_tready & rx_axis_tvalid)begin
             rx_axis_tlast_reg <= 1'b0;
+            data_counter <= data_counter + 1'b1; 
+        end    
     end
 end
+ 
 
  initial begin
      rx_axis_tvalid_select = 1'b0; // initial value

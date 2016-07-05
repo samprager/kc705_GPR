@@ -80,7 +80,7 @@ localparam     PKT_ADJUST  = (ENABLE_VLAN) ? 24 : 20;
 localparam     VLAN_HEADER = {8'h81, 8'h00, VLAN_PRIORITY, 1'b0, VLAN_ID};
 
 // generate the require header count compare
-localparam     HEADER_LENGTH = (ENABLE_VLAN) ? 16 : 12;
+localparam     HEADER_LENGTH = (ENABLE_VLAN) ? 15 : 11;
 
 // total offset for command packet header
 localparam    CMD_HEADER_OFFSET = HEADER_LENGTH + PKT_SIZE_LEN + CMD_LENGTH+ PKT_ID_LENGTH;
@@ -130,6 +130,8 @@ wire                                wr_fifo_rx_axis_tready;
 // wire                                rd_fifo_rx_axis_tready;
 
 reg                       pkt_good;
+reg                       rx_axis_tlast_aligned;
+reg                       prev_tlast_aligned;
 
 wire                       axi_treset;
 
@@ -173,7 +175,7 @@ begin
       header_count <= header_count + 1;
    end
    //else if (gen_state == SIZE & rx_axis_tready_int & rx_axis_tvalid) begin
-   else if (gen_state == NEXT_PKT & rx_axis_tready_int & rx_axis_tvalid) begin
+   else if ((gen_state == NEXT_PKT | gen_state == SIZE) & rx_axis_tready_int & rx_axis_tvalid) begin
       header_count <= 0;
    end
 end
@@ -184,11 +186,12 @@ begin
    if (axi_treset) begin
       dest_mac_count <= 4'b0110;
    end
-   else if (gen_state == HEADER & rx_axis_tready_int & rx_axis_tvalid & |dest_mac_count & |header_count) begin
+   //else if (gen_state == HEADER & rx_axis_tready_int & rx_axis_tvalid & |dest_mac_count & |header_count) begin
+   else if (gen_state == HEADER & rx_axis_tready_int & rx_axis_tvalid & |dest_mac_count) begin
       dest_mac_count <= dest_mac_count - 1;
    end
    //else if (gen_state == SIZE & rx_axis_tready_int & rx_axis_tvalid) begin
-   else if (gen_state == NEXT_PKT & rx_axis_tready_int & rx_axis_tvalid) begin
+   else if ((gen_state == NEXT_PKT | gen_state == SIZE) & rx_axis_tready_int & rx_axis_tvalid) begin
       dest_mac_count <= 4'b0110;
    end
 end
@@ -205,7 +208,7 @@ begin
       src_mac_count <= src_mac_count - 1;
    end
    //else if (gen_state == SIZE & rx_axis_tready_int & rx_axis_tvalid) begin
-   else if (gen_state == NEXT_PKT & rx_axis_tready_int & rx_axis_tvalid) begin
+   else if ((gen_state == NEXT_PKT | gen_state == SIZE) & rx_axis_tready_int & rx_axis_tvalid) begin
       src_mac_count <= 0;
    end
 end
@@ -220,7 +223,7 @@ begin
       size_count <= size_count + 1;
    end
    //else if (gen_state == COUNTER & rx_axis_tready_int & rx_axis_tvalid) begin
-   else if (gen_state == NEXT_PKT & rx_axis_tready_int & rx_axis_tvalid) begin
+   else if ((gen_state == NEXT_PKT | gen_state == COUNTER) & rx_axis_tready_int & rx_axis_tvalid) begin
       size_count <= 0;
    end
 end
@@ -235,7 +238,7 @@ begin
       counter_count <= counter_count + 1;
    end
    //else if (gen_state == DATA & rx_axis_tready_int & rx_axis_tvalid) begin
-   else if (gen_state == NEXT_PKT & rx_axis_tready_int & rx_axis_tvalid) begin
+   else if ((gen_state == NEXT_PKT | gen_state == DATA) & rx_axis_tready_int & rx_axis_tvalid) begin
       counter_count <= 0;
    end
 end
@@ -258,16 +261,21 @@ end
 
 // simple state machine to control the data
 // on the transition from IDLE we reset the counters and increment the packet size
-always @(gen_state or enable_rx_decode or header_count or counter_count or size_count or wr_fifo_rx_axis_tready or byte_count or wr_fifo_rx_axis_tvalid_reg or overhead_count or rx_axis_tvalid or rx_axis_tlast or rx_axis_tready_int)
+always @(gen_state or enable_rx_decode or header_count or counter_count or size_count or wr_fifo_rx_axis_tready or byte_count or wr_fifo_rx_axis_tvalid_reg or overhead_count or rx_axis_tvalid or rx_axis_tlast or rx_axis_tready_int or rx_axis_tlast_aligned)
 begin
    next_gen_state = gen_state;
    case (gen_state)
       IDLE : begin
-         if (enable_rx_decode & !wr_fifo_rx_axis_tvalid_reg & wr_fifo_rx_axis_tready)
+         if (enable_rx_decode & !wr_fifo_rx_axis_tvalid_reg & wr_fifo_rx_axis_tready) begin
+            if (rx_axis_tlast_aligned)
+                next_gen_state = HEADER;
+            else
             next_gen_state = NEXT_PKT;
+         end   
       end
       NEXT_PKT : begin
-         if (rx_axis_tvalid & rx_axis_tlast & rx_axis_tready_int)
+        // if (rx_axis_tvalid & (rx_axis_tlast | prev_tlast_aligned) & rx_axis_tready_int)
+        if (rx_axis_tvalid & rx_axis_tlast & rx_axis_tready_int)
             next_gen_state = HEADER;
       end
       HEADER : begin
@@ -418,6 +426,37 @@ end
 //    end
 // end
 
+always @(posedge axi_tclk)
+begin
+   if (axi_treset)
+      rx_axis_tlast_aligned <= 0;
+   else if (byte_count == 1 & wr_fifo_rx_axis_tready & rx_axis_tlast)
+      rx_axis_tlast_aligned <= 1;
+   else if (gen_state == HEADER)
+      rx_axis_tlast_aligned <= 0;
+end
+
+always @(posedge axi_tclk)
+begin
+   if (axi_treset)
+      prev_tlast_aligned <= 0;
+   else if ((gen_state == NEXT_PKT | gen_state == IDLE) & rx_axis_tlast_aligned)
+      prev_tlast_aligned <= 1;
+   else 
+      prev_tlast_aligned <= 0;
+end
+
+always @(posedge axi_tclk)
+begin
+   if (axi_treset)
+      wr_fifo_rx_axis_tlast_reg <= 0;
+   else if (byte_count == 1 & wr_fifo_rx_axis_tready)
+      wr_fifo_rx_axis_tlast_reg <= 1;
+   else if (wr_fifo_rx_axis_tready)
+      wr_fifo_rx_axis_tlast_reg <= 0;
+end
+
+
 // now generate the TLAST output
 always @(posedge axi_tclk)
 begin
@@ -436,7 +475,8 @@ begin
    if (axi_treset)
       wr_fifo_rx_axis_tvalid_reg <= 0;
    //else if (gen_state == DATA & !adc_axis_tvalid_reg)
-   else if (gen_state == DATA & rx_axis_tvalid)
+   //else if (gen_state == DATA & rx_axis_tvalid)
+   else if (gen_state == DATA & rx_axis_tvalid & wr_fifo_rx_axis_tready)
       wr_fifo_rx_axis_tvalid_reg <= 1'b1;
    else if (wr_fifo_rx_axis_tready)
       wr_fifo_rx_axis_tvalid_reg <= 0;
