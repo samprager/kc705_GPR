@@ -1,6 +1,6 @@
 `timescale 1ps/100fs
 
-module sim_tb_packetizer;
+module sim_tb_decoder;
 
    localparam AXI_TCLK_PERIOD          = 8000;         // 125 MHz
   localparam RESET_PERIOD = 320000; //in pSec
