@@ -187,6 +187,12 @@ module kc705_ethernet_rgmii_example_design
        input                                adc_axis_tuser,
        output                               adc_axis_tready,
 
+       // Decoded Commands from RGMII RX fifo
+       output     [31:0] cmd_axis_tdata,
+       output           cmd_axis_tvalid,
+       output           cmd_axis_tlast,
+       input            cmd_axis_tready,
+
       // Main example design controls
       //-----------------------------
       input [7:0] ethernet_ctrl_bus,
@@ -218,6 +224,7 @@ module kc705_ethernet_rgmii_example_design
    //wire                 tx_reset;
 
   // wire                 glbl_rst_intn;
+  wire         enable_rx_decode;
   wire         enable_adc_pkt;
   wire         gen_tx_data;
   wire         chk_tx_data;
@@ -295,6 +302,7 @@ module kc705_ethernet_rgmii_example_design
    // signal tie offs
    wire  [7:0]          tx_ifg_delay = 0;    // not used in this example
 
+   assign enable_rx_decode = ethernet_ctrl_bus[5];
    assign enable_adc_pkt = ethernet_ctrl_bus[4];
    assign gen_tx_data = ethernet_ctrl_bus[3];
    assign chk_tx_data = ethernet_ctrl_bus[2];
@@ -635,6 +643,36 @@ module kc705_ethernet_rgmii_example_design
       .frame_error                  (frame_error),
       .activity_flash               (activity_flash)
    );
+
+   kc705_ethernet_rgmii_axi_rx_decoder #(
+     //   parameter                            DEST_ADDR       = 48'hda0102030405,
+        .DEST_ADDR       (48'h985aebdb066f),
+        .SRC_ADDR        (48'h5a0102030405),
+        .MAX_SIZE        (16'd500),
+     //   parameter                            MIN_SIZE        = 16'd64,
+       .MIN_SIZE         (16'd500),
+       .ENABLE_VLAN      (1'b0),
+       .VLAN_ID          (12'd2),
+       .VLAN_PRIORITY    (3'd2)
+    ) rx_cmd_decoder_inst (
+        .axi_tclk (tx_fifo_clock),
+        .axi_tresetn (tx_fifo_resetn),
+
+        .enable_rx_decode        (enable_rx_decode),
+        .speed                  (mac_speed),
+
+      // data from the RX data path
+        .rx_axis_tdata       (rx_axis_fifo_tdata),
+        .rx_axis_tvalid       (rx_axis_fifo_tvalid),
+        .rx_axis_tlast       (rx_axis_fifo_tlast),
+        .rx_axis_tready      (rx_axis_fifo_tready),
+
+      // data TO the TX data path
+        .tdata       (cmd_axis_tdata),
+        .tvalid       (cmd_axis_tvalid),
+        .tlast       (cmd_axis_tlast),
+        .tready      (cmd_axis_tready)
+  );
 
 
 

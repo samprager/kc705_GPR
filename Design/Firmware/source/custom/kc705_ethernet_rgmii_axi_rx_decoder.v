@@ -293,7 +293,7 @@ begin
                 next_gen_state = HEADER;
             else
             next_gen_state = NEXT_PKT;
-         end   
+         end
       end
       NEXT_PKT : begin
         // if (rx_axis_tvalid & (rx_axis_tlast | prev_tlast_aligned) & rx_axis_tready_int)
@@ -358,9 +358,9 @@ begin
    else if (gen_state == HEADER & !(|dest_mac_count)) begin
       if (dest_mac_addr != SRC_ADDR)
         pkt_good <= 1'b0;
-   end else if(gen_state == COUNTER) begin
-      if (pkt_size != (REG_MAP_OUT_LEN + PKT_CTR_LEN))
-        pkt_good <= 1'b0;
+    end else if(gen_state == COUNTER) begin
+       if (pkt_size != (REG_MAP_OUT_LEN + PKT_CTR_LEN))
+         pkt_good <= 1'b0;
    end
 end
 
@@ -500,7 +500,7 @@ begin
       prev_tlast_aligned <= 0;
    else if ((gen_state == NEXT_PKT | gen_state == IDLE) & rx_axis_tlast_aligned)
       prev_tlast_aligned <= 1;
-   else 
+   else
       prev_tlast_aligned <= 0;
 end
 

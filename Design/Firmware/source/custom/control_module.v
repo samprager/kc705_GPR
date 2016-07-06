@@ -90,6 +90,12 @@ parameter ADC_CLK_FREQ                              = 245.7
   output chirp_enable,        // continuous high while chirp enabled
   output adc_enable,          // high while adc samples saved
 
+  // Decoded Commands from RGMII RX fifo
+  input     [31:0] cmd_axis_tdata,
+  input            cmd_axis_tvalid,
+  input           cmd_axis_tlast,
+  output            cmd_axis_tready,
+
 
   output [7:0] fmc150_ctrl_bus,
   // output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
@@ -103,6 +109,7 @@ parameter ADC_CLK_FREQ                              = 245.7
   input gtx_resetn,
 
   output [7:0] ethernet_ctrl_bus
+  // output reg enable_rx_decode                      = 1'b1,
   // output reg enable_adc_pkt                         = 1'b1, //dip_sw(1)
   // output reg gen_tx_data                            = 1'b0,
   // output reg chk_tx_data                            = 1'b0,
@@ -161,7 +168,7 @@ radar_pulse_controller radar_pulse_controller_inst (
   .adc_sample_time  (adc_sample_time),
   .chirp_parameters_in (chirp_parameters_axiclk),
   .chirp_parameters_out (chirp_parameters),
-  
+
   .fmc150_status_vector (fmc150_status_vector), // {pll_status, mmcm_adac_locked, mmcm_locked, ADC_calibration_good};
   .chirp_ready (chirp_ready),
   .chirp_done (chirp_done),

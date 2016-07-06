@@ -431,6 +431,11 @@ wire                  reg_map_wr_valid;
 wire                  reg_map_wr_ready;
 wire [1:0]            reg_map_wr_err;
 
+wire [31:0]   cmd_pkt_axis_tdata;
+wire          cmd_pkt_axis_tvalid;
+wire          cmd_pkt_axis_tlast;
+wire          cmd_pkt_axis_tready;
+
 
 
 wire data_tx_ready;        // high when ready to transmit
@@ -601,6 +606,12 @@ control_module control_module_inst(
   .chirp_parameters                   (chirp_parameters),
   //chirp_parameters = {32'b0,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
 
+  // Decoded Commands from RGMII RX fifo
+  .cmd_axis_tdata        (cmd_pkt_axis_tdata),
+  .cmd_axis_tvalid       (cmd_pkt_axis_tvalid),
+  .cmd_axis_tlast        (cmd_pkt_axis_tlast),
+  .cmd_axis_tready       (cmd_pkt_axis_tready),
+
   //fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
   .fmc150_ctrl_bus (fmc150_ctrl_bus),
   // output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
@@ -613,6 +624,7 @@ control_module control_module_inst(
   .gtx_clk_bufg (gtx_clk_bufg),
   .gtx_resetn       (gtx_resetn),
   .ethernet_ctrl_bus (ethernet_ctrl_bus)
+  // output reg enable_rx_decode                         = 1'b1, //dip_sw(1)
   // output reg enable_adc_pkt                         = 1'b1, //dip_sw(1)
   // output reg gen_tx_data                            = 1'b0,
   // output reg chk_tx_data                            = 1'b0,
@@ -624,8 +636,8 @@ control_module control_module_inst(
 assign fmc150_ctrl_bus_bypass = {3'b0,gpio_dip_sw[3],1'b0,1'b0,1'b0,1'b0};
 //fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
 
-assign ethernet_ctrl_bus_bypass = {3'b0,gpio_dip_sw[1],1'b0,1'b0,gpio_dip_sw[0],~gpio_dip_sw[0]};
-// ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
+assign ethernet_ctrl_bus_bypass = {2'b0,1'b1,gpio_dip_sw[1],1'b0,1'b0,gpio_dip_sw[0],~gpio_dip_sw[0]};
+// ethernet_ctrl_bus = {2'b0,enable_rx_decode,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
 
 kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
 (
@@ -676,6 +688,12 @@ kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
   // Serialised Pause interface controls
   //------------------------------------
   .pause_req_s         (pause_req_s),
+
+  // Decoded Commands from RGMII RX fifo
+  .cmd_axis_tdata        (cmd_pkt_axis_tdata),
+  .cmd_axis_tvalid       (cmd_pkt_axis_tvalid),
+  .cmd_axis_tlast        (cmd_pkt_axis_tlast),
+  .cmd_axis_tready       (cmd_pkt_axis_tready),
 
   // connections to adc data ports
   .adc_axis_tdata           (adc_pkt_axis_tdata),

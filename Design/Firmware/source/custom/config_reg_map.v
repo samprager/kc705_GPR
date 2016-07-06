@@ -135,7 +135,7 @@ assign adc_out_dac_in                         = 1'b0;
 assign external_clock                         = 1'b0;
 assign gen_adc_test_pattern                   = 1'b0;
 
-assign ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
+assign ethernet_ctrl_bus = {2'b0,1'b1,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
 assign enable_adc_pkt = enable_adc_pkt_r;
 assign mac_speed = mac_speed_r;
 assign gen_tx_data = 1'b0;
@@ -150,7 +150,7 @@ always @(posedge clk)
 begin
     enable_adc_pkt_r <= 1'b1;//gpio_dip_sw[1];
     mac_speed_r <= 2'b10; //{gpio_dip_sw[0],~gpio_dip_sw[0]};
-end  
+end
 
 always @(posedge clk)
 begin
