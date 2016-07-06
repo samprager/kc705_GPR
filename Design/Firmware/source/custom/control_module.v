@@ -54,7 +54,8 @@ module control_module # (
 parameter REG_ADDR_WIDTH                            = 8,
 parameter CORE_DATA_WIDTH                           = 32,
 parameter CORE_BE_WIDTH                             = CORE_DATA_WIDTH/8,
-parameter ADC_CLK_FREQ                              = 245.7
+parameter ADC_CLK_FREQ                              = 245.7,
+parameter RX_PKT_CMD_DWIDTH                         = 192
 )
 (
 
@@ -91,10 +92,11 @@ parameter ADC_CLK_FREQ                              = 245.7
   output adc_enable,          // high while adc samples saved
 
   // Decoded Commands from RGMII RX fifo
-  input     [31:0] cmd_axis_tdata,
-  input            cmd_axis_tvalid,
-  input           cmd_axis_tlast,
-  output            cmd_axis_tready,
+  input [RX_PKT_CMD_DWIDTH-1:0]         cmd_axis_tdata,
+  input                                 cmd_axis_tvalid,
+  input                                 cmd_axis_tlast,
+  input [RX_PKT_CMD_DWIDTH/8-1:0]       cmd_axis_tkeep,
+  output                                cmd_axis_tready,
 
 
   output [7:0] fmc150_ctrl_bus,
@@ -144,6 +146,7 @@ wire data_tx_done;         // single pule when done transmitting
 wire data_tx_init;        // single pulse to start tx data
 wire data_tx_enable;      // continuous high while transmit enabled
 
+
 assign gpio_led[0] = gpio_dip_sw[0];          // mac speed =  {gpio_dip_sw[0],~gpio_dip_sw[0]};
 assign gpio_led[1] = gpio_dip_sw[1];          // enable adc pkt
 assign gpio_led[2] = gpio_dip_sw[2];          // chirp rate control
@@ -163,6 +166,7 @@ radar_pulse_controller radar_pulse_controller_inst (
   //input mig_init_calib_complete (init_calib_complete),
 
   .clk_fmc150 (clk_fmc150),           // 245.76 MHz
+  .resetn_fmc150(resetn_fmc150),
   .chirp_time_int (ch_prf_int),
   .chirp_time_frac (ch_prf_frac),
   .adc_sample_time  (adc_sample_time),
@@ -178,6 +182,7 @@ radar_pulse_controller radar_pulse_controller_inst (
   .adc_enable   (adc_enable),
 
   .clk_eth (gtx_clk_bufg),              // gtx_clk : 125 MHz
+  .eth_resetn (gtx_resetn),
   .data_tx_ready  (1'b1),        // high when ready to transmit
   .data_tx_active (1'b1),       // high while data being transmitted
   .data_tx_done   (1'b0),         // single pule when done transmitting
@@ -204,7 +209,10 @@ reg_map_cmd_gen reg_map_cmd_gen_inst (
 
 );
 
-config_reg_map config_reg_map_inst (
+config_reg_map #(
+  .RX_PKT_CMD_DWIDTH (RX_PKT_CMD_DWIDTH)
+)
+config_reg_map_inst (
   .rst_n    (s_axi_resetn),
   .clk      (s_axi_aclk),
 
@@ -216,6 +224,15 @@ config_reg_map config_reg_map_inst (
   .wr_valid           (reg_map_wr_valid),
   .wr_ready           (reg_map_wr_ready),
   .wr_err             (reg_map_wr_err),
+
+  .network_cmd_en     (1'b1),
+
+  // Decoded Commands from RGMII RX fifo
+  .cmd_axis_tdata        (cmd_axis_tdata),
+  .cmd_axis_tvalid       (cmd_axis_tvalid),
+  .cmd_axis_tlast        (cmd_axis_tlast),
+  .cmd_axis_tkeep        (cmd_axis_tkeep),
+  .cmd_axis_tready       (cmd_axis_tready),
 
  // .gpio_dip_sw (gpio_dip_sw),
   // Chirp Control registers

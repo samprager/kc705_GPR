@@ -55,6 +55,8 @@ parameter REG_ADDR_WIDTH                            = 8,
 parameter CORE_DATA_WIDTH                           = 32,
 parameter CORE_BE_WIDTH                             = CORE_DATA_WIDTH/8,
 
+parameter RX_PKT_CMD_DWIDTH                         = 192,
+
 parameter ADC_CLK_FREQ                              = 245.7
 )
 (
@@ -71,6 +73,15 @@ parameter ADC_CLK_FREQ                              = 245.7
   output                                  wr_ready,
   output reg [1:0]                        wr_err,
 
+  input                                 network_cmd_en,
+
+  // Decoded Commands from RGMII RX fifo
+  input [RX_PKT_CMD_DWIDTH-1:0]         cmd_axis_tdata,
+  input                                 cmd_axis_tvalid,
+  input                                 cmd_axis_tlast,
+  input [RX_PKT_CMD_DWIDTH/8-1:0]       cmd_axis_tkeep,
+  output                                cmd_axis_tready,
+
  // input [7:0]                             gpio_dip_sw,
   // Chirp Control registers
   output reg [31:0]                 ch_prf_int = 32'b10, // prf in sec
@@ -79,10 +90,10 @@ parameter ADC_CLK_FREQ                              = 245.7
   // Chirp Waveform Configuration registers
   output reg [31:0]                 ch_tuning_coef = 32'b1,
   output reg [31:0]                 ch_counter_max = 32'h00000fff,
-  output reg [31:0]                 ch_freq_offset = 32'd1536,
+  output reg [31:0]                 ch_freq_offset = 32'h0600,
 
   // ADC Sample time after chirp data_tx_done -
-  output reg [31:0]                 adc_sample_time = 32'b1,
+  output reg [31:0]                 adc_sample_time = 32'hc8,
   // FMC150 Mode Control
   output [7:0] fmc150_ctrl_bus,
   // output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
@@ -114,6 +125,7 @@ wire adc_out_dac_in;
 wire external_clock;
 wire gen_adc_test_pattern;
 
+reg cmd_axis_tready_int;
 
 wire gen_tx_data;                           // depricated
 wire chk_tx_data;                          // depticated
@@ -140,6 +152,19 @@ assign enable_adc_pkt = enable_adc_pkt_r;
 assign mac_speed = mac_speed_r;
 assign gen_tx_data = 1'b0;
 assign chk_tx_data = 1'b0;
+
+
+always @(posedge clk)
+begin
+  if (!rst_n)
+    cmd_axis_tready_int <= 1'b0;
+  else if (network_cmd_en)
+    cmd_axis_tready_int <= 1'b1;
+  else
+    cmd_axis_tready_int <= 1'b0;
+end
+
+assign cmd_axis_tready = cmd_axis_tready_int;
 
 always @(posedge clk)
 begin
@@ -182,9 +207,25 @@ begin
       ch_prf_frac          <= 32'b0;
       ch_tuning_coef       <= 32'b1;
       ch_counter_max      <= 32'h00000fff;
-      ch_freq_offset       <= 32'd1536;
-      adc_sample_time      <= 32'b1;
+      ch_freq_offset       <= 32'h0600;
+      adc_sample_time      <= 32'hc8;
 
+  end else if(network_cmd_en) begin
+    if (cmd_axis_tvalid & cmd_axis_tready_int) begin
+      ch_prf_int <= cmd_axis_tdata[31:0];
+      ch_prf_frac <= cmd_axis_tdata[63:32];
+      adc_sample_time <= cmd_axis_tdata[95:64];
+      ch_freq_offset <= cmd_axis_tdata[127:96];
+      ch_tuning_coef<= cmd_axis_tdata[159:128];
+      ch_counter_max <= cmd_axis_tdata[191:160]-1'b1;
+    end else begin
+      ch_prf_int <= ch_prf_int;
+      ch_prf_frac <= ch_prf_frac;
+      adc_sample_time <= adc_sample_time;
+      ch_freq_offset <= ch_freq_offset;
+      ch_tuning_coef<= ch_tuning_coef;
+      ch_counter_max <= ch_counter_max;
+    end
   end else if(wr_cmd & wr_ready_reg) begin
 
     if (addr_up == 4'b0000) begin

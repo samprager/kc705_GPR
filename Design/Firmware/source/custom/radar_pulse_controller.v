@@ -19,7 +19,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module radar_pulse_controller #(
-  parameter CLK_FREQ = 200,    // MHz
+  parameter CLK_FREQ = 245.7,    // MHz
   parameter CHIRP_PRP = 1000000 //Pule Repetition Period (usec)
 )(
   input aclk,
@@ -29,13 +29,14 @@ module radar_pulse_controller #(
 //  input mig_init_calib_complete,
 
   input clk_fmc150,           // 245.76 MHz
+  input resetn_fmc150,
   input [3:0] fmc150_status_vector, // {pll_status, mmcm_adac_locked, mmcm_locked, ADC_calibration_good};
 
   input[31:0] chirp_time_int,
   input[31:0] chirp_time_frac,
 
   input [31:0] adc_sample_time,
-  
+
   input [127:0] chirp_parameters_in,
   output [127:0] chirp_parameters_out,
 
@@ -47,6 +48,7 @@ module radar_pulse_controller #(
   output adc_enable,          // high while adc samples saved
 
   input clk_eth,              // gtx_clk : 125 MHz
+  input eth_resetn,
   input data_tx_ready,        // high when ready to transmit
   input data_tx_active,       // high while data being transmitted
   input data_tx_done,         // single pule when done transmitting
@@ -56,7 +58,8 @@ module radar_pulse_controller #(
 );
 
 localparam CHIRP_PRF_COUNT_FAST = 2457;//10 u sec CLK_FREQ*CHIRP_PRP;
-localparam CHIRP_PRF_COUNT_SLOW = 2457000000;//10 sec CLK_FREQ*CHIRP_PRP;
+localparam CHIRP_PRF_COUNT_SLOW = 245700000;//CLK_FREQ in Hz 1 sec CLK_FREQ*CHIRP_PRP;
+localparam CLK_FREQ_HZ = CLK_FREQ*1000000;
 localparam ADC_LIMIT = 200;
 localparam     IDLE        = 3'b000,
                ACTIVE      = 3'b001,
@@ -92,50 +95,51 @@ wire chirp_prf_speed_sel;
 
 reg[31:0] chirp_time_int_r = 32'd10;
 reg[31:0] chirp_time_frac_r = 32'b0;
-reg[31:0] adc_sample_time_r = 32'b1;
+reg[31:0] adc_sample_time_r = 32'hc8;
 reg[31:0] chirp_time_int_rr = 32'd10;
 reg[31:0] chirp_time_frac_rr = 32'b0;
-reg[31:0] adc_sample_time_rr = 32'b1;
+reg[31:0] adc_sample_time_rr = 32'hc8;
 reg[31:0] chirp_time_int_rrr = 32'd10;
 reg[31:0] chirp_time_frac_rrr = 32'b0;
-reg[31:0] adc_sample_time_rrr = 32'b1;
+reg[31:0] adc_sample_time_rrr = 32'hc8;
 reg update_chirp_time_int = 1'b0;
 reg update_chirp_time_frac = 1'b0;
-reg update_adc_sample_time = 1'b0; 
+reg update_adc_sample_time = 1'b0;
 
 reg [31:0] ch_tuning_coef_r = 32'b1;
 reg [31:0] ch_counter_max_r = 32'h00000fff;
-reg [31:0] ch_freq_offset_r = 32'd1536;
+reg [31:0] ch_freq_offset_r = 32'h0600;
 reg [31:0] ch_tuning_coef_rr = 32'b1;
 reg [31:0] ch_counter_max_rr = 32'h00000fff;
-reg [31:0] ch_freq_offset_rr = 32'd1536;
+reg [31:0] ch_freq_offset_rr = 32'h0600;
 reg [31:0] ch_tuning_coef_rrr = 32'b1;
 reg [31:0] ch_counter_max_rrr = 32'h00000fff;
-reg [31:0] ch_freq_offset_rrr = 32'd1536;
+reg [31:0] ch_freq_offset_rrr = 32'h0600;
 reg update_ch_tuning_coef = 1'b0;
 reg update_ch_counter_max = 1'b0;
-reg update_ch_freq_offset = 1'b0; 
+reg update_ch_freq_offset = 1'b0;
 
 reg[31:0] chirp_prf_count_max = CHIRP_PRF_COUNT_SLOW;
+reg[31:0] adc_collect_count_max = ADC_LIMIT;
 
 assign chirp_parameters_out = {32'b0,ch_freq_offset_rrr,ch_tuning_coef_rrr,ch_counter_max_rrr};
 
 // sync chirp param control inputs from reg map
 always @(posedge clk_fmc150) begin
-    if(~aresetn) begin
-        ch_freq_offset_r <= 32'd1536;        
+    if(~resetn_fmc150) begin
+        ch_freq_offset_r <= 32'h0600;
         ch_tuning_coef_r <= 32'b1;
         ch_counter_max_r <= 32'h00000fff;
-        ch_freq_offset_rr <= 32'd1536;        
+        ch_freq_offset_rr <= 32'h0600;
         ch_tuning_coef_rr <= 32'b1;
         ch_counter_max_rr <= 32'h00000fff;
-        ch_freq_offset_rrr <= 32'd1536;
+        ch_freq_offset_rrr <= 32'h0600;
         ch_tuning_coef_rrr <= 32'b1;
         ch_counter_max_rrr <= 32'h00000fff;
-        update_ch_freq_offset <= 1'b0; 
+        update_ch_freq_offset <= 1'b0;
         update_ch_tuning_coef  <= 1'b0;
         update_ch_counter_max <= 1'b0;
-     end else begin   
+     end else begin
        ch_freq_offset_r <= chirp_parameters_in[95:64];
        ch_tuning_coef_r <= chirp_parameters_in[63:32];
        ch_counter_max_r <= chirp_parameters_in[31:0];
@@ -155,23 +159,23 @@ always @(posedge clk_fmc150) begin
            ch_freq_offset_rrr <= ch_freq_offset_rrr;
             update_ch_tuning_coef <= 1'b0;
             update_ch_counter_max <= 1'b1;
-            update_ch_freq_offset <= 1'b0;          
+            update_ch_freq_offset <= 1'b0;
        end else if (ch_freq_offset_rrr !== ch_freq_offset_rr) begin
             ch_tuning_coef_rrr <= ch_tuning_coef_rrr;
             ch_counter_max_rrr <= ch_counter_max_rrr;
             ch_freq_offset_rrr <= ch_freq_offset_rr;
             update_ch_tuning_coef <= 1'b0;
             update_ch_counter_max <= 1'b0;
-            update_ch_freq_offset <= 1'b1; 
+            update_ch_freq_offset <= 1'b1;
         end else begin
             ch_tuning_coef_rrr <= ch_tuning_coef_rrr;
             ch_counter_max_rrr <= ch_counter_max_rrr;
             ch_freq_offset_rrr <= ch_freq_offset_rrr;
             update_ch_tuning_coef <= 1'b0;
             update_ch_counter_max <= 1'b0;
-            update_ch_freq_offset <= 1'b0; 
-         end            
-    end 
+            update_ch_freq_offset <= 1'b0;
+         end
+    end
 end
 
  // sync chirp time control inputs from reg map
@@ -179,17 +183,17 @@ always @(posedge aclk) begin
     if(~aresetn) begin
         chirp_time_int_r <= 32'd10;
         chirp_time_frac_r <= 32'b0;
-        adc_sample_time_r <= 32'b1;
+        adc_sample_time_r <= 32'hc8;
         chirp_time_int_rr <= 32'd10;
         chirp_time_frac_rr <= 32'b0;
-        adc_sample_time_rr <= 32'b1;
+        adc_sample_time_rr <= 332'hc8;
         chirp_time_int_rrr <= 32'd10;
         chirp_time_frac_rrr <= 32'b0;
-        adc_sample_time_rrr <= 32'b1;
+        adc_sample_time_rrr <= 32'hc8;
         update_chirp_time_int <= 1'b0;
         update_chirp_time_frac <= 1'b0;
-        update_adc_sample_time <= 1'b0; 
-     end else begin   
+        update_adc_sample_time <= 1'b0;
+     end else begin
        chirp_time_int_r <= chirp_time_int;
        chirp_time_frac_r <= chirp_time_frac;
        adc_sample_time_r <= adc_sample_time;
@@ -209,7 +213,7 @@ always @(posedge aclk) begin
              adc_sample_time_rrr <= adc_sample_time_rrr;
              update_chirp_time_int <= 1'b0;
              update_chirp_time_frac <= 1'b1;
-             update_adc_sample_time <= 1'b0;            
+             update_adc_sample_time <= 1'b0;
        end else if (adc_sample_time_rrr !== adc_sample_time_rr) begin
               chirp_time_int_rrr <= chirp_time_int_rrr;
               chirp_time_frac_rrr <= chirp_time_frac_rrr;
@@ -223,19 +227,21 @@ always @(posedge aclk) begin
              adc_sample_time_rrr <= adc_sample_time_rrr;
              update_chirp_time_int <= 1'b0;
              update_chirp_time_frac <= 1'b0;
-             update_adc_sample_time <= 1'b0; 
-         end            
-    end 
+             update_adc_sample_time <= 1'b0;
+         end
+    end
 end
 
 always @(update_chirp_time_int or update_chirp_time_frac)
 begin
-    if (chirp_time_int_rrr == 32'b1)
-        chirp_prf_count_max = CHIRP_PRF_COUNT_FAST;
-    else
-        chirp_prf_count_max = CHIRP_PRF_COUNT_SLOW; 
- end   
- 
+    chirp_prf_count_max = chirp_time_int_rrr*CLK_FREQ_HZ+chirp_time_frac*CLK_FREQ;
+ end
+
+ always @(update_adc_sample_time)
+ begin
+     adc_collect_count_max = adc_sample_time_rrr;
+  end
+
 always @(posedge aclk)
 begin
   if(~aresetn)
@@ -243,7 +249,7 @@ begin
   else if (gen_state == ACTIVE & (|chirp_count))
     chirp_count <= chirp_count - 1;
   else if (gen_state == IDLE) begin
-        chirp_count <= chirp_prf_count_max;  
+        chirp_count <= chirp_prf_count_max;
   //  if (chirp_prf_speed_sel)
 //    if (chirp_time_int_r == 32'b1)
 //        chirp_count <= CHIRP_PRF_COUNT_FAST;
@@ -260,7 +266,7 @@ begin
   else if (gen_state == COLLECT & (|adc_collect_count))
     adc_collect_count <= adc_collect_count - 1;
   else if (gen_state == IDLE)
-    adc_collect_count <= ADC_LIMIT;
+    adc_collect_count <= adc_collect_count_max;
 end
 
 always @(posedge aclk)
@@ -345,7 +351,7 @@ end
 
 always @(posedge clk_fmc150)
 begin
-  if(~aresetn)
+  if(~resetn_fmc150)
     chirp_enable_int <= 1'b0;
   else if (gen_state ==  CHIRP)
     chirp_enable_int <= 1'b1;
@@ -355,7 +361,7 @@ end
 
 always @(posedge clk_fmc150)
 begin
-  if(~aresetn)
+  if(~resetn_fmc150)
     chirp_init_int <= 1'b0;
   else if (gen_state ==  CHIRP & !chirp_active & !chirp_enable_int)
     chirp_init_int <= 1'b1;
@@ -365,7 +371,7 @@ end
 
 always @(posedge clk_fmc150)
 begin
-  if(~aresetn)
+  if(~resetn_fmc150)
     adc_enable_int <= 1'b0;
   else if (gen_state == CHIRP | gen_state == COLLECT)
     adc_enable_int <= 1'b1;
@@ -375,7 +381,7 @@ end
 
 always @(posedge clk_eth)
 begin
-  if(~aresetn)
+  if(~eth_resetn)
     data_tx_enable_int <= 1'b0;
   else if (gen_state == TRANSMIT)
     data_tx_enable_int <= 1'b1;
@@ -385,7 +391,7 @@ end
 
 always @(posedge clk_eth)
 begin
-  if(~aresetn)
+  if(~eth_resetn)
     data_tx_init_int <= 1'b0;
   else if (gen_state == TRANSMIT & !data_tx_active)
     data_tx_init_int <= 1'b1;

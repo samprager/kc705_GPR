@@ -289,6 +289,8 @@ function integer clogb2 (input integer size);
   localparam ADC_AXI_STREAM_ID = 1'b0;
   localparam ADC_AXI_STREAM_DEST = 1'b1;
 
+  localparam RX_PKT_CMD_DWIDTH = 192;
+
   wire                          clk_245_76MHz;
   wire                          clk_245_rst;
 //wire                          clk_491_52MHz;
@@ -431,10 +433,26 @@ wire                  reg_map_wr_valid;
 wire                  reg_map_wr_ready;
 wire [1:0]            reg_map_wr_err;
 
-wire [31:0]   cmd_pkt_axis_tdata;
+wire [31:0]   cmd_pkt_s_axis_tdata;
+wire          cmd_pkt_s_axis_tvalid;
+wire          cmd_pkt_s_axis_tlast;
+wire          cmd_pkt_s_axis_tready;
+
+wire [RX_PKT_CMD_DWIDTH-1:0]   cmd_pkt_m_axis_tdata;
+wire          cmd_pkt_m_axis_tvalid;
+wire          cmd_pkt_m_axis_tlast;
+wire          cmd_pkt_m_axis_tready;
+wire [RX_PKT_CMD_DWIDTH/8-1:0]   cmd_pkt_m_axis_tkeep;
+
+wire [RX_PKT_CMD_DWIDTH-1:0]   cmd_pkt_axis_tdata;
 wire          cmd_pkt_axis_tvalid;
 wire          cmd_pkt_axis_tlast;
 wire          cmd_pkt_axis_tready;
+wire [RX_PKT_CMD_DWIDTH/8-1:0]   cmd_pkt_axis_tkeep;
+
+wire [31:0] cmd_fifo_axis_data_count;        // output wire [31 : 0] axis_data_count
+wire [31:0] cmd_fifo_axis_wr_data_count;  // output wire [31 : 0] axis_wr_data_count
+wire [31:0] cmd_fifo_axis_rd_data_count;  // output wire [31 : 0] axis_rd_data_count
 
 
 
@@ -574,7 +592,9 @@ reg     vfifo_mm2s_ch1_full;
 //***************************************************************************
 
 
-control_module control_module_inst(
+control_module #(
+    .RX_PKT_CMD_DWIDTH (RX_PKT_CMD_DWIDTH)
+)control_module_inst(
   .s_axi_aclk   (s_axi_aclk),
   .s_axi_resetn  (s_axi_resetn),
 // for future use
@@ -610,6 +630,7 @@ control_module control_module_inst(
   .cmd_axis_tdata        (cmd_pkt_axis_tdata),
   .cmd_axis_tvalid       (cmd_pkt_axis_tvalid),
   .cmd_axis_tlast        (cmd_pkt_axis_tlast),
+  .cmd_axis_tkeep        (cmd_pkt_axis_tkeep),
   .cmd_axis_tready       (cmd_pkt_axis_tready),
 
   //fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
@@ -631,6 +652,41 @@ control_module control_module_inst(
   // output reg [1:0] mac_speed                        = 2'b10 // {dip_sw(0),~dip_sw(0)}
 
 
+);
+
+rx_cmd_axis_data_fifo rx_cmd_axis_data_fifo_inst (
+  .s_axis_aresetn(gtx_resetn),          // input wire s_axis_aresetn
+  .m_axis_aresetn(s_axi_aresetn),          // input wire m_axis_aresetn
+  .s_axis_aclk(gtx_clk_bufg),                // input wire s_axis_aclk
+  .s_axis_tvalid(cmd_pkt_m_axis_tvalid),            // input wire s_axis_tvalid
+  .s_axis_tready(cmd_pkt_m_axis_tready),            // output wire s_axis_tready
+  .s_axis_tdata(cmd_pkt_m_axis_tdata),              // input wire [191 : 0] s_axis_tdata
+  .s_axis_tkeep(cmd_pkt_m_axis_tkeep),              // input wire [23 : 0] s_axis_tkeep
+  .s_axis_tlast(cmd_pkt_m_axis_tlast),              // input wire s_axis_tlast
+
+  .m_axis_aclk(s_axi_aclk),                // input wire m_axis_aclk
+  .m_axis_tvalid(cmd_pkt_axis_tvalid),            // output wire m_axis_tvalid
+  .m_axis_tready(cmd_pkt_axis_tready),            // input wire m_axis_tready
+  .m_axis_tdata(cmd_pkt_axis_tdata),              // output wire [191 : 0] m_axis_tdata
+  .m_axis_tkeep(cmd_pkt_axis_tkeep),              // output wire [23 : 0] m_axis_tkeep
+  .m_axis_tlast(cmd_pkt_axis_tlast),              // input wire m_axis_tlast
+  .axis_data_count(cmd_fifo_axis_data_count),        // output wire [31 : 0] axis_data_count
+  .axis_wr_data_count(cmd_fifo_axis_wr_data_count),  // output wire [31 : 0] axis_wr_data_count
+  .axis_rd_data_count(cmd_fifo_axis_rd_data_count)  // output wire [31 : 0] axis_rd_data_count
+);
+
+rx_cmd_axis_dwidth_converter rx_cmd_axis_dwidth_converter_inst (
+  .aclk(gtx_clk_bufg),                    // input wire aclk
+  .aresetn(gtx_resetn),              // input wire aresetn
+  .s_axis_tvalid(cmd_pkt_s_axis_tvalid),  // input wire s_axis_tvalid
+  .s_axis_tready(cmd_pkt_s_axis_tready),  // output wire s_axis_tready
+  .s_axis_tdata(cmd_pkt_s_axis_tdata),    // input wire [31 : 0] s_axis_tdata
+  .s_axis_tlast(cmd_pkt_s_axis_tlast),    // input wire s_axis_tlast
+  .m_axis_tvalid(cmd_pkt_m_axis_tvalid),  // output wire m_axis_tvalid
+  .m_axis_tready(cmd_pkt_m_axis_tready),  // input wire m_axis_tready
+  .m_axis_tdata(cmd_pkt_m_axis_tdata),    // output wire [191 : 0] m_axis_tdata
+  .m_axis_tkeep(cmd_pkt_m_axis_tkeep),    // output wire [23 : 0] m_axis_tkeep
+  .m_axis_tlast(cmd_pkt_m_axis_tlast)    // output wire m_axis_tlast
 );
 
 assign fmc150_ctrl_bus_bypass = {3'b0,gpio_dip_sw[3],1'b0,1'b0,1'b0,1'b0};
@@ -690,10 +746,10 @@ kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
   .pause_req_s         (pause_req_s),
 
   // Decoded Commands from RGMII RX fifo
-  .cmd_axis_tdata        (cmd_pkt_axis_tdata),
-  .cmd_axis_tvalid       (cmd_pkt_axis_tvalid),
-  .cmd_axis_tlast        (cmd_pkt_axis_tlast),
-  .cmd_axis_tready       (cmd_pkt_axis_tready),
+  .cmd_axis_tdata        (cmd_pkt_s_axis_tdata),
+  .cmd_axis_tvalid       (cmd_pkt_s_axis_tvalid),
+  .cmd_axis_tlast        (cmd_pkt_s_axis_tlast),
+  .cmd_axis_tready       (cmd_pkt_s_axis_tready),
 
   // connections to adc data ports
   .adc_axis_tdata           (adc_pkt_axis_tdata),
