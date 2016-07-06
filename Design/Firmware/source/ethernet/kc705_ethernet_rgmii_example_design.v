@@ -295,6 +295,11 @@ module kc705_ethernet_rgmii_example_design
    wire                 s_axi_rvalid;
    wire                 s_axi_rready;
 
+   wire     [31:0]  cmd_pkt_axis_tdata;
+   wire             cmd_pkt_axis_tvalid;
+   wire             cmd_pkt_axis_tlast;
+   wire             cmd_pkt_axis_tready;
+
    // set board defaults - only updated when reprogrammed
    reg                  enable_address_swap = 0;
    reg                  enable_phy_loopback = 0;
@@ -668,11 +673,32 @@ module kc705_ethernet_rgmii_example_design
         .rx_axis_tready      (rx_axis_fifo_tready),
 
       // data TO the TX data path
-        .tdata       (cmd_axis_tdata),
-        .tvalid       (cmd_axis_tvalid),
-        .tlast       (cmd_axis_tlast),
-        .tready      (cmd_axis_tready)
+        .tdata       (cmd_pkt_axis_tdata),
+        .tvalid       (cmd_pkt_axis_tvalid),
+        .tlast       (cmd_pkt_axis_tlast),
+        .tready      (cmd_pkt_axis_tready)
   );
+
+
+     axi_rx_command_gen #(
+      ) axi_rx_command_gen_inst (
+          .axi_tclk (tx_fifo_clock),
+          .axi_tresetn (tx_fifo_resetn),
+
+          .enable_rx_decode        (enable_rx_decode),
+
+        // data from the RX data path
+          .cmd_axis_tdata       (cmd_pkt_axis_tdata),
+          .cmd_axis_tvalid       (cmd_pkt_axis_tvalid),
+          .cmd_axis_tlast       (cmd_pkt_axis_tlast),
+          .cmd_axis_tready      (cmd_pkt_axis_tready),
+
+        // data TO the TX data path
+          .tdata       (cmd_axis_tdata),
+          .tvalid       (cmd_axis_tvalid),
+          .tlast       (cmd_axis_tlast),
+          .tready      (cmd_axis_tready)
+    );
 
 
 
