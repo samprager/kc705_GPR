@@ -174,7 +174,7 @@ begin
   if (axi_treset) begin
     write_command <= 1'b0;
   end
-  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int) begin
+  else if (gen_state == NEXT_CMD & cmd_axis_tvalid_reg & cmd_axis_tready_int) begin
     if (cmd_axis_tdata == WRITE_CMD)
       write_command <= 1'b1;
     else
@@ -187,7 +187,7 @@ always @(posedge axi_tclk)
 begin
   if (axi_treset)
     next_cmd_word <= 0;
-  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & !write_command)
+  else if (gen_state == NEXT_CMD & cmd_axis_tvalid_reg & cmd_axis_tready_int & !write_command)
     next_cmd_word <= cmd_axis_tdata;
 end
 
@@ -195,7 +195,7 @@ always @(posedge axi_tclk)
 begin
   if (axi_treset)
     next_cmd_id <= 0;
-  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & write_command)
+  else if (gen_state == NEXT_CMD & cmd_axis_tvalid_reg & cmd_axis_tready_int & write_command)
     next_cmd_id <= cmd_axis_tdata;
 end
 
@@ -204,7 +204,7 @@ begin
   if (axi_treset) begin
     new_command <= 0;
   end
-  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & write_command) begin
+  else if (gen_state == NEXT_CMD & cmd_axis_tvalid_reg & cmd_axis_tready_int & write_command) begin
       if (cmd_axis_tdata != curr_cmd_id)
         new_command <= 1'b1;
       else
@@ -267,9 +267,9 @@ begin
       tvalid_reg <= 0;
    //else if (gen_state == DATA & !adc_axis_tvalid_reg)
    //else if (gen_state == DATA & rx_axis_tvalid)
-   else if (gen_state == DATA & cmd_axis_tvalid)
+   else if (gen_state == DATA & cmd_axis_tvalid_reg)
       tvalid_reg <= 1'b1;
-   else if(gen_state == NEXT_CMD & new_command & cmd_axis_tvalid)
+   else if(gen_state == NEXT_CMD & new_command & cmd_axis_tvalid_reg)
       tvalid_reg <= 1'b1;
    else if (tready)
       tvalid_reg <= 0;

@@ -2,14 +2,30 @@
 
 module sim_tb_cmd_decoder;
 
-   localparam AXI_TCLK_PERIOD          = 8000;         // 125 MHz
-  localparam RESET_PERIOD = 320000; //in pSec
+   localparam AXI_TCLK_PERIOD          = 10000;         // 100 MHz
+   localparam GTX_TCLK_PERIOD          = 8000;         // 125 MHz
+   localparam FMC_TCLK_PERIOD          = 4069;         // 245.76 MHz
+   localparam RESET_PERIOD = 320000; //in pSec
 
     reg axi_tresetn_i;
     reg axi_tclk_i;
 
+    reg gtx_tresetn_i;
+    reg gtx_tclk_i;
+
+    reg fmc_tresetn_i;
+    reg fmc_tclk_i;
+
+  wire [7:0] gpio_led;
+
    wire                   axi_tclk;
    wire                   axi_tresetn;
+
+   wire                   gtx_tclk;
+   wire                   gtx_tresetn;
+
+   wire                   fmc_tclk;
+   wire                   fmc_tresetn;
 
      // data from ADC Data fifo
   reg       [31:0]                    rx_axis_tdata_reg;
@@ -63,6 +79,18 @@ wire                                rx_axis_tuser;
       axi_tresetn_i = 1'b1;
    end
 
+   initial begin
+     gtx_tresetn_i = 1'b0;
+     #RESET_PERIOD
+       gtx_tresetn_i = 1'b1;
+    end
+
+    initial begin
+      fmc_tresetn_i = 1'b0;
+      #RESET_PERIOD
+        fmc_tresetn_i = 1'b1;
+     end
+
   //**************************************************************************//
   // Clock Generation
   //**************************************************************************//
@@ -76,45 +104,68 @@ wire                                rx_axis_tuser;
         axi_tclk_i = #(AXI_TCLK_PERIOD/2.0) ~axi_tclk_i;
     end
 
+  initial
+    begin
+        gtx_tclk_i = 1'b0;
+    end
+  always
+    begin
+        gtx_tclk_i = #(GTX_TCLK_PERIOD/2.0) ~gtx_tclk_i;
+    end
+
+  initial
+    begin
+        fmc_tclk_i = 1'b0;
+    end
+  always
+    begin
+        fmc_tclk_i = #(FMC_TCLK_PERIOD/2.0) ~fmc_tclk_i;
+    end
 
    assign axi_tresetn = axi_tresetn_i;
    assign axi_tclk = axi_tclk_i;
 
+   assign gtx_tresetn = gtx_tresetn_i;
+   assign gtx_tclk = gtx_tclk_i;
+
+   assign fmc_tresetn = fmc_tresetn_i;
+   assign fmc_tclk = fmc_tclk_i;
+
 
  initial begin
       tx_axis_tready_reg = 1'b1; // initial value
-      @(posedge axi_tresetn_i); // wait for reset
+      @(posedge gtx_tresetn_i); // wait for reset
       tx_axis_tready_reg = 1'b0;
-      repeat(32) @(posedge axi_tclk_i);
+      repeat(32) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b1;
-      repeat(256) @(posedge axi_tclk_i);
+      repeat(256) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b0;
-      repeat(32) @(posedge axi_tclk_i);
+      repeat(32) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b0;
-      repeat(1) @(posedge axi_tclk_i);
+      repeat(1) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b1;
-      repeat(3) @(posedge axi_tclk_i);
+      repeat(3) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b0;
-      repeat(1) @(posedge axi_tclk_i);
+      repeat(1) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b1;
-      repeat(2) @(posedge axi_tclk_i);
+      repeat(2) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b0;
-      repeat(1) @(posedge axi_tclk_i);
+      repeat(1) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b1;
-      repeat(1) @(posedge axi_tclk_i);
+      repeat(1) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b0;
-      repeat(256) @(posedge axi_tclk_i);
+      repeat(256) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b1;
-      repeat(2048) @(posedge axi_tclk_i);
+      repeat(2048) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b0;
-      repeat(2048) @(posedge axi_tclk_i);
+      repeat(2048) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b1;
-      repeat(2048) @(posedge axi_tclk_i);
+      repeat(2048) @(posedge gtx_tclk_i);
       $finish;
     end
 
- always @(posedge  axi_tclk_i) begin
-    if (~axi_tresetn_i) begin
+ always @(posedge  gtx_tclk_i) begin
+    if (~gtx_tresetn_i) begin
         data_counter <= 'b0;
         rx_axis_tdata_reg <= 'b0;
         rx_axis_tvalid_reg <= 1'b0;
@@ -149,31 +200,31 @@ end
 
  initial begin
      rx_axis_tvalid_select = 1'b0; // initial value
-     @(posedge axi_tresetn_i); // wait for reset
+     @(posedge gtx_tresetn_i); // wait for reset
      rx_axis_tvalid_select = 1'b0;
-     repeat(300) @(posedge axi_tclk_i);
+     repeat(300) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b1;
-     repeat(150) @(posedge axi_tclk_i);
+     repeat(150) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b0;
-     repeat(32) @(posedge axi_tclk_i);
+     repeat(32) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b1;
-     repeat(1) @(posedge axi_tclk_i);
+     repeat(1) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b1;
-     repeat(3) @(posedge axi_tclk_i);
+     repeat(3) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b0;
-     repeat(1) @(posedge axi_tclk_i);
+     repeat(1) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b1;
-     repeat(2) @(posedge axi_tclk_i);
+     repeat(2) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b0;
-     repeat(1) @(posedge axi_tclk_i);
+     repeat(1) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b1;
-     repeat(1) @(posedge axi_tclk_i);
+     repeat(1) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b0;
-     repeat(20) @(posedge axi_tclk_i);
+     repeat(20) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b1;
-     repeat(1000) @(posedge axi_tclk_i);
+     repeat(1000) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b0;
-     repeat(2000) @(posedge axi_tclk_i);
+     repeat(2000) @(posedge gtx_tclk_i);
      rx_axis_tvalid_select = 1'b1;
    end
 
@@ -184,30 +235,29 @@ end
 //     rx_axis_tuser_reg = 1'b0;
 // end
 
- axi_rx_command_gen #(
+ cmd_decoder_top #(
   ) u_cmd_decoder_top (
-        .axi_tclk (axi_tclk),
-        .axi_tresetn (axi_tresetn),
+        .gtx_clk_bufg (gtx_tclk),
+        .gtx_resetn (gtx_tresetn),
+        .s_axi_aclk (axi_tclk),
+        .s_axi_resetn (axi_tresetn),
+        .clk_fmc150 (fmc_tclk),
+        .resetn_fmc150 (fmc_tresetn),
 
-        .enable_rx_decode        (1'b1),
+        .gpio_dip_sw        (8'hff),
+        .gpio_led        (gpio_led),
     // data from the RX data path
-            .cmd_axis_tdata       (rx_axis_tdata),
-            .cmd_axis_tvalid       (rx_axis_tvalid),
-            .cmd_axis_tlast       (rx_axis_tlast),
-            .cmd_axis_tready      (rx_axis_tready),
-
-    // data TO the TX data path
-            .tdata       (tx_axis_tdata),
-            .tvalid       (tx_axis_tvalid),
-            .tlast       (tx_axis_tlast),
-            .tready      (tx_axis_tready)
+            .rx_axis_tdata       (rx_axis_tdata),
+            .rx_axis_tvalid       (rx_axis_tvalid),
+            .rx_axis_tlast       (rx_axis_tlast),
+            .rx_axis_tready      (rx_axis_tready)
 
 );
 
 //kc705_ethernet_rgmii_axi_packetizer u_packetizer_top
 //(
-//       .axi_tclk (axi_tclk),
-//       .axi_tresetn (axi_tresetn),
+//       .gtx_tclk (gtx_tclk),
+//       .gtx_tresetn (gtx_tresetn),
 
 //        .enable_adc_pkt (1'b1),
 //        .speed  (2'b10),

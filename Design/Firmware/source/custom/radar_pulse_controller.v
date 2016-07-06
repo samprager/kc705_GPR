@@ -19,7 +19,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module radar_pulse_controller #(
-  parameter CLK_FREQ = 245.7,    // MHz
+  parameter CLK_FREQ = 245.76,    // MHz
   parameter CHIRP_PRP = 1000000 //Pule Repetition Period (usec)
 )(
   input aclk,

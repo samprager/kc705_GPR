@@ -255,30 +255,30 @@ config_reg_map_inst (
 
 );
 
-ila_regmap ila_regmap_inst (
-.clk (s_axi_aclk),
-//.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
-.probe0             (reg_map_wr_cmd),
-.probe1            (reg_map_wr_addr),
-.probe2            (reg_map_wr_data),
-.probe3            (reg_map_wr_keep),
-.probe4           (reg_map_wr_valid),
-.probe5           (reg_map_wr_ready),
-.probe6             (reg_map_wr_err),
+//ila_regmap ila_regmap_inst (
+//.clk (s_axi_aclk),
+////.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
+//.probe0             (reg_map_wr_cmd),
+//.probe1            (reg_map_wr_addr),
+//.probe2            (reg_map_wr_data),
+//.probe3            (reg_map_wr_keep),
+//.probe4           (reg_map_wr_valid),
+//.probe5           (reg_map_wr_ready),
+//.probe6             (reg_map_wr_err),
 
-// Chirp Control registers
-.probe7 (ch_prf_int), // prf in sec
-.probe8 (ch_prf_frac),
+//// Chirp Control registers
+//.probe7 (ch_prf_int), // prf in sec
+//.probe8 (ch_prf_frac),
 
-.probe9 (chirp_tuning_word_coeff),
-.probe10  (chirp_count_max),
-.probe11 (chirp_freq_offset),
+//.probe9 (chirp_tuning_word_coeff),
+//.probe10  (chirp_count_max),
+//.probe11 (chirp_freq_offset),
 
-.probe12                        (adc_sample_time),
-//  . Control Signals
-.probe13                         (ethernet_ctrl_bus),
-.probe14                         (fmc150_ctrl_bus)
-);
+//.probe12                        (adc_sample_time),
+////  . Control Signals
+//.probe13                         (ethernet_ctrl_bus),
+//.probe14                         (fmc150_ctrl_bus)
+//);
 
 
 

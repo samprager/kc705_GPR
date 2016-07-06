@@ -656,7 +656,7 @@ control_module #(
 
 rx_cmd_axis_data_fifo rx_cmd_axis_data_fifo_inst (
   .s_axis_aresetn(gtx_resetn),          // input wire s_axis_aresetn
-  .m_axis_aresetn(s_axi_aresetn),          // input wire m_axis_aresetn
+  .m_axis_aresetn(s_axi_resetn),          // input wire m_axis_aresetn
   .s_axis_aclk(gtx_clk_bufg),                // input wire s_axis_aclk
   .s_axis_tvalid(cmd_pkt_m_axis_tvalid),            // input wire s_axis_tvalid
   .s_axis_tready(cmd_pkt_m_axis_tready),            // output wire s_axis_tready
