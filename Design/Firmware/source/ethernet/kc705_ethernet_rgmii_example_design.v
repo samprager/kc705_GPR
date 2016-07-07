@@ -299,6 +299,11 @@ module kc705_ethernet_rgmii_example_design
    wire             cmd_pkt_axis_tvalid;
    wire             cmd_pkt_axis_tlast;
    wire             cmd_pkt_axis_tready;
+   
+    wire     [31:0]  cmd_axis_tdata_ila;
+   wire  cmd_axis_tvalid_ila;
+   wire  cmd_axis_tlast_ila;
+   wire  cmd_axis_tready_ila;
 
    // set board defaults - only updated when reprogrammed
    reg                  enable_address_swap = 0;
@@ -627,11 +632,16 @@ module kc705_ethernet_rgmii_example_design
       .enable_address_swap          (enable_address_swap),
       .speed                        (mac_speed),
 
-      .rx_axis_tdata                (rx_axis_fifo_tdata),
-      .rx_axis_tvalid               (rx_axis_fifo_tvalid),
-      .rx_axis_tlast                (rx_axis_fifo_tlast),
-      .rx_axis_tuser                (1'b0), // the FIFO drops all bad frames
-      .rx_axis_tready               (rx_axis_fifo_tready),
+//      .rx_axis_tdata                (rx_axis_fifo_tdata),
+//      .rx_axis_tvalid               (rx_axis_fifo_tvalid),
+//      .rx_axis_tlast                (rx_axis_fifo_tlast),
+//      .rx_axis_tuser                (1'b0), // the FIFO drops all bad frames
+//      .rx_axis_tready               (rx_axis_fifo_tready),
+        .rx_axis_tdata                ('b0),
+        .rx_axis_tvalid               ('b0),
+        .rx_axis_tlast                ('b0),
+        .rx_axis_tuser                (1'b0), // the FIFO drops all bad frames
+        .rx_axis_tready               (),
 
       .tx_axis_tdata                (tx_axis_fifo_tdata),
       .tx_axis_tvalid               (tx_axis_fifo_tvalid),
@@ -661,7 +671,7 @@ module kc705_ethernet_rgmii_example_design
        .VLAN_PRIORITY    (3'd2)
     ) rx_cmd_decoder_inst (
         .axi_tclk (tx_fifo_clock),
-        .axi_tresetn (tx_fifo_resetn),
+        .axi_tresetn (rx_fifo_resetn),
 
         .enable_rx_decode        (enable_rx_decode),
         .speed                  (mac_speed),
@@ -682,8 +692,8 @@ module kc705_ethernet_rgmii_example_design
 
      axi_rx_command_gen #(
       ) axi_rx_command_gen_inst (
-          .axi_tclk (tx_fifo_clock),
-          .axi_tresetn (tx_fifo_resetn),
+          .axi_tclk (rx_fifo_clock),
+          .axi_tresetn (rx_fifo_resetn),
 
           .enable_rx_decode        (enable_rx_decode),
 
@@ -701,5 +711,25 @@ module kc705_ethernet_rgmii_example_design
     );
 
 
+decoder_ila decoder_ila_inst (
+    .clk  (rx_fifo_clock),
+    .probe0         (cmd_pkt_axis_tdata),
+    .probe1          (cmd_pkt_axis_tvalid),
+    .probe2           (cmd_pkt_axis_tlast),
+    .probe3           (cmd_pkt_axis_tready),
+    .probe4          (cmd_axis_tdata_ila),
+   .probe5                     (cmd_axis_tvalid_ila),
+   .probe6                    (cmd_axis_tlast_ila),
+   .probe7                     (cmd_axis_tready_ila),
+      
+     .probe8         (rx_axis_fifo_tdata),
+     .probe9       (rx_axis_fifo_tvalid),
+     .probe10        (rx_axis_fifo_tlast),
+     .probe11       (rx_axis_fifo_tready)
+);
 
+ assign cmd_axis_tdata_ila   =cmd_axis_tdata;
+ assign  cmd_axis_tvalid_ila =cmd_axis_tvalid;
+ assign  cmd_axis_tlast_ila  =cmd_axis_tlast;
+ assign  cmd_axis_tready_ila  =cmd_axis_tready;
 endmodule

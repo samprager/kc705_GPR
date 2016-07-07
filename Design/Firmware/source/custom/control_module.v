@@ -146,7 +146,13 @@ wire data_tx_done;         // single pule when done transmitting
 wire data_tx_init;        // single pulse to start tx data
 wire data_tx_enable;      // continuous high while transmit enabled
 
-
+  // Decoded Commands from RGMII RX fifo
+wire [RX_PKT_CMD_DWIDTH-1:0]         cmd_axis_tdata_ila;
+wire                                 cmd_axis_tvalid_ila;
+wire                                 cmd_axis_tlast_ila;
+wire [RX_PKT_CMD_DWIDTH/8-1:0]       cmd_axis_tkeep_ila;
+wire                                cmd_axis_tready_ila;
+  
 assign gpio_led[0] = gpio_dip_sw[0];          // mac speed =  {gpio_dip_sw[0],~gpio_dip_sw[0]};
 assign gpio_led[1] = gpio_dip_sw[1];          // enable adc pkt
 assign gpio_led[2] = gpio_dip_sw[2];          // chirp rate control
@@ -255,31 +261,40 @@ config_reg_map_inst (
 
 );
 
-//ila_regmap ila_regmap_inst (
-//.clk (s_axi_aclk),
-////.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
-//.probe0             (reg_map_wr_cmd),
-//.probe1            (reg_map_wr_addr),
+ila_regmap ila_regmap_inst (
+.clk (s_axi_aclk),
+//.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
+.probe0             (reg_map_wr_cmd),
+.probe1            (reg_map_wr_addr),
 //.probe2            (reg_map_wr_data),
 //.probe3            (reg_map_wr_keep),
 //.probe4           (reg_map_wr_valid),
 //.probe5           (reg_map_wr_ready),
 //.probe6             (reg_map_wr_err),
+.probe2             (cmd_axis_tdata_ila),
+.probe3            (cmd_axis_tvalid_ila),
+.probe4            (cmd_axis_tlast_ila),
+.probe5            (cmd_axis_tkeep_ila),
+.probe6           (cmd_axis_tready_ila),
+// Chirp Control registers
+.probe7 (ch_prf_int), // prf in sec
+.probe8 (ch_prf_frac),
 
-//// Chirp Control registers
-//.probe7 (ch_prf_int), // prf in sec
-//.probe8 (ch_prf_frac),
+.probe9 (chirp_tuning_word_coeff),
+.probe10  (chirp_count_max),
+.probe11 (chirp_freq_offset),
 
-//.probe9 (chirp_tuning_word_coeff),
-//.probe10  (chirp_count_max),
-//.probe11 (chirp_freq_offset),
-
-//.probe12                        (adc_sample_time),
-////  . Control Signals
-//.probe13                         (ethernet_ctrl_bus),
-//.probe14                         (fmc150_ctrl_bus)
-//);
-
+.probe12                        (adc_sample_time),
+//  . Control Signals
+.probe13                         (ethernet_ctrl_bus),
+.probe14                         (fmc150_ctrl_bus)
+);
+  // Decoded Commands from RGMII RX fifo
+assign cmd_axis_tdata_ila =         cmd_axis_tdata;
+assign cmd_axis_tvalid_ila = cmd_axis_tvalid;
+assign cmd_axis_tlast_ila = cmd_axis_tlast;
+assign cmd_axis_tkeep_ila =       cmd_axis_tkeep;
+assign cmd_axis_tready_ila = cmd_axis_tready;
 
 
 endmodule

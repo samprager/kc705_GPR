@@ -265,7 +265,10 @@ Chirp_Gen: process (clk1)    -- 491.52 MHz clock
         --elsif (chirp_count(10 downto 0) = "00000000000") then
         --elsif (chirp_count(11 downto 0) = "000000000000") then
             chirp_done_r <= '1';
-            chirp_active_r <= '0';
+            chirp_active_r <= '0'; 
+            
+            chirp_i  <= (others => '0');
+            chirp_q  <= (others => '0');
         else
             chirp_count <= chirp_count + 1;
             tuning_word(31 downto 0) <= tuning_word(31 downto 0) + tuning_word_coeff;
