@@ -369,7 +369,7 @@ begin
    if (axi_treset) begin
       dest_mac_addr <= 0;
    end
-   else if (gen_state == HEADER & |dest_mac_count &rx_axis_tvalid_reg & rx_axis_tready_int) begin
+   else if (gen_state == HEADER & |dest_mac_count &rx_axis_tvalid & rx_axis_tready_int) begin
       dest_mac_addr[8*dest_mac_count-1-:8] <= rx_axis_tdata[7:0];
    end
 end
@@ -379,7 +379,7 @@ begin
    if (axi_treset) begin
       src_mac_addr <= 0;
    end
-   else if (gen_state == HEADER & |src_mac_count &(|src_mac_count) &rx_axis_tvalid_reg & rx_axis_tready_int) begin
+   else if (gen_state == HEADER & |src_mac_count &(|src_mac_count) &rx_axis_tvalid & rx_axis_tready_int) begin
       src_mac_addr[8*src_mac_count-1-:8] <= rx_axis_tdata[7:0];
    end
 end

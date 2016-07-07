@@ -16,6 +16,8 @@ module sim_tb_decoder;
   reg                                rx_axis_tvalid_reg;
   reg                                rx_axis_tlast_reg;
   reg                                rx_axis_tuser_reg;
+  
+  reg [7:0]                     temp_data;
 
          // data from ADC Data fifo
 wire       [7:0]                    rx_axis_tdata;
@@ -86,96 +88,120 @@ wire                                rx_axis_tuser;
       tx_axis_tready_reg = 1'b0;
       repeat(32) @(posedge axi_tclk_i);
       tx_axis_tready_reg = 1'b1;
-      repeat(256) @(posedge axi_tclk_i);
-      tx_axis_tready_reg = 1'b0;
-      repeat(32) @(posedge axi_tclk_i);
-      tx_axis_tready_reg = 1'b0;
-      repeat(1) @(posedge axi_tclk_i);
-      tx_axis_tready_reg = 1'b1;
-      repeat(3) @(posedge axi_tclk_i);
-      tx_axis_tready_reg = 1'b0;
-      repeat(1) @(posedge axi_tclk_i);
-      tx_axis_tready_reg = 1'b1;
-      repeat(2) @(posedge axi_tclk_i);
-      tx_axis_tready_reg = 1'b0;
-      repeat(1) @(posedge axi_tclk_i);
-      tx_axis_tready_reg = 1'b1;
-      repeat(1) @(posedge axi_tclk_i);
-      tx_axis_tready_reg = 1'b0;
-      repeat(256) @(posedge axi_tclk_i);
-      tx_axis_tready_reg = 1'b1;
-      repeat(2048) @(posedge axi_tclk_i);
-      tx_axis_tready_reg = 1'b0;
-      repeat(2048) @(posedge axi_tclk_i);
-      tx_axis_tready_reg = 1'b1;
-      repeat(2048) @(posedge axi_tclk_i);
+      repeat(8192) @(posedge axi_tclk_i);
+//      tx_axis_tready_reg = 1'b0;
+//      repeat(32) @(posedge axi_tclk_i);
+//      tx_axis_tready_reg = 1'b0;
+//      repeat(1) @(posedge axi_tclk_i);
+//      tx_axis_tready_reg = 1'b1;
+//      repeat(3) @(posedge axi_tclk_i);
+//      tx_axis_tready_reg = 1'b0;
+//      repeat(1) @(posedge axi_tclk_i);
+//      tx_axis_tready_reg = 1'b1;
+//      repeat(2) @(posedge axi_tclk_i);
+//      tx_axis_tready_reg = 1'b0;
+//      repeat(1) @(posedge axi_tclk_i);
+//      tx_axis_tready_reg = 1'b1;
+//      repeat(1) @(posedge axi_tclk_i);
+//      tx_axis_tready_reg = 1'b0;
+//      repeat(256) @(posedge axi_tclk_i);
+//      tx_axis_tready_reg = 1'b1;
+//      repeat(2048) @(posedge axi_tclk_i);
+//      tx_axis_tready_reg = 1'b0;
+//      repeat(2048) @(posedge axi_tclk_i);
+//      tx_axis_tready_reg = 1'b1;
+//      repeat(2048) @(posedge axi_tclk_i);
       $finish;
     end
+ 
 
  always @(posedge  axi_tclk_i) begin
     if (~axi_tresetn_i) begin
         data_counter <= 'b0;
-        rx_axis_tdata_reg <= 'b0;
+        rx_axis_tdata_reg <= 8'h02;
         rx_axis_tvalid_reg <= 1'b0;
         rx_axis_tlast_reg <= 1'b0;
         rx_axis_tuser_reg <= 1'b0;
-    end else begin          
-        rx_axis_tvalid_reg <= 1'b1;
-        if (rx_axis_tready & rx_axis_tvalid) begin
-            if (data_counter < 8'h06)
-                rx_axis_tdata_reg <= dest_mac_addr[8*(6-data_counter)-1-:8];
-            else if (data_counter == 8'h0c)
-                rx_axis_tdata_reg <= 8'h0;  
-            else if (data_counter == 8'h0d)
-                rx_axis_tdata_reg <= 8'h22; 
-            else 
-                rx_axis_tdata_reg <= data_counter;        
-        end     
-       // if (&rx_axis_tdata_reg[5:0]) begin
-        if ((rx_axis_tdata_reg == (8'h22+8'h0c)) & (data_counter >8'h0f)) begin
-            rx_axis_tlast_reg <= 1'b1;
-            if (test_flop)
-                data_counter <= 0;
-            else 
-                data_counter <= 1'b1;
-            test_flop <= !test_flop;        
-        end else if (rx_axis_tready & rx_axis_tvalid)begin
+    end else begin  
+        data_counter <= data_counter + 1'b1;
+        if (data_counter < 8'h40)        
+            rx_axis_tvalid_reg <= 1'b0;
+        else 
+            rx_axis_tvalid_reg <= 1'b1; 
+        if (data_counter == 8'hff)
+           rx_axis_tlast_reg <= 1'b1;
+        else 
             rx_axis_tlast_reg <= 1'b0;
-            data_counter <= data_counter + 1'b1; 
-        end    
-    end
-end
+        if (data_counter == 8'h4c) begin
+            rx_axis_tdata_reg <= 8'h00;
+            temp_data <=rx_axis_tdata_reg+1'b1; 
+        end else if (data_counter == 8'h4d) begin
+            rx_axis_tdata_reg <= 8'h22;
+            temp_data <= temp_data + 1'b1;
+        end else if (data_counter == 8'h4e) begin
+           // rx_axis_tdata_reg <= 8'hd1;  
+           rx_axis_tdata_reg <= temp_data +1'b1;      
+        end else if (rx_axis_tvalid_reg & rx_axis_tready & !rx_axis_tlast_reg)
+            rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;
+        else if (data_counter == 8'h40)   
+            rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1; 
+     end
+   end  
+//        if (rx_axis_tready & rx_axis_tvalid) begin
+//            if (data_counter < 8'h06)
+//                rx_axis_tdata_reg <= dest_mac_addr[8*(6-data_counter)-1-:8];
+//            else if (data_counter == 8'h0c)
+//                rx_axis_tdata_reg <= 8'h0;  
+//            else if (data_counter == 8'h0d)
+//                rx_axis_tdata_reg <= 8'h22; 
+//            else 
+//                rx_axis_tdata_reg <= data_counter;        
+//        end     
+//       // if (&rx_axis_tdata_reg[5:0]) begin
+//        if ((rx_axis_tdata_reg == (8'h22+8'h0c)) & (data_counter >8'h0f)) begin
+//            rx_axis_tlast_reg <= 1'b1;
+//            if (test_flop)
+//                data_counter <= 0;
+//            else 
+//                data_counter <= 1'b1;
+//            test_flop <= !test_flop;        
+//        end else if (rx_axis_tready & rx_axis_tvalid)begin
+//            rx_axis_tlast_reg <= 1'b0;
+//            data_counter <= data_counter + 1'b1; 
+//        end    
+//    end
+//end
  
 
- initial begin
-     rx_axis_tvalid_select = 1'b0; // initial value
-     @(posedge axi_tresetn_i); // wait for reset
-     rx_axis_tvalid_select = 1'b0;
-     repeat(300) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b1;
-     repeat(150) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b0;
-     repeat(32) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b1;
-     repeat(1) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b1;
-     repeat(3) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b0;
-     repeat(1) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b1;
-     repeat(2) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b0;
-     repeat(1) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b1;
-     repeat(1) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b0;
-     repeat(20) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b1;
-     repeat(1000) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b0;
-     repeat(2000) @(posedge axi_tclk_i);
-     rx_axis_tvalid_select = 1'b1;
-   end
+// initial begin
+//     rx_axis_tvalid_select = 1'b0; // initial value
+//     @(posedge axi_tresetn_i); // wait for reset
+//     rx_axis_tvalid_select = 1'b0;
+//     repeat(300) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b1;
+//     repeat(150) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b0;
+//     repeat(32) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b1;
+//     repeat(1) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b1;
+//     repeat(3) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b0;
+//     repeat(1) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b1;
+//     repeat(2) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b0;
+//     repeat(1) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b1;
+//     repeat(1) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b0;
+//     repeat(20) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b1;
+//     repeat(1000) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b0;
+//     repeat(2000) @(posedge axi_tclk_i);
+//     rx_axis_tvalid_select = 1'b1;
+//   end
 
 // initial begin
 //     rx_axis_tdata_reg = 7'b0;
@@ -187,7 +213,8 @@ end
  kc705_ethernet_rgmii_axi_rx_decoder #(
    //   parameter                            DEST_ADDR       = 48'hda0102030405,
       .DEST_ADDR       (48'h985aebdb066f),
-      .SRC_ADDR        (48'h5a0102030405),
+      //.SRC_ADDR        (48'h5a0102030405),
+      .SRC_ADDR        (48'hc3c4c5c6c7c8),
       .MAX_SIZE        (16'd500),
    //   parameter                            MIN_SIZE        = 16'd64,
      .MIN_SIZE         (16'd500),
@@ -238,7 +265,9 @@ end
 assign tx_axis_tready = tx_axis_tready_reg;
 
 assign rx_axis_tdata =  rx_axis_tdata_reg;
-assign rx_axis_tvalid =  rx_axis_tvalid_reg & rx_axis_tvalid_select;
+//assign rx_axis_tvalid =  rx_axis_tvalid_reg & rx_axis_tvalid_select;
+assign rx_axis_tvalid =  rx_axis_tvalid_reg;
+
 assign rx_axis_tlast =  rx_axis_tlast_reg;
 assign rx_axis_tuser =  rx_axis_tuser_reg;
 
