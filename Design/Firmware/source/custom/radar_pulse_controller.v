@@ -19,7 +19,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module radar_pulse_controller #(
-  parameter CLK_FREQ = 245.76,    // MHz
+  parameter CLK_FREQ = 245760000,    // Hz
   parameter CHIRP_PRP = 1000000 //Pule Repetition Period (usec)
 )(
   input aclk,
@@ -59,7 +59,6 @@ module radar_pulse_controller #(
 
 localparam CHIRP_PRF_COUNT_FAST = 2457;//10 u sec CLK_FREQ*CHIRP_PRP;
 localparam CHIRP_PRF_COUNT_SLOW = 245700000;//CLK_FREQ in Hz 1 sec CLK_FREQ*CHIRP_PRP;
-localparam CLK_FREQ_HZ = CLK_FREQ*1000000;
 localparam ADC_LIMIT = 200;
 localparam     IDLE        = 3'b000,
                ACTIVE      = 3'b001,
@@ -234,7 +233,7 @@ end
 
 always @(update_chirp_time_int or update_chirp_time_frac)
 begin
-    chirp_prf_count_max = chirp_time_int_rrr*CLK_FREQ_HZ+chirp_time_frac*CLK_FREQ;
+    chirp_prf_count_max = chirp_time_int_rrr*CLK_FREQ+chirp_time_frac*CLK_FREQ/1000000;
  end
 
  always @(update_adc_sample_time)
