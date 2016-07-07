@@ -1,7 +1,9 @@
-filenameC = '../outputs/single_chirpC.bin';
-filenameIQ = '../outputs/single_chirpIQ.bin';
+%filenameC = '../outputs/single_chirpC.bin';
+%filenameIQ = '../outputs/single_chirpIQ.bin';
 %filenameC = '../outputs/adc_chirpC.bin';
 %filenameIQ = '../outputs/adc_chirpIQ.bin';
+filenameC = '/Users/sam/outputs/adc_chirp2C.bin';
+filenameIQ = '/Users/sam/outputs/adc_chirp2IQ.bin';
 
 
 fileID_C = fopen(filenameC,'r');
