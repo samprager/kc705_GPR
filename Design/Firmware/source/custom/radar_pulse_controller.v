@@ -72,7 +72,7 @@ localparam     IDLE        = 3'b000,
 reg [2:0] next_gen_state;
 reg [2:0] gen_state;
 
-reg [31:0] chirp_count;
+reg [63:0] chirp_count;
 reg [3:0] overhead_count;
 reg [31:0] adc_collect_count;
 reg [31:0] process_count;
@@ -118,7 +118,7 @@ reg update_ch_tuning_coef = 1'b0;
 reg update_ch_counter_max = 1'b0;
 reg update_ch_freq_offset = 1'b0;
 
-reg[31:0] chirp_prf_count_max = CHIRP_PRF_COUNT_SLOW;
+reg[63:0] chirp_prf_count_max = CHIRP_PRF_COUNT_SLOW;
 reg[31:0] adc_collect_count_max = ADC_LIMIT;
 
 assign chirp_parameters_out = {32'b0,ch_freq_offset_rrr,ch_tuning_coef_rrr,ch_counter_max_rrr};
@@ -233,7 +233,7 @@ end
 
 always @(update_chirp_time_int or update_chirp_time_frac)
 begin
-    chirp_prf_count_max = chirp_time_int_rrr*CLK_FREQ+chirp_time_frac*CLK_FREQ/1000000;
+    chirp_prf_count_max = chirp_time_int_rrr*CLK_FREQ+chirp_time_frac_rrr*CLK_FREQ/1000000;
  end
 
  always @(update_adc_sample_time)
