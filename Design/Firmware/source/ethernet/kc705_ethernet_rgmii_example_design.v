@@ -299,7 +299,7 @@ module kc705_ethernet_rgmii_example_design
    wire             cmd_pkt_axis_tvalid;
    wire             cmd_pkt_axis_tlast;
    wire             cmd_pkt_axis_tready;
-   
+
     wire     [31:0]  cmd_axis_tdata_ila;
    wire  cmd_axis_tvalid_ila;
    wire  cmd_axis_tlast_ila;
@@ -670,7 +670,7 @@ module kc705_ethernet_rgmii_example_design
        .VLAN_ID          (12'd2),
        .VLAN_PRIORITY    (3'd2)
     ) rx_cmd_decoder_inst (
-        .axi_tclk (tx_fifo_clock),
+        .axi_tclk (rx_fifo_clock),
         .axi_tresetn (rx_fifo_resetn),
 
         .enable_rx_decode        (enable_rx_decode),
@@ -721,7 +721,7 @@ decoder_ila decoder_ila_inst (
    .probe5                     (cmd_axis_tvalid_ila),
    .probe6                    (cmd_axis_tlast_ila),
    .probe7                     (cmd_axis_tready_ila),
-      
+
      .probe8         (rx_axis_fifo_tdata),
      .probe9       (rx_axis_fifo_tvalid),
      .probe10        (rx_axis_fifo_tlast),

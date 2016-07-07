@@ -2,8 +2,8 @@
 %filenameIQ = '../outputs/single_chirpIQ.bin';
 %filenameC = '../outputs/adc_chirpC.bin';
 %filenameIQ = '../outputs/adc_chirpIQ.bin';
-filenameC = '/Users/sam/outputs/adc_chirp2C.bin';
-filenameIQ = '/Users/sam/outputs/adc_chirp2IQ.bin';
+filenameC = '/Users/sam/outputs/adc_chirpC.bin';
+filenameIQ = '/Users/sam/outputs/adc_chirpIQ.bin';
 
 
 fileID_C = fopen(filenameC,'r');
@@ -35,7 +35,7 @@ counter_jumps = [counter_jumps, numel(counter)];
 front_delay = 203; back_delay = 95; % samples that can be discarded
 
 %chirpmin = 1; chirpmax = counter_jumps(1); 
-chirpmin = counter_jumps(1); chirpmax = counter_jumps(2);
+chirpmin = counter_jumps(2); chirpmax = counter_jumps(3);
 %chirpmin = counter_jumps(3)+front_delay; chirpmax = counter_jumps(4)-back_delay;
 
 figure; 

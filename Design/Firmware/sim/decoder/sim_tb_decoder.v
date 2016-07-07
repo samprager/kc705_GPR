@@ -16,7 +16,7 @@ module sim_tb_decoder;
   reg                                rx_axis_tvalid_reg;
   reg                                rx_axis_tlast_reg;
   reg                                rx_axis_tuser_reg;
-  
+
   reg [7:0]                     temp_data;
 
          // data from ADC Data fifo
@@ -47,10 +47,10 @@ wire                                rx_axis_tuser;
 
  reg                tready_reg;
  reg                rx_axis_tvalid_select;
- 
+
  reg [7:0]         data_counter = 'b0;
  reg                test_flop = 1'b1;
- 
+
  reg [6*8-1:0]     dest_mac_addr = 48'h5a0102030405;
 
  wire     frame_error;
@@ -113,7 +113,7 @@ wire                                rx_axis_tuser;
 //      repeat(2048) @(posedge axi_tclk_i);
       $finish;
     end
- 
+
 
  always @(posedge  axi_tclk_i) begin
     if (~axi_tresetn_i) begin
@@ -122,56 +122,63 @@ wire                                rx_axis_tuser;
         rx_axis_tvalid_reg <= 1'b0;
         rx_axis_tlast_reg <= 1'b0;
         rx_axis_tuser_reg <= 1'b0;
-    end else begin  
+    end else begin
         data_counter <= data_counter + 1'b1;
-        if (data_counter < 8'h40)        
+        if (data_counter < 8'h40)
             rx_axis_tvalid_reg <= 1'b0;
-        else 
-            rx_axis_tvalid_reg <= 1'b1; 
+        else
+            rx_axis_tvalid_reg <= 1'b1;
         if (data_counter == 8'hff)
            rx_axis_tlast_reg <= 1'b1;
-        else 
+        else
             rx_axis_tlast_reg <= 1'b0;
         if (data_counter == 8'h4c) begin
             rx_axis_tdata_reg <= 8'h00;
-            temp_data <=rx_axis_tdata_reg+1'b1; 
+            temp_data <=rx_axis_tdata_reg+1'b1;
         end else if (data_counter == 8'h4d) begin
             rx_axis_tdata_reg <= 8'h22;
             temp_data <= temp_data + 1'b1;
         end else if (data_counter == 8'h4e) begin
-           // rx_axis_tdata_reg <= 8'hd1;  
-           rx_axis_tdata_reg <= temp_data +1'b1;      
-        end else if (rx_axis_tvalid_reg & rx_axis_tready & !rx_axis_tlast_reg)
+           // rx_axis_tdata_reg <= 8'hd1;
+           rx_axis_tdata_reg <= temp_data +1'b1;
+//        end else if (data_counter==8'h50) begin
+//             rx_axis_tdata_reg <= 8'h57; 
+//             temp_data <=rx_axis_tdata_reg+1'b1;  
+        end else if (data_counter>=8'h50 & data_counter<8'h54)
+          rx_axis_tdata_reg <= 8'h57;
+        else if (data_counter == 8'h54)
+          rx_axis_tdata_reg <= temp_data + 8'h07;
+        else if (rx_axis_tvalid_reg & rx_axis_tready & !rx_axis_tlast_reg)
             rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;
-        else if (data_counter == 8'h40)   
-            rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1; 
+        else if (data_counter == 8'h40)
+            rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;
      end
-   end  
+   end
 //        if (rx_axis_tready & rx_axis_tvalid) begin
 //            if (data_counter < 8'h06)
 //                rx_axis_tdata_reg <= dest_mac_addr[8*(6-data_counter)-1-:8];
 //            else if (data_counter == 8'h0c)
-//                rx_axis_tdata_reg <= 8'h0;  
+//                rx_axis_tdata_reg <= 8'h0;
 //            else if (data_counter == 8'h0d)
-//                rx_axis_tdata_reg <= 8'h22; 
-//            else 
-//                rx_axis_tdata_reg <= data_counter;        
-//        end     
+//                rx_axis_tdata_reg <= 8'h22;
+//            else
+//                rx_axis_tdata_reg <= data_counter;
+//        end
 //       // if (&rx_axis_tdata_reg[5:0]) begin
 //        if ((rx_axis_tdata_reg == (8'h22+8'h0c)) & (data_counter >8'h0f)) begin
 //            rx_axis_tlast_reg <= 1'b1;
 //            if (test_flop)
 //                data_counter <= 0;
-//            else 
+//            else
 //                data_counter <= 1'b1;
-//            test_flop <= !test_flop;        
+//            test_flop <= !test_flop;
 //        end else if (rx_axis_tready & rx_axis_tvalid)begin
 //            rx_axis_tlast_reg <= 1'b0;
-//            data_counter <= data_counter + 1'b1; 
-//        end    
+//            data_counter <= data_counter + 1'b1;
+//        end
 //    end
 //end
- 
+
 
 // initial begin
 //     rx_axis_tvalid_select = 1'b0; // initial value
@@ -210,20 +217,15 @@ wire                                rx_axis_tuser;
 //     rx_axis_tuser_reg = 1'b0;
 // end
 
- kc705_ethernet_rgmii_axi_rx_decoder #(
+ decoder_top #(
    //   parameter                            DEST_ADDR       = 48'hda0102030405,
       .DEST_ADDR       (48'h985aebdb066f),
       //.SRC_ADDR        (48'h5a0102030405),
-      .SRC_ADDR        (48'hc3c4c5c6c7c8),
-      .MAX_SIZE        (16'd500),
-   //   parameter                            MIN_SIZE        = 16'd64,
-     .MIN_SIZE         (16'd500),
-     .ENABLE_VLAN      (1'b0),
-     .VLAN_ID          (12'd2),
-     .VLAN_PRIORITY    (3'd2)
+      .SRC_ADDR        (48'hc3c4c5c6c7c8)
+
   ) u_decoder_top (
-        .axi_tclk (axi_tclk),
-        .axi_tresetn (axi_tresetn),
+        .rx_fifo_clock (axi_tclk),
+        .rx_fifo_resetn (axi_tresetn),
 
         .enable_rx_decode        (1'b1),
         .speed                  (2'b10),
@@ -235,10 +237,10 @@ wire                                rx_axis_tuser;
             .rx_axis_tready      (rx_axis_tready),
 
     // data TO the TX data path
-            .tdata       (tx_axis_tdata),
-            .tvalid       (tx_axis_tvalid),
-            .tlast       (tx_axis_tlast),
-            .tready      (tx_axis_tready)
+            .cmd_axis_tdata       (tx_axis_tdata),
+            .cmd_axis_tvalid       (tx_axis_tvalid),
+            .cmd_axis_tlast       (tx_axis_tlast),
+            .cmd_axis_tready      (tx_axis_tready)
 );
 
 //kc705_ethernet_rgmii_axi_packetizer u_packetizer_top
