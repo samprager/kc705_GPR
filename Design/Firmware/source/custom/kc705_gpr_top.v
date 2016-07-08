@@ -576,6 +576,9 @@ wire [1 : 0] vfifo_idle;                     // output from vfifo
 reg     vfifo_mm2s_ch0_full;
 reg     vfifo_mm2s_ch1_full;
 
+reg     vfifo_mm2s_ch1_full_r;
+reg     vfifo_mm2s_ch1_full_gtxclk;
+
 // AXI Top Level DMA Signals
 //wire dma_start;
 //wire dma_done;
@@ -1147,9 +1150,19 @@ always @(posedge ui_clk) begin
     // vfifo_mm2s_ch0_full <= |M00_FIFO_DATA_COUNT[31:7];
 end
 
-always @(posedge ui_clk) begin
-    vfifo_mm2s_ch1_full <= (M01_FIFO_DATA_COUNT > FIFO_M01_THRESHOLD) ? 1'b1 : 1'b0;
+always @(posedge gtx_clk_bufg) begin
+    vfifo_mm2s_ch1_full_gtxclk <= (M01_FIFO_DATA_COUNT > FIFO_M01_THRESHOLD) ? 1'b1 : 1'b0;
     //vfifo_mm2s_ch1_full <= (|M01_FIFO_DATA_COUNT[31:10]) || (&M01_FIFO_DATA_COUNT[9:8]);
+end
+always @(posedge ui_clk) begin
+    if (~aresetn) begin
+        vfifo_mm2s_ch1_full_r <= 0;
+        vfifo_mm2s_ch1_full <= 0;
+    end else begin     
+    vfifo_mm2s_ch1_full_r <= vfifo_mm2s_ch1_full_gtxclk;
+    vfifo_mm2s_ch1_full <= vfifo_mm2s_ch1_full_r;
+    //vfifo_mm2s_ch1_full <= (|M01_FIFO_DATA_COUNT[31:10]) || (&M01_FIFO_DATA_COUNT[9:8]);
+    end
 end
 
 assign vfifo_mm2s_channel_full = {vfifo_mm2s_ch1_full,vfifo_mm2s_ch0_full};

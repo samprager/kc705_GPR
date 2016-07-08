@@ -55,7 +55,9 @@ parameter REG_ADDR_WIDTH                            = 8,
 parameter CORE_DATA_WIDTH                           = 32,
 parameter CORE_BE_WIDTH                             = CORE_DATA_WIDTH/8,
 parameter ADC_CLK_FREQ                              = 245.7,
-parameter RX_PKT_CMD_DWIDTH                         = 192
+parameter RX_PKT_CMD_DWIDTH                         = 192,
+
+parameter CHIRP_CLK_FREQ = 245760000    // Hz
 )
 (
 
@@ -162,7 +164,10 @@ assign gpio_led[5] = fmc150_status_vector[2]; //mmcm_adac_locked
 assign gpio_led[6] = fmc150_status_vector[1]; //mmcm_locked
 assign gpio_led[7] = fmc150_status_vector[0]; // ADC_calibration_good
 
-radar_pulse_controller radar_pulse_controller_inst (
+radar_pulse_controller #(
+    .CLK_FREQ (CHIRP_CLK_FREQ)
+)
+radar_pulse_controller_inst (
   //.aclk(sysclk_bufg),
   //.aresetn(sysclk_resetn),
   .aclk(clk_fmc150),
@@ -216,7 +221,8 @@ reg_map_cmd_gen reg_map_cmd_gen_inst (
 );
 
 config_reg_map #(
-  .RX_PKT_CMD_DWIDTH (RX_PKT_CMD_DWIDTH)
+  .RX_PKT_CMD_DWIDTH (RX_PKT_CMD_DWIDTH),
+   .CHIRP_CLK_FREQ (CHIRP_CLK_FREQ)
 )
 config_reg_map_inst (
   .rst_n    (s_axi_resetn),

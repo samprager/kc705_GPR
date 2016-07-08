@@ -148,10 +148,10 @@ always @(posedge  aclk) begin
         reg_map_wr_addr_r <= 8'h00;
         reg_map_wr_keep_r <= 32'hffffffff;
         if (gpio_dip_sw_rr[2]) begin
-          reg_map_wr_data_r <= 32'd1;     // 1 sec
+          reg_map_wr_data_r <= 32'b1;    
       // slow chirp
         end else begin
-          reg_map_wr_data_r <= 32'd10;    //10 sec
+          reg_map_wr_data_r <= 32'b0; 
         end
       end
   end

@@ -57,6 +57,8 @@ parameter CORE_BE_WIDTH                             = CORE_DATA_WIDTH/8,
 
 parameter RX_PKT_CMD_DWIDTH                         = 192,
 
+parameter  CHIRP_CLK_FREQ                           = 245760000,    // Hz
+
 parameter ADC_CLK_FREQ                              = 245.7
 )
 (
@@ -84,8 +86,8 @@ parameter ADC_CLK_FREQ                              = 245.7
 
  // input [7:0]                             gpio_dip_sw,
   // Chirp Control registers
-  output reg [31:0]                 ch_prf_int = 32'b10, // prf in sec
-  output reg [31:0]                 ch_prf_frac = 32'b0,
+  output reg [31:0]                 ch_prf_int = 32'b0, // prf in sec
+  output reg [31:0]                 ch_prf_frac = 32'h927c0000, //10*CHIRP_CLK_FREQ;  = 245760000  (10 sec)
 
   // Chirp Waveform Configuration registers
   output reg [31:0]                 ch_tuning_coef = 32'b1,
@@ -203,8 +205,8 @@ begin
         wr_valid_reg                                   <= 1'b0;
         wr_err                                   <= 2'b0;
       // Chirp Control registers
-      ch_prf_int           <= 32'd10; // prf in sec
-      ch_prf_frac          <= 32'b0;
+      ch_prf_int           <= 32'd0; // prf in sec
+      ch_prf_frac          <= 32'h927c0000;
       ch_tuning_coef       <= 32'b1;
       ch_counter_max      <= 32'h00000fff;
       ch_freq_offset       <= 32'h0600;
