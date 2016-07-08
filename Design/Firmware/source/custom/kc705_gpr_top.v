@@ -576,6 +576,7 @@ wire [1 : 0] vfifo_idle;                     // output from vfifo
 reg     vfifo_mm2s_ch0_full;
 reg     vfifo_mm2s_ch1_full;
 
+wire     vfifo_mm2s_ch1_full_sync;
 reg     vfifo_mm2s_ch1_full_r;
 reg     vfifo_mm2s_ch1_full_rr;
 reg     vfifo_mm2s_ch1_full_gtxclk;
@@ -1171,8 +1172,13 @@ end
 kc705_ethernet_rgmii_sync_block vfifo_mm2s_ch1_full_sync (
      .clk              (ui_clk),
      .data_in          (vfifo_mm2s_ch1_full_gtxclk),
-     .data_out         (vfifo_mm2s_ch1_full)
+     .data_out         (vfifo_mm2s_ch1_full_sync)
   );
+  
+always @(posedge ui_clk) begin
+      vfifo_mm2s_ch1_full <= vfifo_mm2s_ch1_full_sync;
+      // vfifo_mm2s_ch0_full <= |M00_FIFO_DATA_COUNT[31:7];
+  end  
 
 assign vfifo_mm2s_channel_full = {vfifo_mm2s_ch1_full,vfifo_mm2s_ch0_full};
 
