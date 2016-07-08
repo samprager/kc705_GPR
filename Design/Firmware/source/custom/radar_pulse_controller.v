@@ -91,14 +91,14 @@ reg data_tx_enable_int;
 
 wire chirp_prf_speed_sel;
 
-reg[31:0] chirp_time_int_r = 32'b0;;
-reg[31:0] chirp_time_frac_r = CHIRP_PRF_COUNT_SLOW;
+reg[31:0] chirp_time_int_r = 32'b0;
+reg[31:0] chirp_time_frac_r = 32'h927c0000;//CHIRP_PRF_COUNT_SLOW;
 reg[31:0] adc_sample_time_r = 32'hc8;
 reg[31:0] chirp_time_int_rr = 32'b0;
-reg[31:0] chirp_time_frac_rr = CHIRP_PRF_COUNT_SLOW;
+reg[31:0] chirp_time_frac_rr = 32'h927c0000;//CHIRP_PRF_COUNT_SLOW;
 reg[31:0] adc_sample_time_rr = 32'hc8;
 reg[31:0] chirp_time_int_rrr = 32'b0;
-reg[31:0] chirp_time_frac_rrr = CHIRP_PRF_COUNT_SLOW;
+reg[31:0] chirp_time_frac_rrr = 32'h927c0000;//CHIRP_PRF_COUNT_SLOW;
 reg[31:0] adc_sample_time_rrr = 32'hc8;
 reg update_chirp_time_int = 1'b0;
 reg update_chirp_time_frac = 1'b0;
@@ -236,14 +236,14 @@ end
  // sync chirp time control inputs from reg map
  always @(posedge aclk) begin
      if(~aresetn) begin
-         chirp_time_int_r <= 32'd10;
-         chirp_time_frac_r <= 32'b0;
+         chirp_time_int_r <= 32'b0; //32'd10;
+         chirp_time_frac_r <= 32'h927c0000;//32'b0;
          adc_sample_time_r <= 32'hc8;
-         chirp_time_int_rr <= 32'd10;
-         chirp_time_frac_rr <= 32'b0;
+         chirp_time_int_rr <= 32'b0; //32'd10;
+         chirp_time_frac_rr <= 32'h927c0000; //32'b0;
          adc_sample_time_rr <= 332'hc8;
-         chirp_time_int_rrr <= 32'd10;
-         chirp_time_frac_rrr <= 32'b0;
+         chirp_time_int_rrr <= 32'b0; //32'd10;
+         chirp_time_frac_rrr <= 32'h927c0000; //32'b0;
          adc_sample_time_rrr <= 32'hc8;
          update_chirp_time_int <= 1'b0;
          update_chirp_time_frac <= 1'b0;
