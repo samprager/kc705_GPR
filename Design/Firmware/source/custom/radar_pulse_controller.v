@@ -222,7 +222,7 @@ end
 //        update_ch_counter_max <= 1'b0;
 //    end else begin   
 //        ch_counter_max_r <= chirp_parameters_in[31:0];
-//        ch_counter_max_rr <= ch_tuning_coef_r;
+//        ch_counter_max_rr <= ch_counter_max_r;
 //        if (ch_counter_max_rrr !== ch_counter_max_rr) begin
 //            ch_counter_max_rrr <= ch_counter_max_rr;
 //            update_ch_counter_max <= 1'b1;
