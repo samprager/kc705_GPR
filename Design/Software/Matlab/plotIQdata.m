@@ -1,7 +1,8 @@
-filename = '../outputs/single_chirp.bin'; bitformat = 'uint32';
+%filename = '../outputs/single_chirp.bin'; bitformat = 'uint32';
 %filename = '../outputs/adc_chirp.bin'; bitformat = 'uint32';
 %filename = '../outputs/chirp_shifted.bin'; bitformat = 'uint32';
 %filename = '../C/Listener/outdata.bin'; bitformat = 'uint32';
+filename = '/Users/sam/outputs/adc_chirp.bin'; bitformat = 'uint32';
 byteoffset = 0;
 packetsize = 496;
 headersize = 16;

@@ -2,8 +2,8 @@
 %filenameIQ = '../outputs/single_chirpIQ.bin';
 %filenameC = '../outputs/adc_chirpC.bin';
 %filenameIQ = '../outputs/adc_chirpIQ.bin';
-filenameC = '/Users/sam/outputs/adc_chirpC.bin';
-filenameIQ = '/Users/sam/outputs/adc_chirpIQ.bin';
+filenameC = '/Users/sam/outputs/en4_dataoutC.bin';
+filenameIQ = '/Users/sam/outputs/en4_dataoutIQ.bin';
 
 
 fileID_C = fopen(filenameC,'r');
@@ -62,6 +62,21 @@ title(['Q Channel: ',get(get(gca,'title'),'string')]);
 
 %figure; obw(x,Fs); title(['x = I+jQ: ',get(get(gca,'title'),'string')]);
 %figure; plot(20*log10(abs(fftshift(fft(x))))); title('fft of I+i*Q');
+I_fft = fft(real(x));
+I_fft = I_fft(1:end/2);
+Q_fft = (fft(imag(x)));
+Q_fft = Q_fft(1:end/2);
+x1 = linspace(0,Fs/2e6,numel(I_fft));
+x2 = linspace(0,Fs/2e6,numel(Q_fft));
+figure; subplot(2,1,1); 
+plot(x1,10*log10(abs(2*I_fft/Fs))); 
+grid on; %axis tight; 
+title('fft I');
+subplot(2,1,2); 
+plot(x2,20*log10(abs(Q_fft))); 
+grid on; %axis tight; 
+title('fft Q');
+
 
 % Plot complete data set with locations of counter jumps 
 figure; 
