@@ -582,7 +582,8 @@ reg     vfifo_mm2s_ch1_full_rr;
 reg     vfifo_mm2s_ch1_full_gtxclk;
 reg     vfifo_mm2s_ch1_full_gtxclk_r;
 reg     vfifo_mm2s_ch1_full_gtxclk_rr;
-reg     vfifo_mm2s_ch1_full_gtxclk_ctr;
+reg     vfifo_mm2s_ch1_full_gtxclk_en = 0;
+reg [1:0]     vfifo_mm2s_ch1_full_gtxclk_ctr = 2'b0;
 
 // AXI Top Level DMA Signals
 //wire dma_start;
@@ -1158,27 +1159,36 @@ end
 // double register prog full in gtx clk domain
 always @(posedge gtx_clk_bufg) begin
     vfifo_mm2s_ch1_full_gtxclk <= (M01_FIFO_DATA_COUNT > FIFO_M01_THRESHOLD) ? 1'b1 : 1'b0;
-//    vfifo_mm2s_ch1_full_gtxclk_r <= vfifo_mm2s_ch1_full_gtxclk;
+   // vfifo_mm2s_ch1_full_gtxclk_r <= vfifo_mm2s_ch1_full_gtxclk;
     //vfifo_mm2s_ch1_full <= (|M01_FIFO_DATA_COUNT[31:10]) || (&M01_FIFO_DATA_COUNT[9:8]);  
 end
 
-//// create single bit counter to ensure that any pulses are held for two gtx_clk cycles
-//always @(posedge gtx_clk_bufg) begin
-//    if (|vfifo_mm2s_ch1_full_gtxclk_ctr) 
-//        vfifo_mm2s_ch1_full_gtxclk_ctr <= vfifo_mm2s_ch1_full_gtxclk_ctr -1;
-//    else if (vfifo_mm2s_ch1_full_gtxclk!=vfifo_mm2s_ch1_full_gtxclk_r)
-//       vfifo_mm2s_ch1_full_gtxclk_ctr <= 1;
-//    else
-//        vfifo_mm2s_ch1_full_gtxclk_ctr <= 0;     
-//end
-
-//// hold prog full signals for at least two gtx_clk cycles
-//always @(posedge gtx_clk_bufg) begin
-//    if (|vfifo_mm2s_ch1_full_gtxclk_ctr) 
-//        vfifo_mm2s_ch1_full_gtxclk_rr <= vfifo_mm2s_ch1_full_gtxclk_rr;
-//    else     
-//        vfifo_mm2s_ch1_full_gtxclk_rr <= vfifo_mm2s_ch1_full_gtxclk;
-//end
+//// create single bit counter to ensure that any pulses are held for four gtx_clk cycles
+always @(posedge gtx_clk_bufg) begin
+    if (!gtx_resetn) begin
+        vfifo_mm2s_ch1_full_gtxclk_r <= 0;
+        vfifo_mm2s_ch1_full_gtxclk_ctr <= 2'b0;
+    end
+    else if (|vfifo_mm2s_ch1_full_gtxclk_ctr) begin    
+        vfifo_mm2s_ch1_full_gtxclk_ctr <= vfifo_mm2s_ch1_full_gtxclk_ctr -1;
+        vfifo_mm2s_ch1_full_gtxclk_r <= vfifo_mm2s_ch1_full_gtxclk_r;
+    end 
+    else if (vfifo_mm2s_ch1_full_gtxclk_r!=vfifo_mm2s_ch1_full_gtxclk) begin
+       vfifo_mm2s_ch1_full_gtxclk_ctr <= 2'b11; 
+       vfifo_mm2s_ch1_full_gtxclk_r <= vfifo_mm2s_ch1_full_gtxclk;   
+    end
+end
+always @(posedge gtx_clk_bufg) begin
+    if (!gtx_resetn)
+        vfifo_mm2s_ch1_full_gtxclk_en <= 0;
+    else    
+        vfifo_mm2s_ch1_full_gtxclk_en <= !vfifo_mm2s_ch1_full_gtxclk_en;
+end
+        
+// hold prog full signals for at least four gtx_clk cycles
+always @(posedge vfifo_mm2s_ch1_full_gtxclk_en) begin
+        vfifo_mm2s_ch1_full_gtxclk_rr = vfifo_mm2s_ch1_full_gtxclk_r;
+end
 
 always @(posedge ui_clk) begin
     if (~aresetn) begin
@@ -1186,7 +1196,7 @@ always @(posedge ui_clk) begin
         vfifo_mm2s_ch1_full_r <= 0;
         vfifo_mm2s_ch1_full <= 0;
     end else begin     
-        vfifo_mm2s_ch1_full_r <= vfifo_mm2s_ch1_full_gtxclk;
+        vfifo_mm2s_ch1_full_r <= vfifo_mm2s_ch1_full_gtxclk_rr;
         vfifo_mm2s_ch1_full_rr <= vfifo_mm2s_ch1_full_r;
         if (vfifo_mm2s_ch1_full != vfifo_mm2s_ch1_full_rr)
             vfifo_mm2s_ch1_full <= vfifo_mm2s_ch1_full_rr;
