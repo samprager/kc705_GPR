@@ -104,6 +104,21 @@ parameter ADC_CLK_FREQ                              = 245.7
   // output reg external_clock                         = 1'b0,
   // output reg gen_adc_test_pattern                   = 1'b0,
 
+  output [67:0] fmc150_spi_ctrl_bus_in,       // to fmc150
+  input [47:0] fmc150_spi_ctrl_bus_out,       // from fmc150
+
+  // -- Set_CH_A_iDelay <= fmc150_spi_ctrl_bus_in(4 downto 0);
+  // -- Set_CH_B_iDelay <= fmc150_spi_ctrl_bus_in(9 downto 5);
+  // -- Set_CLK_iDelay <= fmc150_spi_ctrl_bus_in(14 downto 10);
+  // -- Register_Address <= fmc150_spi_ctrl_bus_in(30 downto 15);
+  // -- SPI_Register_Data_to_FMC150 <= fmc150_spi_ctrl_bus_in(62 downto 31);
+  // -- RW(0 downto 0)        <= fmc150_spi_ctrl_bus_in(63 downto 63);
+  // -- CDCE72010(0 downto 0) <= fmc150_spi_ctrl_bus_in(64 downto 64);
+  // -- ADS62P49(0 downto 0)  <= fmc150_spi_ctrl_bus_in(65 downto 65);
+  // -- DAC3283(0 downto 0)   <= fmc150_spi_ctrl_bus_in(66 downto 66);
+  // -- AMC7823(0 downto 0)   <= fmc150_spi_ctrl_bus_in(67 downto 67);
+
+
   // Ethernet Control Signals
   output [7:0] ethernet_ctrl_bus
   // output reg enable_adc_pkt                         = 1'b1, //dip_sw(1)
@@ -127,6 +142,17 @@ wire adc_out_dac_in;
 wire external_clock;
 wire gen_adc_test_pattern;
 
+reg [4:0] Set_CH_A_iDelay;
+reg [4:0] Set_CH_B_iDelay;
+reg [4:0] Set_CLK_iDelay;
+reg [15:0] Register_Address;
+reg [31:0] SPI_Register_Data_to_FMC150;
+reg RW;
+reg CDCE72010;
+reg ADS62P49;
+reg DAC3283;
+reg AMC7823;
+
 reg cmd_axis_tready_int;
 
 wire gen_tx_data;                           // depricated
@@ -139,6 +165,8 @@ reg [1:0] mac_speed_r = 2'b10;                        // {dip_sw[0],~dip_sw[0]};
 wire [3:0] addr_up;
 wire [3:0] addr_low;
 
+
+
 assign wr_ready                                     = wr_ready_reg;
 assign wr_valid                                     = wr_valid_reg;
 
@@ -148,6 +176,9 @@ assign digital_mode                           = 1'b0;
 assign adc_out_dac_in                         = 1'b0;
 assign external_clock                         = 1'b0;
 assign gen_adc_test_pattern                   = 1'b0;
+
+assign fmc150_spi_ctrl_bus_in = {AMC7823,DAC3283,ADS62P49,CDCE72010,RW,SPI_Register_Data_to_FMC150,Register_Address,Set_CLK_iDelay,Set_CH_B_iDelay,Set_CH_A_iDelay};
+
 
 assign ethernet_ctrl_bus = {2'b0,1'b1,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
 assign enable_adc_pkt = enable_adc_pkt_r;
@@ -198,6 +229,21 @@ end
 
 assign addr_up                                      = wr_addr[7:4];
 assign addr_low                                     = wr_addr[3:0];
+
+always @(posedge clk)
+begin
+  Set_CH_A_iDelay             <= 5'h1e; //fmc150_spi_ctrl_bus_in(4 downto 0);
+  Set_CH_B_iDelay             <= 5'h00; //fmc150_spi_ctrl_bus_in(9 downto 5);
+  Set_CLK_iDelay              <= 5'h00; //fmc150_spi_ctrl_bus_in(14 downto 10);
+  Register_Address            <= 16'h0004; //fmc150_spi_ctrl_bus_in(30 downto 15);
+  SPI_Register_Data_to_FMC150 <= 32'h00000077; //fmc150_spi_ctrl_bus_in(62 downto 31);
+  RW        <= 1'b0; //fmc150_spi_ctrl_bus_in(63 downto 63);
+  CDCE72010 <= 1'b0; //fmc150_spi_ctrl_bus_in(64 downto 64);
+  ADS62P49  <= 1'b0; //fmc150_spi_ctrl_bus_in(65 downto 65);
+  DAC3283   <= 1'b0; //fmc150_spi_ctrl_bus_in(66 downto 66);
+  AMC7823   <= 1'b0; //fmc150_spi_ctrl_bus_in(67 downto 67);
+end
+
 
 always @(posedge clk)
 begin

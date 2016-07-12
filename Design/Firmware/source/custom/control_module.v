@@ -102,6 +102,9 @@ parameter CHIRP_CLK_FREQ = 245760000    // Hz
 
 
   output [7:0] fmc150_ctrl_bus,
+  output [67:0] fmc150_spi_ctrl_bus_in,
+  input [47:0] fmc150_spi_ctrl_bus_out,
+
   // output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
   // output reg digital_mode                           = 1'b0,
   // output reg adc_out_dac_in                         = 1'b0,
@@ -154,7 +157,7 @@ wire                                 cmd_axis_tvalid_ila;
 wire                                 cmd_axis_tlast_ila;
 wire [RX_PKT_CMD_DWIDTH/8-1:0]       cmd_axis_tkeep_ila;
 wire                                cmd_axis_tready_ila;
-  
+
 assign gpio_led[0] = gpio_dip_sw[0];          // mac speed =  {gpio_dip_sw[0],~gpio_dip_sw[0]};
 assign gpio_led[1] = gpio_dip_sw[1];          // enable adc pkt
 assign gpio_led[2] = gpio_dip_sw[2];          // chirp rate control
@@ -258,7 +261,20 @@ config_reg_map_inst (
 
   .adc_sample_time                        (adc_sample_time),
 
+  // -- Set_CH_A_iDelay <= fmc150_spi_ctrl_bus_in(4 downto 0);
+  // -- Set_CH_B_iDelay <= fmc150_spi_ctrl_bus_in(9 downto 5);
+  // -- Set_CLK_iDelay <= fmc150_spi_ctrl_bus_in(14 downto 10);
+  // -- Register_Address <= fmc150_spi_ctrl_bus_in(30 downto 15);
+  // -- SPI_Register_Data_to_FMC150 <= fmc150_spi_ctrl_bus_in(62 downto 31);
+  // -- RW(0 downto 0)        <= fmc150_spi_ctrl_bus_in(63 downto 63);
+  // -- CDCE72010(0 downto 0) <= fmc150_spi_ctrl_bus_in(64 downto 64);
+  // -- ADS62P49(0 downto 0)  <= fmc150_spi_ctrl_bus_in(65 downto 65);
+  // -- DAC3283(0 downto 0)   <= fmc150_spi_ctrl_bus_in(66 downto 66);
+  // -- AMC7823(0 downto 0)   <= fmc150_spi_ctrl_bus_in(67 downto 67);
 
+  // FMC150 SPI Control
+  .fmc150_spi_ctrl_bus_in (fmc150_spi_ctrl_bus_in),
+  .fmc150_spi_ctrl_bus_out (fmc150_spi_ctrl_bus_out),
   // FMC150 Mode Control
   .fmc150_ctrl_bus (fmc150_ctrl_bus),
 
@@ -267,34 +283,34 @@ config_reg_map_inst (
 
 );
 
-ila_regmap ila_regmap_inst (
-.clk (s_axi_aclk),
-//.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
-.probe0             (reg_map_wr_cmd),
-.probe1            (reg_map_wr_addr),
-//.probe2            (reg_map_wr_data),
-//.probe3            (reg_map_wr_keep),
-//.probe4           (reg_map_wr_valid),
-//.probe5           (reg_map_wr_ready),
-//.probe6             (reg_map_wr_err),
-.probe2             (cmd_axis_tdata_ila),
-.probe3            (cmd_axis_tvalid_ila),
-.probe4            (cmd_axis_tlast_ila),
-.probe5            (cmd_axis_tkeep_ila),
-.probe6           (cmd_axis_tready_ila),
-// Chirp Control registers
-.probe7 (ch_prf_int), // prf in sec
-.probe8 (ch_prf_frac),
+//ila_regmap ila_regmap_inst (
+//.clk (s_axi_aclk),
+////.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
+//.probe0             (reg_map_wr_cmd),
+//.probe1            (reg_map_wr_addr),
+////.probe2            (reg_map_wr_data),
+////.probe3            (reg_map_wr_keep),
+////.probe4           (reg_map_wr_valid),
+////.probe5           (reg_map_wr_ready),
+////.probe6             (reg_map_wr_err),
+//.probe2             (cmd_axis_tdata_ila),
+//.probe3            (cmd_axis_tvalid_ila),
+//.probe4            (cmd_axis_tlast_ila),
+//.probe5            (cmd_axis_tkeep_ila),
+//.probe6           (cmd_axis_tready_ila),
+//// Chirp Control registers
+//.probe7 (ch_prf_int), // prf in sec
+//.probe8 (ch_prf_frac),
 
-.probe9 (chirp_tuning_word_coeff),
-.probe10  (chirp_count_max),
-.probe11 (chirp_freq_offset),
+//.probe9 (chirp_tuning_word_coeff),
+//.probe10  (chirp_count_max),
+//.probe11 (chirp_freq_offset),
 
-.probe12                        (adc_sample_time),
-//  . Control Signals
-.probe13                         (ethernet_ctrl_bus),
-.probe14                         (fmc150_ctrl_bus)
-);
+//.probe12                        (adc_sample_time),
+////  . Control Signals
+//.probe13                         (ethernet_ctrl_bus),
+//.probe14                         (fmc150_ctrl_bus)
+//);
   // Decoded Commands from RGMII RX fifo
 assign cmd_axis_tdata_ila =         cmd_axis_tdata;
 assign cmd_axis_tvalid_ila = cmd_axis_tvalid;

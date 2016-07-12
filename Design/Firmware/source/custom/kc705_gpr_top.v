@@ -881,6 +881,10 @@ fmc150_dac_adc_inst
      .chirp_tuning_word_coeff    (chirp_parameters[63:32]),
      .chirp_count_max            (chirp_parameters[31:0]),
 
+     .clk_100Mhz (s_axi_aclk),
+     .clk_200Mhz (refclk_bufg),
+     .mmcm_locked (dcm_locked),
+
      .clk_out_245_76MHz                        (clk_245_76MHz),
      .clk_245_rst                               (clk_245_rst),
   //   .clk_out_491_52MHz                       (clk_491_52MHz),
@@ -906,6 +910,9 @@ fmc150_dac_adc_inst
 
     // .fmc150_ctrl_bus (fmc150_ctrl_bus),
       .fmc150_ctrl_bus (fmc150_ctrl_bus_bypass),
+      .fmc150_spi_ctrl_bus_in (fmc150_spi_ctrl_bus_in),
+      .fmc150_spi_ctrl_bus_out (fmc150_spi_ctrl_bus_out),
+
     // --Clock/Data connection to ADC on FMC150 (ADS62P49)
      .clk_ab_p (clk_ab_p),        //                : in    std_logic;
      .clk_ab_n (clk_ab_n),        //                : in    std_logic;
@@ -1161,7 +1168,7 @@ end
 //        vfifo_mm2s_ch1_full_rr <= 0;
 //        vfifo_mm2s_ch1_full_r <= 0;
 //        vfifo_mm2s_ch1_full <= 0;
-//    end else begin     
+//    end else begin
 //        vfifo_mm2s_ch1_full_r <= vfifo_mm2s_ch1_full_gtxclk;
 //        vfifo_mm2s_ch1_full_rr <= vfifo_mm2s_ch1_full_r;
 //        vfifo_mm2s_ch1_full <= vfifo_mm2s_ch1_full_rr;
@@ -1174,11 +1181,11 @@ kc705_ethernet_rgmii_sync_block vfifo_mm2s_ch1_full_sync (
      .data_in          (vfifo_mm2s_ch1_full_gtxclk),
      .data_out         (vfifo_mm2s_ch1_full_sync)
   );
-  
+
 always @(posedge ui_clk) begin
       vfifo_mm2s_ch1_full <= vfifo_mm2s_ch1_full_sync;
       // vfifo_mm2s_ch0_full <= |M00_FIFO_DATA_COUNT[31:7];
-  end  
+  end
 
 assign vfifo_mm2s_channel_full = {vfifo_mm2s_ch1_full,vfifo_mm2s_ch0_full};
 

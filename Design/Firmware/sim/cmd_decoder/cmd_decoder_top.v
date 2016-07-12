@@ -86,7 +86,12 @@ input gtx_resetn,
 output [7:0]  gpio_led,        // : out   std_logic_vector(7 downto 0);
 input [7:0]  gpio_dip_sw,   //   : in    std_logic_vector(7 downto 0);
     // data from ADC Data fifo
-input       [31:0]                    rx_axis_tdata,
+output       [7:0]                     tx_axis_tdata,
+output                                 tx_axis_tvalid,
+output                                 tx_axis_tlast,
+input                                  tx_axis_tready,
+
+input       [7:0]                     rx_axis_tdata,
 input                                 rx_axis_tvalid,
 input                                 rx_axis_tlast,
 output                                rx_axis_tready
@@ -117,11 +122,15 @@ wire [7:0] ethernet_ctrl_bus_bypass;
 wire [127:0] chirp_parameters;
 // chirp_parameters = {32'b0,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
 
-
 wire [31:0]   cmd_pkt_s_axis_tdata;
 wire          cmd_pkt_s_axis_tvalid;
 wire          cmd_pkt_s_axis_tlast;
 wire          cmd_pkt_s_axis_tready;
+
+wire [31:0]   cmd_pkt_axis_tdata;
+wire          cmd_pkt_axis_tvalid;
+wire          cmd_pkt_axis_tlast;
+wire          cmd_pkt_axis_tready;
 
 wire [RX_PKT_CMD_DWIDTH-1:0]   cmd_pkt_m_axis_tdata;
 wire          cmd_pkt_m_axis_tvalid;
@@ -129,11 +138,12 @@ wire          cmd_pkt_m_axis_tlast;
 wire          cmd_pkt_m_axis_tready;
 wire [RX_PKT_CMD_DWIDTH/8-1:0]   cmd_pkt_m_axis_tkeep;
 
-wire [RX_PKT_CMD_DWIDTH-1:0]   cmd_pkt_axis_tdata;
-wire          cmd_pkt_axis_tvalid;
-wire          cmd_pkt_axis_tlast;
-wire          cmd_pkt_axis_tready;
-wire [RX_PKT_CMD_DWIDTH/8-1:0]   cmd_pkt_axis_tkeep;
+wire [RX_PKT_CMD_DWIDTH-1:0]   cmd_axis_tdata;
+wire          cmd_axis_tvalid;
+wire          cmd_axis_tlast;
+wire          cmd_axis_tready;
+wire [RX_PKT_CMD_DWIDTH/8-1:0]   cmd_axis_tkeep;
+
 
 wire [31:0] cmd_fifo_axis_data_count;        // output wire [31 : 0] axis_data_count
 wire [31:0] cmd_fifo_axis_wr_data_count;  // output wire [31 : 0] axis_wr_data_count
@@ -156,6 +166,9 @@ wire data_tx_enable;      // continuous high while transmit enabled
 // for connecting the memory controller to system.
 //***************************************************************************
 
+assign tx_axis_tdata = 'b0;
+assign tx_axis_tvalid = 'b0;
+assign tx_axis_tlast = 'b0;
 
 control_module #(
     .RX_PKT_CMD_DWIDTH (RX_PKT_CMD_DWIDTH)
@@ -192,11 +205,11 @@ control_module #(
   //chirp_parameters = {32'b0,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
 
   // Decoded Commands from RGMII RX fifo
-  .cmd_axis_tdata        (cmd_pkt_axis_tdata),
-  .cmd_axis_tvalid       (cmd_pkt_axis_tvalid),
-  .cmd_axis_tlast        (cmd_pkt_axis_tlast),
-  .cmd_axis_tkeep        (cmd_pkt_axis_tkeep),
-  .cmd_axis_tready       (cmd_pkt_axis_tready),
+  .cmd_axis_tdata        (cmd_axis_tdata),
+  .cmd_axis_tvalid       (cmd_axis_tvalid),
+  .cmd_axis_tlast        (cmd_axis_tlast),
+  .cmd_axis_tkeep        (cmd_axis_tkeep),
+  .cmd_axis_tready       (cmd_axis_tready),
 
   //fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
   .fmc150_ctrl_bus (fmc150_ctrl_bus),
@@ -230,11 +243,11 @@ rx_cmd_axis_data_fifo rx_cmd_axis_data_fifo_inst (
   .s_axis_tlast(cmd_pkt_m_axis_tlast),              // input wire s_axis_tlast
 
   .m_axis_aclk(s_axi_aclk),                // input wire m_axis_aclk
-  .m_axis_tvalid(cmd_pkt_axis_tvalid),            // output wire m_axis_tvalid
-  .m_axis_tready(cmd_pkt_axis_tready),            // input wire m_axis_tready
-  .m_axis_tdata(cmd_pkt_axis_tdata),              // output wire [191 : 0] m_axis_tdata
-  .m_axis_tkeep(cmd_pkt_axis_tkeep),              // output wire [23 : 0] m_axis_tkeep
-  .m_axis_tlast(cmd_pkt_axis_tlast),              // input wire m_axis_tlast
+  .m_axis_tvalid(cmd_axis_tvalid),            // output wire m_axis_tvalid
+  .m_axis_tready(cmd_axis_tready),            // input wire m_axis_tready
+  .m_axis_tdata(cmd_axis_tdata),              // output wire [191 : 0] m_axis_tdata
+  .m_axis_tkeep(cmd_axis_tkeep),              // output wire [23 : 0] m_axis_tkeep
+  .m_axis_tlast(cmd_axis_tlast),              // input wire m_axis_tlast
   .axis_data_count(cmd_fifo_axis_data_count),        // output wire [31 : 0] axis_data_count
   .axis_wr_data_count(cmd_fifo_axis_wr_data_count),  // output wire [31 : 0] axis_wr_data_count
   .axis_rd_data_count(cmd_fifo_axis_rd_data_count)  // output wire [31 : 0] axis_rd_data_count
@@ -260,6 +273,37 @@ assign fmc150_ctrl_bus_bypass = {3'b0,gpio_dip_sw[3],1'b0,1'b0,1'b0,1'b0};
 assign ethernet_ctrl_bus_bypass = {2'b0,1'b1,gpio_dip_sw[1],1'b0,1'b0,gpio_dip_sw[0],~gpio_dip_sw[0]};
 // ethernet_ctrl_bus = {2'b0,enable_rx_decode,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
 
+kc705_ethernet_rgmii_axi_rx_decoder #(
+  //   parameter                            DEST_ADDR       = 48'hda0102030405,
+     .DEST_ADDR       (DEST_ADDR),
+     .SRC_ADDR        (SRC_ADDR),
+     .MAX_SIZE        (16'd500),
+  //   parameter                            MIN_SIZE        = 16'd64,
+    .MIN_SIZE         (16'd500),
+    .ENABLE_VLAN      (1'b0),
+    .VLAN_ID          (12'd2),
+    .VLAN_PRIORITY    (3'd2)
+ ) rx_cmd_decoder_inst (
+     .axi_tclk (rx_fifo_clock),
+     .axi_tresetn (rx_fifo_resetn),
+
+     .enable_rx_decode        (enable_rx_decode),
+     .speed                  (speed),
+
+   // data from the RX data path
+     .rx_axis_tdata       (rx_axis_tdata),
+     .rx_axis_tvalid       (rx_axis_tvalid),
+     .rx_axis_tlast       (rx_axis_tlast),
+     .rx_axis_tready      (rx_axis_tready),
+
+   // data TO the TX data path
+     .tdata       (cmd_pkt_axis_tdata),
+     .tvalid       (cmd_pkt_axis_tvalid),
+     .tlast       (cmd_pkt_axis_tlast),
+     .tready      (cmd_pkt_axis_tready)
+);
+
+
 axi_rx_command_gen #(
  ) axi_rx_command_gen_inst (
        .axi_tclk (gtx_clk_bufg),
@@ -267,10 +311,10 @@ axi_rx_command_gen #(
 
        .enable_rx_decode        (1'b1),
    // data from the RX data path
-           .cmd_axis_tdata       (rx_axis_tdata),
-           .cmd_axis_tvalid       (rx_axis_tvalid),
-           .cmd_axis_tlast       (rx_axis_tlast),
-           .cmd_axis_tready      (rx_axis_tready),
+           .cmd_axis_tdata       (cmd_pkt_axis_tdata),
+           .cmd_axis_tvalid       (cmd_pkt_axis_tvalid),
+           .cmd_axis_tlast       (cmd_pkt_axis_tlast),
+           .cmd_axis_tready      (cmd_pkt_axis_tready),
 
    // data TO the TX data path
            .tdata       (cmd_pkt_s_axis_tdata),

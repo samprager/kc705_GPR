@@ -4,6 +4,8 @@ module sim_tb_decoder;
 
    localparam AXI_TCLK_PERIOD          = 8000;         // 125 MHz
   localparam RESET_PERIOD = 320000; //in pSec
+  localparam HOST_MAC_ADDR = 48'h985aebdb066f;
+  localparam FPGA_MAC_ADDR = 48'h5a0102030405;
 
     reg axi_tresetn_i;
     reg axi_tclk_i;
@@ -38,7 +40,7 @@ wire                                rx_axis_tuser;
  //        .tx_axis_tvalid       (tx_axis_tvalid),
  //        .tx_axis_tlast       (tx_axis_tlast),
  //        .tx_axis_tready      (tx_axis_tready)
- wire      [7:0]                    tx_axis_tdata;
+ wire      [31:0]                    tx_axis_tdata;
  wire                               tx_axis_tvalid;
  wire                               tx_axis_tlast;
  wire                                tx_axis_tready;
@@ -51,7 +53,8 @@ wire                                rx_axis_tuser;
  reg [7:0]         data_counter = 'b0;
  reg                test_flop = 1'b1;
 
- reg [6*8-1:0]     dest_mac_addr = 48'h5a0102030405;
+ reg [6*8-1:0]     fpga_mac = FPGA_MAC_ADDR;
+ reg [7:0] cmd_id_reg = 8'h00;
 
  wire     frame_error;
  wire activity_flash;
@@ -122,6 +125,7 @@ wire                                rx_axis_tuser;
         rx_axis_tvalid_reg <= 1'b0;
         rx_axis_tlast_reg <= 1'b0;
         rx_axis_tuser_reg <= 1'b0;
+        cmd_id_reg <= 'b0;
     end else begin
         data_counter <= data_counter + 1'b1;
         if (data_counter < 8'h40)
@@ -132,7 +136,10 @@ wire                                rx_axis_tuser;
            rx_axis_tlast_reg <= 1'b1;
         else
             rx_axis_tlast_reg <= 1'b0;
-        if (data_counter == 8'h4c) begin
+            
+        if (data_counter >=8'h40 & data_counter<8'h46) begin
+            rx_axis_tdata_reg <= fpga_mac[48-8*(data_counter-8'h40)-1-:8];
+        end else if (data_counter == 8'h4c) begin
             rx_axis_tdata_reg <= 8'h00;
             temp_data <=rx_axis_tdata_reg+1'b1;
         end else if (data_counter == 8'h4d) begin
@@ -146,9 +153,12 @@ wire                                rx_axis_tuser;
 //             temp_data <=rx_axis_tdata_reg+1'b1;  
         end else if (data_counter>=8'h50 & data_counter<8'h54)
           rx_axis_tdata_reg <= 8'h57;
-        else if (data_counter == 8'h54)
-          rx_axis_tdata_reg <= temp_data + 8'h07;
-        else if (rx_axis_tvalid_reg & rx_axis_tready & !rx_axis_tlast_reg)
+        else if (data_counter == 8'h54) begin
+          rx_axis_tdata_reg <= cmd_id_reg;
+          cmd_id_reg <= cmd_id_reg+1; 
+        end else if (data_counter == 8'h55) begin
+          rx_axis_tdata_reg <= temp_data + 8'h08;
+        end else if (rx_axis_tvalid_reg & rx_axis_tready & !rx_axis_tlast_reg)
             rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;
         else if (data_counter == 8'h40)
             rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;
@@ -219,9 +229,8 @@ wire                                rx_axis_tuser;
 
  decoder_top #(
    //   parameter                            DEST_ADDR       = 48'hda0102030405,
-      .DEST_ADDR       (48'h985aebdb066f),
-      //.SRC_ADDR        (48'h5a0102030405),
-      .SRC_ADDR        (48'hc3c4c5c6c7c8)
+      .DEST_ADDR       (HOST_MAC_ADDR),
+      .SRC_ADDR        (FPGA_MAC_ADDR)
 
   ) u_decoder_top (
         .rx_fifo_clock (axi_tclk),

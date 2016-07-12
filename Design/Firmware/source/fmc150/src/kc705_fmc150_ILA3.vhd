@@ -163,6 +163,10 @@ port (
   clk_out_491_52MHz     :out std_logic;
   clk_245_rst           :out std_logic;
 
+  clk_100Mhz  :in std_logic;
+  clk_200Mhz  :in std_logic;
+  mmcm_locked :in std_logic;
+
  -- adc_data_out : out std_logic_vector(511 downto 0);
   --KC705 Resources
   cpu_reset        : in    std_logic; -- CPU RST button, SW7 on KC705
@@ -183,6 +187,8 @@ port (
   gpio_sw_w        : in    std_logic;
 
   fmc150_ctrl_bus   : in std_logic_vector(7 downto 0);
+  fmc150_spi_ctrl_bus_in : in std_logic_vector(67 downto 0);
+  fmc150_spi_ctrl_bus_out : out std_logic_vector(47 downto 0);
 
   --Clock/Data connection to ADC on FMC150 (ADS62P49)
   clk_ab_p         : in    std_logic;
@@ -316,6 +322,7 @@ COMPONENT vio
     probe_out9 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0)
   );
 END COMPONENT;
+
 --
 --component ila_dac is
 --port (
@@ -348,18 +355,18 @@ port (
 );
 end component mmcm_adac;
 
-component mmcm is
-port (
-    -- Clock in ports
-    clk_in1   : in std_logic;
-    -- Clock out ports
-    clk_out1  : out std_logic;
-    clk_out2  : out std_logic;
-    -- Status and control signals
-    reset     : in  std_logic;
-    locked    : out std_logic
-);
-end component mmcm;
+-- component mmcm is
+-- port (
+--     -- Clock in ports
+--     clk_in1   : in std_logic;
+--     -- Clock out ports
+--     clk_out1  : out std_logic;
+--     clk_out2  : out std_logic;
+--     -- Status and control signals
+--     reset     : in  std_logic;
+--     locked    : out std_logic
+-- );
+-- end component mmcm;
 
 component fmc150_spi_ctrl is
 port (
@@ -851,6 +858,25 @@ begin
      );
 
 
+
+----------------------------------------------------------------------------------
+-- Register VIO Signals to fmc150_spi_ctrl_bus_out
+----------------------------------------------------------------------------------
+fmc150_spi_ctrl_bus_out <= vio_sync_in;
+
+-- Set_CH_A_iDelay <= fmc150_spi_ctrl_bus_in(4 downto 0);
+-- Set_CH_B_iDelay <= fmc150_spi_ctrl_bus_in(9 downto 5);
+-- Set_CLK_iDelay <= fmc150_spi_ctrl_bus_in(14 downto 10);
+-- Register_Address <= fmc150_spi_ctrl_bus_in(30 downto 15);
+-- SPI_Register_Data_to_FMC150 <= fmc150_spi_ctrl_bus_in(62 downto 31);
+-- RW(0 downto 0)        <= fmc150_spi_ctrl_bus_in(63 downto 63);
+-- CDCE72010(0 downto 0) <= fmc150_spi_ctrl_bus_in(64 downto 64);
+-- ADS62P49(0 downto 0)  <= fmc150_spi_ctrl_bus_in(65 downto 65);
+-- DAC3283(0 downto 0)   <= fmc150_spi_ctrl_bus_in(66 downto 66);
+-- AMC7823(0 downto 0)   <= fmc150_spi_ctrl_bus_in(67 downto 67);
+
+vio_sync_out <= fmc150_spi_ctrl_bus_in;
+
 ----------------------------------------------------------------------------------
 -- VIO In Mapping
 ----------------------------------------------------------------------------------
@@ -868,20 +894,21 @@ ADC_CLK_iDelay <= vio_sync_in(14 downto 10);
 SPI_Register_Data_from_FM150 <= vio_sync_in(46 downto 15);
 Busy_signal <= vio_sync_in(47);
 
-vio_sync_out(14 downto 10) <= Set_CLK_iDelay;
-vio_sync_out(4 downto 0) <= Set_CH_A_iDelay;
-vio_sync_out(9 downto 5) <= Set_CH_B_iDelay;
-vio_sync_out(30 downto 15) <= Register_Address;
--- bkf: need to swap these 16-bit words to work around CR 700077 & 700076
-vio_sync_out(62 downto 31) <= SPI_Register_Data_to_FMC150;
---vio_sync_out(62 downto 47) <= SPI_Register_Data_to_FMC150(15 downto 0);
---vio_sync_out(46 downto 31) <= SPI_Register_Data_to_FMC150(31 downto 16);
---
-vio_sync_out(63 downto 63) <= RW(0 downto 0);
-vio_sync_out(64 downto 64) <= CDCE72010(0 downto 0);
-vio_sync_out(65 downto 65) <= ADS62P49(0 downto 0);
-vio_sync_out(66 downto 66) <= DAC3283(0 downto 0);
-vio_sync_out(67 downto 67) <= AMC7823(0 downto 0);
+
+-- vio_sync_out(14 downto 10) <= Set_CLK_iDelay;
+-- vio_sync_out(4 downto 0) <= Set_CH_A_iDelay;
+-- vio_sync_out(9 downto 5) <= Set_CH_B_iDelay;
+-- vio_sync_out(30 downto 15) <= Register_Address;
+-- -- bkf: need to swap these 16-bit words to work around CR 700077 & 700076
+-- vio_sync_out(62 downto 31) <= SPI_Register_Data_to_FMC150;
+-- --vio_sync_out(62 downto 47) <= SPI_Register_Data_to_FMC150(15 downto 0);
+-- --vio_sync_out(46 downto 31) <= SPI_Register_Data_to_FMC150(31 downto 16);
+-- --
+-- vio_sync_out(63 downto 63) <= RW(0 downto 0);
+-- vio_sync_out(64 downto 64) <= CDCE72010(0 downto 0);
+-- vio_sync_out(65 downto 65) <= ADS62P49(0 downto 0);
+-- vio_sync_out(66 downto 66) <= DAC3283(0 downto 0);
+-- vio_sync_out(67 downto 67) <= AMC7823(0 downto 0);
 --  -- Synch In
 --  signal ADC_Ch_A_iDelay       : std_logic_vector(4 downto 0);
 --  signal ADC_Ch_B_iDelay       : std_logic_vector(4 downto 0);
@@ -1123,14 +1150,14 @@ end process iDelay_update;
 ----------------------------------------------------------------------------------------------------
 -- MMCM System Clock
 ----------------------------------------------------------------------------------------------------
-mmcm_inst : mmcm
-port map (
-    clk_in1 	=> sysclk_bufg,
-    clk_out1  => clk_100Mhz,
-    clk_out2  => clk_200Mhz,
-    reset     => cpu_reset,
-    locked    => mmcm_locked
-);
+-- mmcm_inst : mmcm
+-- port map (
+--     clk_in1 	=> sysclk_bufg,
+--     clk_out1  => clk_100Mhz,
+--     clk_out2  => clk_200Mhz,
+--     reset     => cpu_reset,
+--     locked    => mmcm_locked
+-- );
 
 arst <= not mmcm_locked;
 
@@ -2021,8 +2048,8 @@ port map(
 baseband_out_valid_sig <= adc_dout_valid;
 baseband_out_i_sig <= adc_dout_i;
 baseband_out_q_sig <= adc_dout_q;
- 
- 
+
+
 duc_dcc_route_ctrl_sig(0) 	<= digital_mode;
 duc_dcc_route_ctrl_sig(1) 	<= adc_out_dac_in;
 duc_dcc_route_ctrl_sig(2) 	<= ddc_duc_bypass;
