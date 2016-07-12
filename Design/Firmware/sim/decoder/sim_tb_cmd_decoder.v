@@ -61,7 +61,7 @@ wire                                rx_axis_tuser;
 
  reg [6*8-1:0]     fpga_mac = FPGA_MAC_ADDR;
  reg [7:0] cmd_id_reg = 8'h00;
- 
+  
 
  wire     frame_error;
  wire activity_flash;
@@ -167,7 +167,7 @@ wire                                rx_axis_tuser;
            rx_axis_tlast_reg <= 1'b0;
            rx_axis_tuser_reg <= 1'b0;
            cmd_id_reg <= 'b0;
-       end else begin
+                  end else begin
            data_counter <= data_counter + 1'b1;
            if (data_counter < 8'h40)
                rx_axis_tvalid_reg <= 1'b0;
@@ -202,10 +202,10 @@ wire                                rx_axis_tuser;
            end else if (rx_axis_tvalid_reg & rx_axis_tready & !rx_axis_tlast_reg)
                rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;
            else if (data_counter == 8'h40)
-               rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;                          
+               rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1; 
+                          
         end
       end
-
 
  cmd_decoder_top #(
   ) u_cmd_decoder_top (

@@ -25,45 +25,61 @@ module signal_hold #
    parameter DATA_WIDTH = 1
 )
 (
-   input       [DATA_WIDTH-1:0] data_in,
    input                        clk,
+   input                        aresetn,
+   input       [DATA_WIDTH-1:0] data_in,
    output wire [DATA_WIDTH-1:0] data_out
 );
-localparam HOLD_COUNT = (HOLD_CLOCKS > 1) ? (HOLD_CLOCKS-1): 0; 
+localparam HOLD_COUNT = (HOLD_CLOCKS > 1) ? (HOLD_CLOCKS-1): 0;
 
 localparam CTR_WIDTH = (HOLD_COUNT < 2)? 1:
                        ((HOLD_COUNT < 4)? 2:
                        ((HOLD_COUNT < 256)? 8:
-                       32));                     
-                        
+                       32));
+
 reg [DATA_WIDTH-1:0] data_r, data_rr;
 reg [CTR_WIDTH-1:0] counter = 0;
 
 // Register twice for metastability
-always @(posedge clk)
-begin
-  data_r <= data_in;
-end
+//always @(posedge clk)
+//begin
+//  data_r <= data_in;
+//end
 
 always @(posedge clk)
 begin
-  if (|counter)
-    counter <= counter -1;
-  else if (data_r != data_in)
-    counter <= HOLD_COUNT;
-  else
+  if (!aresetn) begin
     counter <= 0;
+    data_r <= 0;
+  end
+  else if (|counter) begin
+    counter <= counter -1;
+  end  
+  else if (data_r != data_in) begin
+    data_r <= data_in;
+    counter <= HOLD_COUNT;
+  end
+//  else
+//    counter <= 0;
 end
 
-always @(posedge clk)
-begin
-  if (|counter)
-    data_rr <= data_rr;
-  else
-    data_rr <= data_in;
-end
+//always @(posedge clk)
+//begin
+// if (counter==HOLD_COUNT)
+//    data_rr <= data_r;
+// else if (|counter)
+//    data_rr <= data_rr;
+//end
+
+//always @(posedge clk)
+//begin
+//  if (|counter)
+//      data_rr <= data_rr;
+//  else
+//   data_rr <= data_in;
+//end
 
 
-assign data_out = data_rr;
+assign data_out = data_r;
 
 endmodule

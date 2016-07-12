@@ -1,77 +1,8 @@
-//*****************************************************************************
-// (c) Copyright 2009 - 2013 Xilinx, Inc. All rights reserved.
-//
-// This file contains confidential and proprietary information
-// of Xilinx, Inc. and is protected under U.S. and
-// international copyright and other intellectual property
-// laws.
-//
-// DISCLAIMER
-// This disclaimer is not a license and does not grant any
-// rights to the materials distributed herewith. Except as
-// otherwise provided in a valid license issued to you by
-// Xilinx, and to the maximum extent permitted by applicable
-// law: (1) THESE MATERIALS ARE MADE AVAILABLE "AS IS" AND
-// WITH ALL FAULTS, AND XILINX HEREBY DISCLAIMS ALL WARRANTIES
-// AND CONDITIONS, EXPRESS, IMPLIED, OR STATUTORY, INCLUDING
-// BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, NON-
-// INFRINGEMENT, OR FITNESS FOR ANY PARTICULAR PURPOSE; and
-// (2) Xilinx shall not be liable (whether in contract or tort,
-// including negligence, or under any other theory of
-// liability) for any loss or damage of any kind or nature
-// related to, arising under or in connection with these
-// materials, including for any direct, or any indirect,
-// special, incidental, or consequential loss or damage
-// (including loss of data, profits, goodwill, or any type of
-// loss or damage suffered as a result of any action brought
-// by a third party) even if such damage or loss was
-// reasonably foreseeable or Xilinx had been advised of the
-// possibility of the same.
-//
-// CRITICAL APPLICATIONS
-// Xilinx products are not designed or intended to be fail-
-// safe, or for use in any application requiring fail-safe
-// performance, such as life-support or safety devices or
-// systems, Class III medical devices, nuclear facilities,
-// applications related to the deployment of airbags, or any
-// other applications that could lead to death, personal
-// injury, or severe property or environmental damage
-// (individually and collectively, "Critical
-// Applications"). Customer assumes the sole risk and
-// liability of any use of Xilinx products in Critical
-// Applications, subject only to applicable laws and
-// regulations governing limitations on product liability.
-//
-// THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
-// PART OF THIS FILE AT ALL TIMES.
-//
-//*****************************************************************************
-//   ____  ____
-//  /   /\/   /
-// /___/  \  /    Vendor             : Xilinx
-// \   \   \/     Version            : 2.1
-//  \   \         Application        : MIG
-//  /   /         Filename           : example_top.v
-// /___/   /\     Date Last Modified : $Date: 2011/06/02 08:35:03 $
-// \   \  /  \    Date Created       : Tue Sept 21 2010
-//  \___\/\___\
-//
-// Device           : 7 Series
-// Design Name      : DDR3 SDRAM
-// Purpose          :
-//   Top-level  module. This module serves as an example,
-//   and allows the user to synthesize a self-contained design,
-//   which they can be used to test their hardware.
-//   In addition to the memory controller, the module instantiates:
-//     1. Synthesizable testbench - used to model user's backend logic
-//        and generate different traffic patterns
-// Reference        :
-// Revision History :
-//*****************************************************************************
-
 `timescale 1ps/1ps
 
 module cmd_decoder_top #(
+    parameter DEST_ADDR       =48'h985aebdb066f,
+    parameter SRC_ADDR        = 48'h5a0102030405
 )
 (
 input s_axi_aclk,
@@ -115,6 +46,9 @@ wire [7:0] fmc150_ctrl_bus;
 wire [7:0] fmc150_ctrl_bus_bypass;
 //fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
 
+wire [67:0] fmc150_spi_ctrl_bus_in;
+wire [47:0] fmc150_spi_ctrl_bus_out = 48'b0;
+
 wire [7:0] ethernet_ctrl_bus;
 wire [7:0] ethernet_ctrl_bus_bypass;
 // ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
@@ -157,6 +91,13 @@ wire data_tx_done;         // single pule when done transmitting
 wire data_tx_init;        // single pulse to start tx data
 wire data_tx_enable;      // continuous high while transmit enabled
 
+wire tlast_hold0;
+wire tlast_hold1;
+wire tlast_hold2;
+wire tlast_hold8;
+
+reg tlast_hold_en;
+reg hold_en = 0;
 
 // Start of User Design top instance
 //***************************************************************************
@@ -211,6 +152,8 @@ control_module #(
   .cmd_axis_tkeep        (cmd_axis_tkeep),
   .cmd_axis_tready       (cmd_axis_tready),
 
+  .fmc150_spi_ctrl_bus_in (fmc150_spi_ctrl_bus_in),
+  .fmc150_spi_ctrl_bus_out (fmc150_spi_ctrl_bus_out),
   //fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
   .fmc150_ctrl_bus (fmc150_ctrl_bus),
   // output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
@@ -284,11 +227,11 @@ kc705_ethernet_rgmii_axi_rx_decoder #(
     .VLAN_ID          (12'd2),
     .VLAN_PRIORITY    (3'd2)
  ) rx_cmd_decoder_inst (
-     .axi_tclk (rx_fifo_clock),
-     .axi_tresetn (rx_fifo_resetn),
+     .axi_tclk (gtx_clk_bufg),
+     .axi_tresetn (gtx_resetn),
 
-     .enable_rx_decode        (enable_rx_decode),
-     .speed                  (speed),
+     .enable_rx_decode        (1'b1),
+     .speed                  (2'b10),
 
    // data from the RX data path
      .rx_axis_tdata       (rx_axis_tdata),
@@ -323,5 +266,57 @@ axi_rx_command_gen #(
            .tready      (cmd_pkt_s_axis_tready)
 
 );
+
+signal_hold #(
+    .HOLD_CLOCKS (0),
+    .DATA_WIDTH (1)
+) signal_hold_tlast0 (
+    .clk(gtx_clk_bufg),
+    .aresetn(gtx_resetn),
+    .data_in(rx_axis_tlast),
+    .data_out (tlast_hold0)
+);
+
+signal_hold #(
+    .HOLD_CLOCKS (1),
+    .DATA_WIDTH (1)
+) signal_hold_tlast1 (
+    .clk(gtx_clk_bufg),
+    .aresetn(gtx_resetn),
+    .data_in(rx_axis_tlast),
+    .data_out (tlast_hold1)
+);
+
+signal_hold #(
+    .HOLD_CLOCKS (2),
+    .DATA_WIDTH (1)
+) signal_hold_tlast2 (
+    .clk(gtx_clk_bufg),
+    .aresetn(gtx_resetn),
+    .data_in(rx_axis_tlast),
+    .data_out (tlast_hold2)
+);
+
+signal_hold #(
+    .HOLD_CLOCKS (2),
+    .DATA_WIDTH (1)
+) signal_hold_tlast8 (
+    .clk(gtx_clk_bufg),
+    .aresetn(gtx_resetn),
+    .data_in((rx_axis_tdata[0]^rx_axis_tdata[1])),
+    .data_out (tlast_hold8)
+);
+
+always @(posedge gtx_clk_bufg) begin
+if (!gtx_resetn)    
+    hold_en <= 0;
+else 
+    hold_en <= !hold_en;
+end    
+
+always @(posedge hold_en) begin
+    tlast_hold_en = tlast_hold2;
+end
+
 
 endmodule
