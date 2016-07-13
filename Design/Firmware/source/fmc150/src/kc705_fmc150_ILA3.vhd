@@ -163,6 +163,9 @@ port (
   clk_out_491_52MHz     :out std_logic;
   clk_245_rst           :out std_logic;
 
+--  clk_100Mhz_out  :out std_logic;
+--  clk_100Mhz_rst  :out std_logic;
+
   clk_100Mhz  :in std_logic;
   clk_200Mhz  :in std_logic;
   mmcm_locked :in std_logic;
@@ -526,9 +529,9 @@ attribute keep: string;
 --attribute keep of vio_control : signal is "TRUE";
 --attribute keep of vio_sync_out : signal is "TRUE";
 
-signal clk_100Mhz        : std_logic;
-signal clk_200Mhz        : std_logic;
-signal mmcm_locked       : std_logic;
+-- signal clk_100Mhz        : std_logic;
+-- signal clk_200Mhz        : std_logic;
+-- signal mmcm_locked       : std_logic;
 
 signal arst              : std_logic;
 signal rst               : std_logic;
@@ -1160,6 +1163,9 @@ end process iDelay_update;
 -- );
 
 arst <= not mmcm_locked;
+
+-- clk_100Mhz_out <= clk_100Mhz;
+-- clk_100Mhz_rst <= arst;
 
 ----------------------------------------------------------------------------------------------------
 -- Clock from ADC on FMC150 for channel A and B
