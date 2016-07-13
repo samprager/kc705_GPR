@@ -178,7 +178,11 @@ module fmc150_dac_adc #
 
 //        .clk_100Mhz_out (clk_100Mhz),
 //        .clk_100Mhz_rst (clk_100Mhz_rst),
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> 9b01f4f92c04747b30ff1e7d9dd92b3f71fad73f
         .clk_100Mhz (clk_100Mhz),
         .clk_200Mhz (clk_200Mhz),
         .mmcm_locked (mmcm_locked),

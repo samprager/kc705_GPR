@@ -167,8 +167,8 @@ port (
 --  clk_100Mhz_rst  :out std_logic;
 
   clk_100Mhz  :in std_logic;
-  clk_200Mhz  :in std_logic;
-  mmcm_locked :in std_logic;
+  clk_200Mhz :in std_logic;
+  mmcm_locked : in std_logic;
 
  -- adc_data_out : out std_logic_vector(511 downto 0);
   --KC705 Resources
@@ -305,26 +305,26 @@ END COMPONENT;
 --end component vio;
 
 
-COMPONENT vio
-  PORT (
-    clk : IN STD_LOGIC;
-    probe_in0 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-    probe_in1 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-    probe_in2 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-    probe_in3 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-    probe_in4 : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe_out0 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-    probe_out1 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-    probe_out2 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-    probe_out3 : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-    probe_out4 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-    probe_out5 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe_out6 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe_out7 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe_out8 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe_out9 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0)
-  );
-END COMPONENT;
+--COMPONENT vio
+--  PORT (
+--    clk : IN STD_LOGIC;
+--    probe_in0 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+--    probe_in1 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+--    probe_in2 : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+--    probe_in3 : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+--    probe_in4 : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe_out0 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+--    probe_out1 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+--    probe_out2 : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+--    probe_out3 : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+--    probe_out4 : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+--    probe_out5 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe_out6 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe_out7 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe_out8 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe_out9 : OUT STD_LOGIC_VECTOR(0 DOWNTO 0)
+--  );
+--END COMPONENT;
 
 --
 --component ila_dac is
@@ -840,25 +840,25 @@ begin
 --);
 
     Busy_signal_1(0) <= Busy_signal;
-   vio_inst : vio
-     PORT MAP (
-       clk => clk_100Mhz,
-       probe_in0 => ADC_Ch_A_iDelay,
-       probe_in1 => ADC_Ch_B_iDelay,
-       probe_in2 => ADC_CLK_iDelay,
-       probe_in3 => SPI_Register_Data_from_FM150,
-       probe_in4 => Busy_signal_1,--(0 => Busy_signal),
-       probe_out0 => Set_CLK_iDelay,
-       probe_out1 => Set_CH_A_iDelay,
-       probe_out2 => Set_CH_B_iDelay,
-       probe_out3 => Register_Address,
-       probe_out4 => SPI_Register_Data_to_FMC150,
-       probe_out5 => RW,
-       probe_out6 => CDCE72010,
-       probe_out7 => ADS62P49,
-       probe_out8 => DAC3283,
-       probe_out9 => AMC7823
-     );
+--   vio_inst : vio
+--     PORT MAP (
+--       clk => clk_100Mhz,
+--       probe_in0 => ADC_Ch_A_iDelay,
+--       probe_in1 => ADC_Ch_B_iDelay,
+--       probe_in2 => ADC_CLK_iDelay,
+--       probe_in3 => SPI_Register_Data_from_FM150,
+--       probe_in4 => Busy_signal_1,--(0 => Busy_signal),
+--       probe_out0 => Set_CLK_iDelay,
+--       probe_out1 => Set_CH_A_iDelay,
+--       probe_out2 => Set_CH_B_iDelay,
+--       probe_out3 => Register_Address,
+--       probe_out4 => SPI_Register_Data_to_FMC150,
+--       probe_out5 => RW,
+--       probe_out6 => CDCE72010,
+--       probe_out7 => ADS62P49,
+--       probe_out8 => DAC3283,
+--       probe_out9 => AMC7823
+--     );
 
 
 
@@ -912,6 +912,8 @@ Busy_signal <= vio_sync_in(47);
 -- vio_sync_out(65 downto 65) <= ADS62P49(0 downto 0);
 -- vio_sync_out(66 downto 66) <= DAC3283(0 downto 0);
 -- vio_sync_out(67 downto 67) <= AMC7823(0 downto 0);
+
+
 --  -- Synch In
 --  signal ADC_Ch_A_iDelay       : std_logic_vector(4 downto 0);
 --  signal ADC_Ch_B_iDelay       : std_logic_vector(4 downto 0);

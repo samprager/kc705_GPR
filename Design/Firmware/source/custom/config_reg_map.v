@@ -142,16 +142,16 @@ wire adc_out_dac_in;
 wire external_clock;
 wire gen_adc_test_pattern;
 
-reg [4:0] Set_CH_A_iDelay;
-reg [4:0] Set_CH_B_iDelay;
-reg [4:0] Set_CLK_iDelay;
-reg [15:0] Register_Address;
-reg [31:0] SPI_Register_Data_to_FMC150;
-reg RW;
-reg CDCE72010;
-reg ADS62P49;
-reg DAC3283;
-reg AMC7823;
+reg [4:0] Set_CH_A_iDelay = 5'h1e;
+reg [4:0] Set_CH_B_iDelay = 5'h00;
+reg [4:0] Set_CLK_iDelay = 5'h00;
+reg [15:0] Register_Address = 16'h0004;
+reg [31:0] SPI_Register_Data_to_FMC150 = 32'h00000077;;
+reg RW = 0;
+reg CDCE72010 = 0;
+reg ADS62P49 = 0;
+reg DAC3283 = 0;
+reg AMC7823 = 0;
 
 reg cmd_axis_tready_int;
 

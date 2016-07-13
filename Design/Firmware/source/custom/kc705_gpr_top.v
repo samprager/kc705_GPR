@@ -295,8 +295,8 @@ function integer clogb2 (input integer size);
   wire                          clk_245_rst;
 //wire                          clk_491_52MHz;
 
-  wire        fmc150_clk_100Mhz;
-  wire        fmc150_clk_100Mhz_rst;
+  wire          fmc150_clk_100Mhz;
+  wire          fmc150_clk_100Mhz_rst;
 
 //////////////////////////////////////////
 // DDR3 MIG Wires
