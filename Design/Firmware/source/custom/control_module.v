@@ -158,6 +158,13 @@ wire                                 cmd_axis_tlast_ila;
 wire [RX_PKT_CMD_DWIDTH/8-1:0]       cmd_axis_tkeep_ila;
 wire                                cmd_axis_tready_ila;
 
+wire [67:0] fmc150_spi_ctrl_bus_in_ila;
+wire [47:0] fmc150_spi_ctrl_bus_out_ila;
+
+reg [47:0] fmc150_spi_ctrl_bus_out_r;
+reg [47:0] fmc150_spi_ctrl_bus_out_rr;
+reg [47:0] fmc150_spi_ctrl_bus_out_rrr;
+
 assign gpio_led[0] = gpio_dip_sw[0];          // mac speed =  {gpio_dip_sw[0],~gpio_dip_sw[0]};
 assign gpio_led[1] = gpio_dip_sw[1];          // enable adc pkt
 assign gpio_led[2] = gpio_dip_sw[2];          // chirp rate control
@@ -283,34 +290,34 @@ config_reg_map_inst (
 
 );
 
-//ila_regmap ila_regmap_inst (
-//.clk (s_axi_aclk),
-////.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
-//.probe0             (fmc150_spi_ctrl_bus_in_ila),
-//.probe1            (fmc150_spi_ctrl_bus_out_ila),
-////.probe2            (reg_map_wr_data),
-////.probe3            (reg_map_wr_keep),
-////.probe4           (reg_map_wr_valid),
-////.probe5           (reg_map_wr_ready),
-////.probe6             (reg_map_wr_err),
-//.probe2             (cmd_axis_tdata_ila),
-//.probe3            (cmd_axis_tvalid_ila),
-//.probe4            (cmd_axis_tlast_ila),
-//.probe5            (cmd_axis_tkeep_ila),
-//.probe6           (cmd_axis_tready_ila),
-//// Chirp Control registers
-//.probe7 (ch_prf_int), // prf in sec
-//.probe8 (ch_prf_frac),
+ila_regmap ila_regmap_inst (
+.clk (s_axi_aclk),
+//.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
+.probe0             (fmc150_spi_ctrl_bus_in_ila),
+.probe1            (fmc150_spi_ctrl_bus_out_ila),
+//.probe2            (reg_map_wr_data),
+//.probe3            (reg_map_wr_keep),
+//.probe4           (reg_map_wr_valid),
+//.probe5           (reg_map_wr_ready),
+//.probe6             (reg_map_wr_err),
+.probe2             (cmd_axis_tdata_ila),
+.probe3            (cmd_axis_tvalid_ila),
+.probe4            (cmd_axis_tlast_ila),
+.probe5            (cmd_axis_tkeep_ila),
+.probe6           (cmd_axis_tready_ila),
+// Chirp Control registers
+.probe7 (ch_prf_int), // prf in sec
+.probe8 (ch_prf_frac),
 
-//.probe9 (chirp_tuning_word_coeff),
-//.probe10  (chirp_count_max),
-//.probe11 (chirp_freq_offset),
+.probe9 (chirp_tuning_word_coeff),
+.probe10  (chirp_count_max),
+.probe11 (chirp_freq_offset),
 
-//.probe12                        (adc_sample_time),
-////  . Control Signals
-//.probe13                         (ethernet_ctrl_bus),
-//.probe14                         (fmc150_ctrl_bus)
-//);
+.probe12                        (adc_sample_time),
+//  . Control Signals
+.probe13                         (ethernet_ctrl_bus),
+.probe14                         (fmc150_ctrl_bus)
+);
   // Decoded Commands from RGMII RX fifo
 assign cmd_axis_tdata_ila =         cmd_axis_tdata;
 assign cmd_axis_tvalid_ila = cmd_axis_tvalid;
@@ -318,5 +325,13 @@ assign cmd_axis_tlast_ila = cmd_axis_tlast;
 assign cmd_axis_tkeep_ila =       cmd_axis_tkeep;
 assign cmd_axis_tready_ila = cmd_axis_tready;
 
+assign fmc150_spi_ctrl_bus_in_ila = fmc150_spi_ctrl_bus_in;
+assign fmc150_spi_ctrl_bus_out_ila = fmc150_spi_ctrl_bus_out;
+
+//always @(posedge s_axi_aclk) begin
+//    fmc150_spi_ctrl_bus_out_r <= fmc150_spi_ctrl_bus_out;
+//    fmc150_spi_ctrl_bus_out_rr <= fmc150_spi_ctrl_bus_out_r;
+//    fmc150_spi_ctrl_bus_out_rrr <= fmc150_spi_ctrl_bus_out_rr;
+//end
 
 endmodule

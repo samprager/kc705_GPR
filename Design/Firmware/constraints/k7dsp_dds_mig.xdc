@@ -19,7 +19,8 @@ set_input_jitter [get_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst
 #set_input_jitter [get_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]] 0.05000000074505806
 
 # Exception paths
-# set_clock_groups -physically_exclusive -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]]
+#set_clock_groups -physically_exclusive -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]]
+set_clock_groups -physically_exclusive -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKIN1]]
 
 #set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKIN1]]
 set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKIN1]]

@@ -163,9 +163,12 @@ port (
   clk_out_491_52MHz     :out std_logic;
   clk_245_rst           :out std_logic;
 
+--  clk_100Mhz_out  :out std_logic;
+--  clk_100Mhz_rst :out std_logic;
+  
   clk_100Mhz  :in std_logic;
-  clk_200Mhz  :in std_logic;
-  mmcm_locked :in std_logic;
+  clk_200Mhz :in std_logic;
+  mmcm_locked : in std_logic;
 
  -- adc_data_out : out std_logic_vector(511 downto 0);
   --KC705 Resources
@@ -909,6 +912,8 @@ Busy_signal <= vio_sync_in(47);
 -- vio_sync_out(65 downto 65) <= ADS62P49(0 downto 0);
 -- vio_sync_out(66 downto 66) <= DAC3283(0 downto 0);
 -- vio_sync_out(67 downto 67) <= AMC7823(0 downto 0);
+
+
 --  -- Synch In
 --  signal ADC_Ch_A_iDelay       : std_logic_vector(4 downto 0);
 --  signal ADC_Ch_B_iDelay       : std_logic_vector(4 downto 0);
@@ -1160,6 +1165,9 @@ end process iDelay_update;
 -- );
 
 arst <= not mmcm_locked;
+
+--clk_100Mhz_out <= clk_100Mhz;
+--clk_100Mhz_rst <= arst;
 
 ----------------------------------------------------------------------------------------------------
 -- Clock from ADC on FMC150 for channel A and B
