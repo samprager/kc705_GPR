@@ -295,6 +295,9 @@ function integer clogb2 (input integer size);
   wire                          clk_245_rst;
 //wire                          clk_491_52MHz;
 
+  wire        fmc150_clk_100Mhz;
+  wire        fmc150_clk_100Mhz_rst;
+
 //////////////////////////////////////////
 // DDR3 MIG Wires
 //////////////////////////////////////////
@@ -413,6 +416,9 @@ wire [31:0]            chirp_count_max;
 wire [31:0]                 ch_prf_int; // prf in sec
 wire [31:0]                 ch_prf_frac;
 wire [31:0]                 adc_sample_time;
+
+wire [67:0] fmc150_spi_ctrl_bus_in;
+wire [47:0] fmc150_spi_ctrl_bus_out;
 
 wire [7:0] fmc150_ctrl_bus;
 wire [7:0] fmc150_ctrl_bus_bypass;
@@ -642,6 +648,8 @@ control_module #(
   .cmd_axis_tkeep        (cmd_pkt_axis_tkeep),
   .cmd_axis_tready       (cmd_pkt_axis_tready),
 
+  .fmc150_spi_ctrl_bus_in (fmc150_spi_ctrl_bus_in),
+  .fmc150_spi_ctrl_bus_out (fmc150_spi_ctrl_bus_out),
   //fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
   .fmc150_ctrl_bus (fmc150_ctrl_bus),
   // output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
@@ -885,6 +893,8 @@ fmc150_dac_adc_inst
      .chirp_tuning_word_coeff    (chirp_parameters[63:32]),
      .chirp_count_max            (chirp_parameters[31:0]),
 
+    //  .clk_100Mhz (fmc150_clk_100Mhz),
+    //  .clk_100Mhz_rst (fmc150_clk_100Mhz_rst),
      .clk_100Mhz (s_axi_aclk),
      .clk_200Mhz (refclk_bufg),
      .mmcm_locked (dcm_locked),

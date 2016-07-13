@@ -45,6 +45,9 @@ module fmc150_dac_adc #
   input [31:0] chirp_tuning_word_coeff,
   input [31:0] chirp_count_max,
 
+  // output clk_100Mhz,
+  // output clk_100Mhz_rst,
+
   input clk_100Mhz,
   input clk_200Mhz,
   input mmcm_locked,
@@ -68,7 +71,7 @@ module fmc150_dac_adc #
 
   input [7:0] fmc150_ctrl_bus,
   input [67:0] fmc150_spi_ctrl_bus_in,
-  input [47:0] fmc150_spi_ctrl_bus_out,
+  output [47:0] fmc150_spi_ctrl_bus_out,
 
  // --Clock/Data connection to ADC on FMC150 (ADS62P49)
   input clk_ab_p,        //                : in    std_logic;
@@ -172,6 +175,9 @@ module fmc150_dac_adc #
         .clk_out_245_76MHz  (clk_245_76MHz),
         .clk_out_491_52MHz  (clk_491_52MHz),
         .clk_245_rst (clk_245_rst),
+
+//        .clk_100Mhz_out (clk_100Mhz),
+//        .clk_100Mhz_rst (clk_100Mhz_rst),
 
         .clk_100Mhz (clk_100Mhz),
         .clk_200Mhz (clk_200Mhz),
