@@ -286,8 +286,8 @@ config_reg_map_inst (
 //ila_regmap ila_regmap_inst (
 //.clk (s_axi_aclk),
 ////.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
-//.probe0             (reg_map_wr_cmd),
-//.probe1            (reg_map_wr_addr),
+//.probe0             (fmc150_spi_ctrl_bus_in_ila),
+//.probe1            (fmc150_spi_ctrl_bus_out_ila),
 ////.probe2            (reg_map_wr_data),
 ////.probe3            (reg_map_wr_keep),
 ////.probe4           (reg_map_wr_valid),

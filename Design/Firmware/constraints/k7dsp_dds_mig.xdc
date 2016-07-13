@@ -16,12 +16,13 @@ set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets example_clocks/clkin1]
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets fmc150_dac_adc_inst/KC705_fmc150_inst/clk_in1]
 
 set_input_jitter [get_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] 0.04100000113248825
-set_input_jitter [get_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]] 0.05000000074505806
+#set_input_jitter [get_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]] 0.05000000074505806
 
 # Exception paths
-set_clock_groups -physically_exclusive -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]]
+# set_clock_groups -physically_exclusive -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]]
 
-set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKIN1]]
+#set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKIN1]]
+set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks -of [get_pins fmc150_dac_adc_inst/KC705_fmc150_inst/mmcm_adac_inst/inst/mmcm_adv_inst/CLKIN1]] -group [get_clocks -include_generated_clocks -of [get_pins example_clocks/clock_generator/mmcm_adv_inst/CLKIN1]]
 
 #IO Constraints
 
@@ -283,4 +284,4 @@ set_property LOC XADC_X0Y0 [get_cells u_mig_7series_1/u_mig_7series_1_mig/temp_m
 
 set_property FIXED_ROUTE { { IOB_IBUF0 RIOI_I0 RIOI_ILOGIC0_D IOI_ILOGIC0_O RIOI_I2GCLK_TOP0  { HCLK_CMT_CK_IN0 CLK_HROW_BOT_R_CK_BUFG_CASCO20 CLK_HROW_BOT_R_CK_BUFG_CASCO20 CLK_HROW_BOT_R_CK_BUFG_CASCO20 CLK_BUFG_BUFGCTRL10_I0 }  HCLK_CMT_MUX_OUT_FREQ_REF0 HCLK_CMT_FREQ_REF_NS0 PLL_CLK_FREQ_BB_BUFOUT_NS0 MMCM_CLK_FREQ_BB_NS0 CMT_L_LOWER_B_CLK_FREQ_BB3 CMT_LR_LOWER_B_MMCM_CLKIN1 }  } [get_nets example_clocks/clkin1]
 set_property FIXED_ROUTE { { LIOI_IDELAY0_DATAOUT LIOI_ILOGIC0_DDLY IOI_ILOGIC0_O IOI_LOGIC_OUTS18_1 INT_INTERFACE_LOGIC_OUTS_L18 SE6BEG0 SE6BEG0 SE6BEG0 SE6BEG0 SE6BEG0 SE6BEG0 SE6BEG0 LH12 LH12 LH12 LH12 LH12 EE4BEG3 EE4BEG3 SE6BEG3 NE6BEG0 NE6BEG0 NE6BEG0 NE2BEG0 EE2BEG0 ER1BEG1 CLK_L0 CMT_L_LOWER_B_CLK_IN1_INT CMT_LR_LOWER_B_MMCM_CLKIN1 }  } [get_nets fmc150_dac_adc_inst/KC705_fmc150_inst/clk_in1]
-set_property LOC BSCAN_X0Y0 [get_cells dbg_hub/inst/bscan_inst/SERIES7_BSCAN.bscan_inst]
+#set_property LOC BSCAN_X0Y0 [get_cells dbg_hub/inst/bscan_inst/SERIES7_BSCAN.bscan_inst]
