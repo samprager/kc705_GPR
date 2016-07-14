@@ -43,6 +43,9 @@ module sim_tb_cmd_decoder;
   reg [127:0] test_packet_2 = 128'h46465757fc1700001e00000004000000;
   reg [127:0] test_packet_3 = 128'h77000000000000000000010001040001;
 
+  reg [127:0] test_packet_rd_1 = 128'h5a0102030405a45e60ee9f35000e0100;
+  reg[95:0] test_packet_rd_2 = 96'h4343525204000000efbeedfe;
+//  reg[95:0] test_packet_rd_2 = 96'h646525275000000efbeedfe;
 
 
          // data from ADC Data fifo
@@ -70,6 +73,7 @@ wire                                rx_axis_tuser;
  reg [6*8-1:0]     fpga_mac = FPGA_MAC_ADDR;
  reg [7:0] cmd_id_reg = 8'h00;
  reg [1:0] command_type;
+ reg use_wr_packet = 1'b1;
 
 
  wire     frame_error;
@@ -142,7 +146,10 @@ wire                                rx_axis_tuser;
       tx_axis_tready_reg = 1'b0;
       repeat(32) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b1;
-      repeat(16000) @(posedge gtx_tclk_i);
+      use_wr_packet = 1'b1;
+      repeat(2048) @(posedge gtx_tclk_i);
+      use_wr_packet = 1'b0;
+      repeat(2048) @(posedge gtx_tclk_i);
       // tx_axis_tready_reg = 1'b0;
       // repeat(32) @(posedge gtx_tclk_i);
       // tx_axis_tready_reg = 1'b0;
@@ -179,6 +186,7 @@ wire                                rx_axis_tuser;
            command_type <= 0;
 
         end else if(use_test_packet) begin
+        if (use_wr_packet) begin
          data_counter <= data_counter + 1'b1;
           if (data_counter < 8'hd0)
               rx_axis_tvalid_reg <= 1'b0;
@@ -215,7 +223,31 @@ wire                                rx_axis_tuser;
             test_packet_3<= 128'hc8000000000300000100000000100000;
            end
            end
+          end else begin
+          data_counter <= data_counter + 1'b1;
+           if (data_counter < 8'he4)
+               rx_axis_tvalid_reg <= 1'b0;
+           else
+               rx_axis_tvalid_reg <= 1'b1;
+           if (data_counter == 8'hff)
+              rx_axis_tlast_reg <= 1'b1;
+           else
+               rx_axis_tlast_reg <= 1'b0;
 
+           if (data_counter >=8'he4 & data_counter<8'hf4) begin
+               rx_axis_tdata_reg <= test_packet_rd_1[8'h80-(8'h8*(data_counter-8'he4))-1-:8];
+           end else if (data_counter >=8'hf4) begin
+               rx_axis_tdata_reg <= test_packet_rd_2[8'h60-(8'h8*(data_counter-8'hf4))-1-:8];
+            end
+           if (data_counter == 8'hff) begin
+             command_type <= command_type + 1;
+             if (command_type[0]) begin
+              test_packet_rd_2 <= 96'h4343525204000000efbeedfe;
+            end else  begin
+              test_packet_rd_2 <= 96'h4646525275000000efbeedfe;
+            end
+            end
+          end
         end else begin
            data_counter <= data_counter + 1'b1;
            if (data_counter < 8'h40)
