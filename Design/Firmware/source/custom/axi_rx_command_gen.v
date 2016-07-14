@@ -40,6 +40,10 @@ module axi_rx_command_gen #(
     output    [31:0] tdata,
     output           tvalid,
     output           tlast,
+    output    [3:0]  tkeep,
+    output    [3:0]  tdest,
+    output    [3:0]  tid,
+    output    [31:0] tuser,
     input            tready
 
   //  output reg  [8*REG_WIDTH-1:0]        reg_map_axis_tdata,
@@ -55,7 +59,12 @@ localparam     IDLE        = 3'b000,
                DATA        = 3'b010,
                OVERHEAD    = 3'b011;
 
-localparam     WRITE_CMD = 32'h57575757;     //Ascii Write
+localparam     CHIRP_WRITE_COMMAND = 32'h57574343;     //Ascii WWCC
+localparam     FMC150_WRITE_COMMAND = 32'h57574646;     //Ascii WWFF
+localparam     DATA_WRITE_COMMAND = 32'h57574441;       //Ascii WWDA
+
+localparam    CHIRP_READ_COMMAND = 32'h52524343;         //Ascii RRCC
+localparam    FMC150_READ_COMMAND = 32'h52524646;         //Ascii RRFF
 
 
 reg [31:0]                 next_cmd_word;
@@ -80,10 +89,16 @@ reg                        cmd_axis_tready_int;
 reg       [31:0]                   tdata_reg;
 reg                                tvalid_reg;
 reg                                tlast_reg;
+reg       [3:0]                    tdest_reg;
+reg       [3:0]                    tid_reg;
+reg       [3:0]                    tkeep_reg;
+reg       [31:0]                   tuser_reg;
 
 reg                       has_command;
 reg                       new_command;
 reg                       write_command;
+reg                       read_command;
+
 
 
 wire                       axi_treset;
@@ -96,7 +111,7 @@ begin
    if (axi_treset) begin
    cmd_axis_tvalid_reg <= 1'b0;
    cmd_axis_tlast_reg <= 1'b0;
-   cmd_axis_tdata_reg <= 7'b0;
+   cmd_axis_tdata_reg <= 32'b0;
    end else begin
    cmd_axis_tvalid_reg <= cmd_axis_tvalid;
    cmd_axis_tlast_reg <= cmd_axis_tlast;
@@ -175,7 +190,7 @@ begin
     write_command <= 1'b0;
   end
   else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int) begin
-    if (cmd_axis_tdata == WRITE_CMD)
+    if ((cmd_axis_tdata == CHIRP_WRITE_COMMAND) | (cmd_axis_tdata == FMC150_WRITE_COMMAND))
       write_command <= 1'b1;
     else
       write_command <= 1'b0;
@@ -185,9 +200,23 @@ end
 
 always @(posedge axi_tclk)
 begin
+  if (axi_treset) begin
+    read_command <= 1'b0;
+  end
+  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int) begin
+    if ((cmd_axis_tdata == CHIRP_READ_COMMAND) | (cmd_axis_tdata == FMC150_READ_COMMAND))
+      read_command <= 1'b1;
+    else
+      read_command <= 1'b0;
+  end else if (gen_state != NEXT_CMD)
+      read_command <= 1'b0;
+end
+
+always @(posedge axi_tclk)
+begin
   if (axi_treset)
     next_cmd_word <= 0;
-  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & !write_command)
+  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & !write_command & !read_command)
     next_cmd_word <= cmd_axis_tdata;
 end
 
@@ -195,7 +224,7 @@ always @(posedge axi_tclk)
 begin
   if (axi_treset)
     next_cmd_id <= 0;
-  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & write_command)
+  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & (write_command | read_command))
     next_cmd_id <= cmd_axis_tdata;
 end
 
@@ -204,7 +233,7 @@ begin
   if (axi_treset) begin
     new_command <= 0;
   end
-  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & write_command) begin
+  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & (write_command | read_command)) begin
       if (cmd_axis_tdata != curr_cmd_id)
         new_command <= 1'b1;
       else
@@ -217,7 +246,7 @@ always @(posedge axi_tclk)
 begin
   if (axi_treset)
     curr_cmd_word <= 0;
-  else if (write_command)
+  else if ((write_command | read_command))
       curr_cmd_word <= next_cmd_word;
   else
       curr_cmd_word <= curr_cmd_word;
@@ -242,8 +271,75 @@ begin
    else if (gen_state == DATA & cmd_axis_tvalid & cmd_axis_tready_int) begin
       tdata_reg <= cmd_axis_tdata;
    end
-   else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & new_command) begin
-     tdata_reg <= cmd_axis_tdata;
+  //  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & new_command) begin
+  //    tdata_reg <= cmd_axis_tdata;
+  else if (gen_state == NEXT_CMD & new_command) begin
+    tdata_reg <= curr_cmd_word;
+   end
+end
+
+always @(posedge axi_tclk)
+begin
+   if (axi_treset) begin
+      tuser_reg <= 0;
+   end
+   else if (gen_state == DATA & cmd_axis_tvalid & cmd_axis_tready_int) begin
+      tuser_reg <= curr_cmd_id;
+   end
+  //  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & new_command) begin
+  //    tdata_reg <= cmd_axis_tdata;
+  else if (gen_state == NEXT_CMD & new_command) begin
+    tuser_reg <= next_cmd_id;
+   end
+end
+
+always @(posedge axi_tclk)
+begin
+   if (axi_treset) begin
+      tkeep_reg <= 0;
+   end
+   else if (gen_state == DATA & cmd_axis_tvalid & cmd_axis_tready_int) begin
+      tkeep_reg <= 4'hf;
+   end
+  //  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & new_command) begin
+  //    tdata_reg <= cmd_axis_tdata;
+  else if (gen_state == NEXT_CMD & new_command) begin
+    tkeep_reg <= 4'hf;
+   end
+end
+
+// now generate the WR fifo TID output
+always @(posedge axi_tclk)
+begin
+   tid_reg <= 0;
+end
+
+always @(posedge axi_tclk)
+begin
+   if (axi_treset) begin
+      tdest_reg <= 0;
+   end
+   else if (gen_state == DATA & cmd_axis_tvalid & cmd_axis_tready_int) begin
+      if(curr_cmd_word == CHIRP_WRITE_COMMAND)
+        tdest_reg <= 4'b0000;
+      else if(curr_cmd_word == FMC150_WRITE_COMMAND)
+        tdest_reg <= 4'b0001;
+     else if(curr_cmd_word == CHIRP_READ_COMMAND)
+          tdest_reg <= 4'b0010;
+      else if(curr_cmd_word == FMC150_READ_COMMAND)
+          tdest_reg <= 4'b0011;
+   end
+  //  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & new_command) begin
+  //    tdata_reg <= cmd_axis_tdata;
+  else if (gen_state == NEXT_CMD & new_command) begin
+    if(curr_cmd_word == CHIRP_WRITE_COMMAND)
+      tdest_reg <= 4'b0000;
+    else if(curr_cmd_word == FMC150_WRITE_COMMAND)
+      tdest_reg <= 4'b0001;
+    else if(curr_cmd_word == CHIRP_READ_COMMAND)
+         tdest_reg <= 4'b0010;
+     else if(curr_cmd_word == FMC150_READ_COMMAND)
+         tdest_reg <= 4'b0011;
    end
 end
 
@@ -269,7 +365,8 @@ begin
    //else if (gen_state == DATA & rx_axis_tvalid)
    else if (gen_state == DATA & cmd_axis_tvalid)
       tvalid_reg <= 1'b1;
-   else if(gen_state == NEXT_CMD & new_command & cmd_axis_tvalid)
+//   else if(gen_state == NEXT_CMD & new_command & cmd_axis_tvalid)
+  else if(gen_state == NEXT_CMD & new_command)
       tvalid_reg <= 1'b1;
    else if (tready)
       tvalid_reg <= 0;
@@ -285,7 +382,8 @@ begin
    else begin
     if (next_gen_state == DATA & tready)
          cmd_axis_tready_int <= 1;
-   else if(gen_state == NEXT_CMD & (!new_command | tready))
+   //else if(gen_state == NEXT_CMD & (!new_command | tready))
+   else if(gen_state == NEXT_CMD & (!new_command))
         cmd_axis_tready_int <= 1;
     else
         cmd_axis_tready_int <= 0;
@@ -300,6 +398,10 @@ end
 assign tvalid = tvalid_reg;
 assign tlast = tlast_reg;
 assign tdata = tdata_reg;
+assign tuser = tuser_reg;
+assign tdest = tdest_reg;
+assign tkeep = tkeep_reg;
+assign tid = tid_reg;
 
 assign cmd_axis_tready = cmd_axis_tready_int;
 

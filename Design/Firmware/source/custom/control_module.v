@@ -51,11 +51,13 @@
 // -----------------------
 
 module control_module # (
+parameter SIMULATION = 0,
 parameter REG_ADDR_WIDTH                            = 8,
 parameter CORE_DATA_WIDTH                           = 32,
 parameter CORE_BE_WIDTH                             = CORE_DATA_WIDTH/8,
 parameter ADC_CLK_FREQ                              = 245.7,
-parameter RX_PKT_CMD_DWIDTH                         = 192,
+parameter RX_WR_CMD_DWIDTH                         = 192,
+parameter RX_RD_CMD_DWIDTH                         = 192,
 
 parameter CHIRP_CLK_FREQ = 245760000    // Hz
 )
@@ -94,11 +96,18 @@ parameter CHIRP_CLK_FREQ = 245760000    // Hz
   output adc_enable,          // high while adc samples saved
 
   // Decoded Commands from RGMII RX fifo
-  input [RX_PKT_CMD_DWIDTH-1:0]         cmd_axis_tdata,
-  input                                 cmd_axis_tvalid,
-  input                                 cmd_axis_tlast,
-  input [RX_PKT_CMD_DWIDTH/8-1:0]       cmd_axis_tkeep,
-  output                                cmd_axis_tready,
+  input [RX_WR_CMD_DWIDTH-1:0]         ch_wr_cmd_axis_tdata,
+  input                                 ch_wr_cmd_axis_tvalid,
+  input                                 ch_wr_cmd_axis_tlast,
+  input [RX_WR_CMD_DWIDTH/8-1:0]       ch_wr_cmd_axis_tkeep,
+  output                                ch_wr_cmd_axis_tready,
+
+  // Decoded Commands from RGMII RX fifo
+  input [RX_WR_CMD_DWIDTH-1:0]         sp_wr_cmd_axis_tdata,
+  input                                 sp_wr_cmd_axis_tvalid,
+  input                                 sp_wr_cmd_axis_tlast,
+  input [RX_WR_CMD_DWIDTH/8-1:0]       sp_wr_cmd_axis_tkeep,
+  output                                sp_wr_cmd_axis_tready,
 
 
   output [7:0] fmc150_ctrl_bus,
@@ -152,10 +161,10 @@ wire data_tx_init;        // single pulse to start tx data
 wire data_tx_enable;      // continuous high while transmit enabled
 
   // Decoded Commands from RGMII RX fifo
-wire [RX_PKT_CMD_DWIDTH-1:0]         cmd_axis_tdata_ila;
+wire [RX_WR_CMD_DWIDTH-1:0]         cmd_axis_tdata_ila;
 wire                                 cmd_axis_tvalid_ila;
 wire                                 cmd_axis_tlast_ila;
-wire [RX_PKT_CMD_DWIDTH/8-1:0]       cmd_axis_tkeep_ila;
+wire [RX_WR_CMD_DWIDTH/8-1:0]       cmd_axis_tkeep_ila;
 wire                                cmd_axis_tready_ila;
 
 wire [67:0] fmc150_spi_ctrl_bus_in_ila;
@@ -231,7 +240,8 @@ reg_map_cmd_gen reg_map_cmd_gen_inst (
 );
 
 config_reg_map #(
-  .RX_PKT_CMD_DWIDTH (RX_PKT_CMD_DWIDTH),
+  .RX_WR_CMD_DWIDTH (RX_WR_CMD_DWIDTH),
+  .RX_RD_CMD_DWIDTH (RX_RD_CMD_DWIDTH),
    .CHIRP_CLK_FREQ (CHIRP_CLK_FREQ)
 )
 config_reg_map_inst (
@@ -249,12 +259,25 @@ config_reg_map_inst (
 
   .network_cmd_en     (1'b1),
 
+  // // Decoded Commands from RGMII RX fifo
+  // .cmd_axis_tdata        (cmd_axis_tdata),
+  // .cmd_axis_tvalid       (cmd_axis_tvalid),
+  // .cmd_axis_tlast        (cmd_axis_tlast),
+  // .cmd_axis_tkeep        (cmd_axis_tkeep),
+  // .cmd_axis_tready       (cmd_axis_tready),
   // Decoded Commands from RGMII RX fifo
-  .cmd_axis_tdata        (cmd_axis_tdata),
-  .cmd_axis_tvalid       (cmd_axis_tvalid),
-  .cmd_axis_tlast        (cmd_axis_tlast),
-  .cmd_axis_tkeep        (cmd_axis_tkeep),
-  .cmd_axis_tready       (cmd_axis_tready),
+  .ch_wr_cmd_axis_tdata        (ch_wr_cmd_axis_tdata),
+  .ch_wr_cmd_axis_tvalid       (ch_wr_cmd_axis_tvalid),
+  .ch_wr_cmd_axis_tlast        (ch_wr_cmd_axis_tlast),
+  .ch_wr_cmd_axis_tkeep        (ch_wr_cmd_axis_tkeep),
+  .ch_wr_cmd_axis_tready       (ch_wr_cmd_axis_tready),
+
+  // Decoded Commands from RGMII RX fifo
+  .sp_wr_cmd_axis_tdata        (sp_wr_cmd_axis_tdata),
+  .sp_wr_cmd_axis_tvalid       (sp_wr_cmd_axis_tvalid),
+  .sp_wr_cmd_axis_tlast        (sp_wr_cmd_axis_tlast),
+  .sp_wr_cmd_axis_tkeep        (sp_wr_cmd_axis_tkeep),
+  .sp_wr_cmd_axis_tready       (sp_wr_cmd_axis_tready),
 
  // .gpio_dip_sw (gpio_dip_sw),
   // Chirp Control registers
@@ -289,7 +312,7 @@ config_reg_map_inst (
   .ethernet_ctrl_bus (ethernet_ctrl_bus)
 
 );
-
+generate if (SIMULATION == 0) begin
 ila_regmap ila_regmap_inst (
 .clk (s_axi_aclk),
 //.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
@@ -318,12 +341,15 @@ ila_regmap ila_regmap_inst (
 .probe13                         (ethernet_ctrl_bus),
 .probe14                         (fmc150_ctrl_bus)
 );
+end
+endgenerate
+
   // Decoded Commands from RGMII RX fifo
-assign cmd_axis_tdata_ila =         cmd_axis_tdata;
-assign cmd_axis_tvalid_ila = cmd_axis_tvalid;
-assign cmd_axis_tlast_ila = cmd_axis_tlast;
-assign cmd_axis_tkeep_ila =       cmd_axis_tkeep;
-assign cmd_axis_tready_ila = cmd_axis_tready;
+assign cmd_axis_tdata_ila =         ch_wr_cmd_axis_tdata;
+assign cmd_axis_tvalid_ila = ch_wr_cmd_axis_tvalid;
+assign cmd_axis_tlast_ila = ch_wr_cmd_axis_tlast;
+assign cmd_axis_tkeep_ila =       ch_wr_cmd_axis_tkeep;
+assign cmd_axis_tready_ila = ch_wr_cmd_axis_tready;
 
 assign fmc150_spi_ctrl_bus_in_ila = fmc150_spi_ctrl_bus_in;
 assign fmc150_spi_ctrl_bus_out_ila = fmc150_spi_ctrl_bus_out;

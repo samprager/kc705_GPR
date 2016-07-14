@@ -358,9 +358,9 @@ begin
    else if (gen_state == HEADER & !(|dest_mac_count)) begin
       if (dest_mac_addr != SRC_ADDR)
         pkt_good <= 1'b0;
-    end else if(gen_state == COUNTER) begin
-       if (pkt_size != (REG_MAP_OUT_LEN + PKT_CTR_LEN))
-         pkt_good <= 1'b0;
+    // end else if(gen_state == COUNTER) begin
+    //    if (pkt_size != (REG_MAP_OUT_LEN + PKT_CTR_LEN))
+    //      pkt_good <= 1'b0;
    end
 end
 

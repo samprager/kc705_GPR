@@ -9,6 +9,8 @@ module sim_tb_cmd_decoder;
    localparam HOST_MAC_ADDR = 48'h985aebdb066f;
    localparam FPGA_MAC_ADDR = 48'h5a0102030405;
 
+   localparam use_test_packet = 1;
+
     reg axi_tresetn_i;
     reg axi_tclk_i;
 
@@ -34,8 +36,14 @@ module sim_tb_cmd_decoder;
   reg                                rx_axis_tvalid_reg;
   reg                                rx_axis_tlast_reg;
   reg                                rx_axis_tuser_reg;
-  
+
   reg [7:0]                     temp_data;
+
+  reg [127:0] test_packet_1 = 128'h5a0102030405a45e60ee9f3500220200;
+  reg [127:0] test_packet_2 = 128'h46465757fc1700001e00000004000000;
+  reg [127:0] test_packet_3 = 128'h77000000000000000000010001040001;
+
+
 
          // data from ADC Data fifo
 wire       [7:0]                   rx_axis_tdata;
@@ -61,7 +69,8 @@ wire                                rx_axis_tuser;
 
  reg [6*8-1:0]     fpga_mac = FPGA_MAC_ADDR;
  reg [7:0] cmd_id_reg = 8'h00;
-  
+ reg [1:0] command_type;
+
 
  wire     frame_error;
  wire activity_flash;
@@ -133,7 +142,7 @@ wire                                rx_axis_tuser;
       tx_axis_tready_reg = 1'b0;
       repeat(32) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b1;
-      repeat(8192) @(posedge gtx_tclk_i);
+      repeat(16000) @(posedge gtx_tclk_i);
       // tx_axis_tready_reg = 1'b0;
       // repeat(32) @(posedge gtx_tclk_i);
       // tx_axis_tready_reg = 1'b0;
@@ -167,7 +176,47 @@ wire                                rx_axis_tuser;
            rx_axis_tlast_reg <= 1'b0;
            rx_axis_tuser_reg <= 1'b0;
            cmd_id_reg <= 'b0;
-                  end else begin
+           command_type <= 0;
+
+        end else if(use_test_packet) begin
+         data_counter <= data_counter + 1'b1;
+          if (data_counter < 8'hd0)
+              rx_axis_tvalid_reg <= 1'b0;
+          else
+              rx_axis_tvalid_reg <= 1'b1;
+          if (data_counter == 8'hff)
+             rx_axis_tlast_reg <= 1'b1;
+          else
+              rx_axis_tlast_reg <= 1'b0;
+
+          if (data_counter >=8'hd0 & data_counter<8'he0) begin
+              rx_axis_tdata_reg <= test_packet_1[8'h80-(8'h8*(data_counter-8'hd0))-1-:8];
+          end else if (data_counter >=8'he0 & data_counter<8'hf0) begin
+              rx_axis_tdata_reg <= test_packet_2[8'h80-(8'h8*(data_counter-8'he0))-1-:8];
+              if (data_counter == 8'he5)
+                test_packet_2[95:88] <= test_packet_2[95:88]+1;
+          end else if (data_counter >=8'hf0)begin
+              rx_axis_tdata_reg <= test_packet_3[8'h80-(8'h8*(data_counter-8'hf0))-1-:8];
+           end
+          if (data_counter == 8'hff) begin
+            command_type <= command_type + 1;
+            if (command_type == 2'b0) begin
+             test_packet_2 <= 128'h46465757fc1700001e00000004000000;
+             test_packet_3 <= 128'h77000000000000000000010001040001;
+           end else if (command_type == 2'b1) begin
+            test_packet_2 <= 128'h46465757e42a00001e12070004000000;
+            test_packet_3 <= 128'h77000000010101010000010001040001;
+           end else if (command_type == 2'b10)begin
+            test_packet_2 <= 128'h464657573e2b00001e120700edfe0000;
+            test_packet_3<= 128'h04030201010101010000000101080010;
+           end
+           else if (command_type == 2'b11)begin
+            test_packet_2 <= 128'h43435757ce2b00000000000000007c92;
+            test_packet_3<= 128'hc8000000000300000100000000100000;
+           end
+           end
+
+        end else begin
            data_counter <= data_counter + 1'b1;
            if (data_counter < 8'h40)
                rx_axis_tvalid_reg <= 1'b0;
@@ -192,18 +241,31 @@ wire                                rx_axis_tuser;
    //        end else if (data_counter==8'h50) begin
    //             rx_axis_tdata_reg <= 8'h57;
    //             temp_data <=rx_axis_tdata_reg+1'b1;
-           end else if (data_counter>=8'h50 & data_counter<8'h54)
-             rx_axis_tdata_reg <= 8'h57;
+           end
+
+           else if (data_counter>=8'h50 & data_counter<8'h52)begin
+                if(command_type[0])
+                    rx_axis_tdata_reg <= 8'h43;
+                else
+                    rx_axis_tdata_reg <= 8'h46;
+           end
+           else if (data_counter>=8'h52 & data_counter<8'h54) begin
+               if(command_type[1])
+                   rx_axis_tdata_reg <= 8'h57;
+               else
+                   rx_axis_tdata_reg <= 8'h52;
+           end
            else if (data_counter == 8'h54) begin
              rx_axis_tdata_reg <= cmd_id_reg;
              cmd_id_reg <= cmd_id_reg+1;
+             command_type <= command_type + 1;
            end else if (data_counter == 8'h55) begin
              rx_axis_tdata_reg <= temp_data + 8'h08;
            end else if (rx_axis_tvalid_reg & rx_axis_tready & !rx_axis_tlast_reg)
                rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;
            else if (data_counter == 8'h40)
-               rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1; 
-                          
+               rx_axis_tdata_reg <= rx_axis_tdata_reg + 1'b1;
+
         end
       end
 

@@ -1,6 +1,7 @@
 `timescale 1ps/1ps
 
 module cmd_decoder_top #(
+    parameter SIMULATION = 1,
     parameter DEST_ADDR       =48'h985aebdb066f,
     parameter SRC_ADDR        = 48'h5a0102030405
 )
@@ -29,7 +30,9 @@ output                                rx_axis_tready
 
 );
 
-  localparam RX_PKT_CMD_DWIDTH = 192;
+  localparam RX_WR_CMD_DWIDTH = 192;
+  localparam RX_RD_CMD_DWIDTH = 32;
+  localparam RX_CMD_ID_WIDTH = 32;
 
 
 // Control Module Signals
@@ -60,24 +63,94 @@ wire [31:0]   cmd_pkt_s_axis_tdata;
 wire          cmd_pkt_s_axis_tvalid;
 wire          cmd_pkt_s_axis_tlast;
 wire          cmd_pkt_s_axis_tready;
+wire [31:0]   cmd_pkt_s_axis_tuser;
+wire [3:0]    cmd_pkt_s_axis_tdest;
+wire    [3:0] cmd_pkt_s_axis_tid;
+wire    [3:0] cmd_pkt_s_axis_tkeep;
 
 wire [31:0]   cmd_pkt_axis_tdata;
 wire          cmd_pkt_axis_tvalid;
 wire          cmd_pkt_axis_tlast;
 wire          cmd_pkt_axis_tready;
 
-wire [RX_PKT_CMD_DWIDTH-1:0]   cmd_pkt_m_axis_tdata;
+
+
+wire [31:0]   chirp_cmd_word;
+
+wire [RX_WR_CMD_DWIDTH-1:0]   cmd_pkt_m_axis_tdata;
 wire          cmd_pkt_m_axis_tvalid;
 wire          cmd_pkt_m_axis_tlast;
 wire          cmd_pkt_m_axis_tready;
-wire [RX_PKT_CMD_DWIDTH/8-1:0]   cmd_pkt_m_axis_tkeep;
+wire [(RX_WR_CMD_DWIDTH)/8-1:0]   cmd_pkt_m_axis_tkeep;
 
-wire [RX_PKT_CMD_DWIDTH-1:0]   cmd_axis_tdata;
+wire  [RX_CMD_ID_WIDTH-1:0]        cmd_pkt_id;
+wire  [RX_CMD_ID_WIDTH/8-1:0]        cmd_pkt_id_tkeep;
+
+wire [RX_WR_CMD_DWIDTH-1:0]   cmd_axis_tdata;
 wire          cmd_axis_tvalid;
 wire          cmd_axis_tlast;
 wire          cmd_axis_tready;
-wire [RX_PKT_CMD_DWIDTH/8-1:0]   cmd_axis_tkeep;
+wire [RX_WR_CMD_DWIDTH/8-1:0]   cmd_axis_tkeep;
 
+//`include "../../source/include/rx_cmd_1s4m_ic.v"
+wire [(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:0]     ch_wr_cmd_axis_tdata;
+wire                            ch_wr_cmd_axis_tvalid;
+wire                            ch_wr_cmd_axis_tlast;
+wire                            ch_wr_cmd_axis_tready;
+wire [(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:0]     ch_wr_cmd_axis_tuser;
+wire [(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)/8-1:0]   ch_wr_cmd_axis_tkeep;
+wire [3:0]                      ch_wr_cmd_axis_tdest;
+wire [3:0]                      ch_wr_cmd_axis_tid;
+
+wire  [RX_CMD_ID_WIDTH-1:0]     ch_wr_cmd_id;
+wire  [RX_CMD_ID_WIDTH-1:0]     ch_wr_cmd_id_tuser;
+wire  [RX_CMD_ID_WIDTH/8-1:0]   ch_wr_cmd_id_tkeep;
+
+wire [(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:0]     sp_wr_cmd_axis_tdata;
+wire                            sp_wr_cmd_axis_tvalid;
+wire                            sp_wr_cmd_axis_tlast;
+wire                            sp_wr_cmd_axis_tready;
+wire [(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:0]    sp_wr_cmd_axis_tuser;
+wire [(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)/8-1:0]  sp_wr_cmd_axis_tkeep;
+wire [3:0]                      sp_wr_cmd_axis_tdest;
+wire [3:0]                      sp_wr_cmd_axis_tid;
+
+wire  [RX_CMD_ID_WIDTH-1:0]     sp_wr_cmd_id;
+wire  [RX_CMD_ID_WIDTH-1:0]     sp_wr_cmd_id_tuser;
+wire  [RX_CMD_ID_WIDTH/8-1:0]   sp_wr_cmd_id_tkeep;
+
+wire [(RX_RD_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:0]     ch_rd_cmd_axis_tdata;
+wire                            ch_rd_cmd_axis_tvalid;
+wire                            ch_rd_cmd_axis_tlast;
+wire                            ch_rd_cmd_axis_tready;
+wire [(RX_RD_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:0]    ch_rd_cmd_axis_tuser;
+wire [(RX_RD_CMD_DWIDTH+RX_CMD_ID_WIDTH)/8-1:0]  ch_rd_cmd_axis_tkeep;
+wire [3:0]                      ch_rd_cmd_axis_tdest;
+wire [3:0]                      ch_rd_cmd_axis_tid;
+
+wire  [RX_CMD_ID_WIDTH-1:0]     ch_rd_cmd_id;
+wire  [RX_CMD_ID_WIDTH-1:0]     ch_rd_cmd_id_tuser;
+wire  [RX_CMD_ID_WIDTH/8-1:0]   ch_rd_cmd_id_tkeep;
+
+wire [(RX_RD_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:0]     sp_rd_cmd_axis_tdata;
+wire                            sp_rd_cmd_axis_tvalid;
+wire                            sp_rd_cmd_axis_tlast;
+wire                            sp_rd_cmd_axis_tready;
+wire [(RX_RD_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:0]    sp_rd_cmd_axis_tuser;
+wire [(RX_RD_CMD_DWIDTH+RX_CMD_ID_WIDTH)/8-1:0]  sp_rd_cmd_axis_tkeep;
+wire [3:0]                      sp_rd_cmd_axis_tdest;
+wire [3:0]                      sp_rd_cmd_axis_tid;
+
+wire  [RX_CMD_ID_WIDTH-1:0]     sp_rd_cmd_id;
+wire  [RX_CMD_ID_WIDTH-1:0]     sp_rd_cmd_id_tuser;
+wire  [RX_CMD_ID_WIDTH/8-1:0]   sp_rd_cmd_id_tkeep;
+
+wire S00_CMD_DECODE_ERR;           // output wire S00_DECODE_ERR
+wire [31:0] S00_CMD_FIFO_DATA_COUNT;  // output wire [31 : 0] S00_FIFO_DATA_COUNT
+wire [31:0] M00_CMD_FIFO_DATA_COUNT;  // output wire [31 : 0] M00_FIFO_DATA_COUNT
+wire [31:0] M01_CMD_FIFO_DATA_COUNT;  // output wire [31 : 0] M01_FIFO_DATA_COUNT
+wire [31:0] M02_CMD_FIFO_DATA_COUNT;  // output wire [31 : 0] M02_FIFO_DATA_COUNT
+wire [31:0] M03_CMD_FIFO_DATA_COUNT;  // output wire [31 : 0] M03_FIFO_DATA_COUNT
 
 wire [31:0] cmd_fifo_axis_data_count;        // output wire [31 : 0] axis_data_count
 wire [31:0] cmd_fifo_axis_wr_data_count;  // output wire [31 : 0] axis_wr_data_count
@@ -112,7 +185,8 @@ assign tx_axis_tvalid = 'b0;
 assign tx_axis_tlast = 'b0;
 
 control_module #(
-    .RX_PKT_CMD_DWIDTH (RX_PKT_CMD_DWIDTH)
+    .SIMULATION(SIMULATION),
+    .RX_WR_CMD_DWIDTH (RX_WR_CMD_DWIDTH)
 )control_module_inst(
   .s_axi_aclk   (s_axi_aclk),
   .s_axi_resetn  (s_axi_resetn),
@@ -146,11 +220,18 @@ control_module #(
   //chirp_parameters = {32'b0,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
 
   // Decoded Commands from RGMII RX fifo
-  .cmd_axis_tdata        (cmd_axis_tdata),
-  .cmd_axis_tvalid       (cmd_axis_tvalid),
-  .cmd_axis_tlast        (cmd_axis_tlast),
-  .cmd_axis_tkeep        (cmd_axis_tkeep),
-  .cmd_axis_tready       (cmd_axis_tready),
+  .ch_wr_cmd_axis_tdata        (ch_wr_cmd_axis_tdata[(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:RX_CMD_ID_WIDTH]),
+  .ch_wr_cmd_axis_tvalid       (ch_wr_cmd_axis_tvalid),
+  .ch_wr_cmd_axis_tlast        (ch_wr_cmd_axis_tlast),
+  .ch_wr_cmd_axis_tkeep        (ch_wr_cmd_axis_tkeep[(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)/8-1:RX_CMD_ID_WIDTH/8]),
+  .ch_wr_cmd_axis_tready       (ch_wr_cmd_axis_tready),
+
+  // Decoded Commands from RGMII RX fifo
+  .sp_wr_cmd_axis_tdata        (sp_wr_cmd_axis_tdata[(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:RX_CMD_ID_WIDTH]),
+  .sp_wr_cmd_axis_tvalid       (sp_wr_cmd_axis_tvalid),
+  .sp_wr_cmd_axis_tlast        (sp_wr_cmd_axis_tlast),
+  .sp_wr_cmd_axis_tkeep        (sp_wr_cmd_axis_tkeep[(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)/8-1:RX_CMD_ID_WIDTH/8]),
+  .sp_wr_cmd_axis_tready       (sp_wr_cmd_axis_tready),
 
   .fmc150_spi_ctrl_bus_in (fmc150_spi_ctrl_bus_in),
   .fmc150_spi_ctrl_bus_out (fmc150_spi_ctrl_bus_out),
@@ -175,40 +256,114 @@ control_module #(
 
 );
 
-rx_cmd_axis_data_fifo rx_cmd_axis_data_fifo_inst (
-  .s_axis_aresetn(gtx_resetn),          // input wire s_axis_aresetn
-  .m_axis_aresetn(s_axi_resetn),          // input wire m_axis_aresetn
-  .s_axis_aclk(gtx_clk_bufg),                // input wire s_axis_aclk
-  .s_axis_tvalid(cmd_pkt_m_axis_tvalid),            // input wire s_axis_tvalid
-  .s_axis_tready(cmd_pkt_m_axis_tready),            // output wire s_axis_tready
-  .s_axis_tdata(cmd_pkt_m_axis_tdata),              // input wire [191 : 0] s_axis_tdata
-  .s_axis_tkeep(cmd_pkt_m_axis_tkeep),              // input wire [23 : 0] s_axis_tkeep
-  .s_axis_tlast(cmd_pkt_m_axis_tlast),              // input wire s_axis_tlast
+// rx_cmd_axis_data_fifo rx_cmd_axis_data_fifo_inst (
+//   .s_axis_aresetn(gtx_resetn),          // input wire s_axis_aresetn
+//   .m_axis_aresetn(s_axi_resetn),          // input wire m_axis_aresetn
+//   .s_axis_aclk(gtx_clk_bufg),                // input wire s_axis_aclk
+//   .s_axis_tvalid(cmd_pkt_m_axis_tvalid),            // input wire s_axis_tvalid
+//   .s_axis_tready(cmd_pkt_m_axis_tready),            // output wire s_axis_tready
+//   .s_axis_tdata(cmd_pkt_m_axis_tdata),              // input wire [191 : 0] s_axis_tdata
+//   .s_axis_tkeep(cmd_pkt_m_axis_tkeep),              // input wire [23 : 0] s_axis_tkeep
+//   .s_axis_tlast(cmd_pkt_m_axis_tlast),              // input wire s_axis_tlast
+//
+//   .m_axis_aclk(s_axi_aclk),                // input wire m_axis_aclk
+//   .m_axis_tvalid(cmd_axis_tvalid),            // output wire m_axis_tvalid
+//   .m_axis_tready(cmd_axis_tready),            // input wire m_axis_tready
+//   .m_axis_tdata(cmd_axis_tdata),              // output wire [191 : 0] m_axis_tdata
+//   .m_axis_tkeep(cmd_axis_tkeep),              // output wire [23 : 0] m_axis_tkeep
+//   .m_axis_tlast(cmd_axis_tlast),              // input wire m_axis_tlast
+//   .axis_data_count(cmd_fifo_axis_data_count),        // output wire [31 : 0] axis_data_count
+//   .axis_wr_data_count(cmd_fifo_axis_wr_data_count),  // output wire [31 : 0] axis_wr_data_count
+//   .axis_rd_data_count(cmd_fifo_axis_rd_data_count)  // output wire [31 : 0] axis_rd_data_count
+// );
 
-  .m_axis_aclk(s_axi_aclk),                // input wire m_axis_aclk
-  .m_axis_tvalid(cmd_axis_tvalid),            // output wire m_axis_tvalid
-  .m_axis_tready(cmd_axis_tready),            // input wire m_axis_tready
-  .m_axis_tdata(cmd_axis_tdata),              // output wire [191 : 0] m_axis_tdata
-  .m_axis_tkeep(cmd_axis_tkeep),              // output wire [23 : 0] m_axis_tkeep
-  .m_axis_tlast(cmd_axis_tlast),              // input wire m_axis_tlast
-  .axis_data_count(cmd_fifo_axis_data_count),        // output wire [31 : 0] axis_data_count
-  .axis_wr_data_count(cmd_fifo_axis_wr_data_count),  // output wire [31 : 0] axis_wr_data_count
-  .axis_rd_data_count(cmd_fifo_axis_rd_data_count)  // output wire [31 : 0] axis_rd_data_count
+// rx_cmd_axis_dwidth_converter rx_cmd_axis_dwidth_converter_inst (
+//   .aclk(gtx_clk_bufg),                    // input wire aclk
+//   .aresetn(gtx_resetn),              // input wire aresetn
+//   .s_axis_tvalid(cmd_pkt_s_axis_tvalid),  // input wire s_axis_tvalid
+//   .s_axis_tready(cmd_pkt_s_axis_tready),  // output wire s_axis_tready
+//   .s_axis_tdata(cmd_pkt_s_axis_tdata),    // input wire [31 : 0] s_axis_tdata
+//   .s_axis_tlast(cmd_pkt_s_axis_tlast),    // input wire s_axis_tlast
+//   .m_axis_tvalid(cmd_pkt_m_axis_tvalid),  // output wire m_axis_tvalid
+//   .m_axis_tready(cmd_pkt_m_axis_tready),  // input wire m_axis_tready
+//   .m_axis_tdata({cmd_pkt_m_axis_tdata,cmd_pkt_id}),    // output wire [191 : 0] m_axis_tdata
+//   .m_axis_tkeep({cmd_pkt_m_axis_tkeep,cmd_pkt_id_tkeep}),    // output wire [23 : 0] m_axis_tkeep
+//   .m_axis_tlast(cmd_pkt_m_axis_tlast)    // output wire m_axis_tlast
+// );
+
+// assign cmd_axis_tdata = ch_wr_cmd_axis_tdata[(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:RX_CMD_ID_WIDTH];
+// assign cmd_axis_tvalid = ch_wr_cmd_axis_tvalid;
+// assign cmd_axis_tlast = ch_wr_cmd_axis_tlast;
+// assign cmd_axis_tkeep = ch_wr_cmd_axis_tkeep[(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)/8-1:RX_CMD_ID_WIDTH/8];
+//
+// assign ch_wr_cmd_axis_tready = cmd_axis_tready;
+// assign sp_wr_cmd_axis_tready = 1;
+// assign ch_rd_cmd_axis_tready = 1;
+// assign sp_rd_cmd_axis_tready = 1;
+assign ch_rd_cmd_axis_tready = 1;
+assign sp_rd_cmd_axis_tready = 1;
+
+rx_cmd_1s4m_axis_interconnect rx_cmd_1s4m_axis_interconnect_inst (
+  .ACLK(gtx_clk_bufg),                                // input wire ACLK
+  .ARESETN(gtx_resetn),                          // input wire ARESETN
+  .S00_AXIS_ACLK(gtx_clk_bufg),              // input wire S00_AXIS_ACLK
+  .S00_AXIS_ARESETN(gtx_resetn),        // input wire S00_AXIS_ARESETN
+  .S00_AXIS_TVALID(cmd_pkt_s_axis_tvalid),          // input wire S00_AXIS_TVALID
+  .S00_AXIS_TREADY(cmd_pkt_s_axis_tready),          // output wire S00_AXIS_TREADY
+  .S00_AXIS_TDATA(cmd_pkt_s_axis_tdata),            // input wire [31 : 0] S00_AXIS_TDATA
+  .S00_AXIS_TKEEP(cmd_pkt_s_axis_tkeep),            // input wire [3 : 0] S00_AXIS_TKEEP
+  .S00_AXIS_TLAST(cmd_pkt_s_axis_tlast),            // input wire S00_AXIS_TLAST
+  .S00_AXIS_TID(cmd_pkt_s_axis_tid),                // input wire [3 : 0] S00_AXIS_TID
+  .S00_AXIS_TDEST(cmd_pkt_s_axis_tdest),            // input wire [3 : 0] S00_AXIS_TDEST
+  .S00_AXIS_TUSER(cmd_pkt_s_axis_tuser),            // input wire [31 : 0] S00_AXIS_TUSER
+  .M00_AXIS_ACLK(s_axi_aclk),              // input wire M00_AXIS_ACLK
+  .M01_AXIS_ACLK(s_axi_aclk),              // input wire M01_AXIS_ACLK
+  .M02_AXIS_ACLK(s_axi_aclk),              // input wire M02_AXIS_ACLK
+  .M03_AXIS_ACLK(s_axi_aclk),              // input wire M03_AXIS_ACLK
+  .M00_AXIS_ARESETN(s_axi_resetn),        // input wire M00_AXIS_ARESETN
+  .M01_AXIS_ARESETN(s_axi_resetn),        // input wire M01_AXIS_ARESETN
+  .M02_AXIS_ARESETN(s_axi_resetn),        // input wire M02_AXIS_ARESETN
+  .M03_AXIS_ARESETN(s_axi_resetn),        // input wire M03_AXIS_ARESETN
+  .M00_AXIS_TVALID(ch_wr_cmd_axis_tvalid),          // output wire M00_AXIS_TVALID
+  .M01_AXIS_TVALID(sp_wr_cmd_axis_tvalid),          // output wire M01_AXIS_TVALID
+  .M02_AXIS_TVALID(ch_rd_cmd_axis_tvalid),          // output wire M02_AXIS_TVALID
+  .M03_AXIS_TVALID(sp_rd_cmd_axis_tvalid),          // output wire M03_AXIS_TVALID
+  .M00_AXIS_TREADY(ch_wr_cmd_axis_tready),          // input wire M00_AXIS_TREADY
+  .M01_AXIS_TREADY(sp_wr_cmd_axis_tready),          // input wire M01_AXIS_TREADY
+  .M02_AXIS_TREADY(ch_rd_cmd_axis_tready),          // input wire M02_AXIS_TREADY
+  .M03_AXIS_TREADY(sp_rd_cmd_axis_tready),          // input wire M03_AXIS_TREADY
+  .M00_AXIS_TDATA(ch_wr_cmd_axis_tdata),            // output wire [223 : 0] M00_AXIS_TDATA
+  .M01_AXIS_TDATA(sp_wr_cmd_axis_tdata),            // output wire [223 : 0] M01_AXIS_TDATA
+  .M02_AXIS_TDATA(ch_rd_cmd_axis_tdata),            // output wire [63 : 0] M02_AXIS_TDATA
+  .M03_AXIS_TDATA(sp_rd_cmd_axis_tdata),            // output wire [63 : 0] M03_AXIS_TDATA
+  .M00_AXIS_TKEEP(ch_wr_cmd_axis_tkeep),            // output wire [27 : 0] M00_AXIS_TKEEP
+  .M01_AXIS_TKEEP(sp_wr_cmd_axis_tkeep),            // output wire [27 : 0] M01_AXIS_TKEEP
+  .M02_AXIS_TKEEP(ch_rd_cmd_axis_tkeep),            // output wire [7 : 0] M02_AXIS_TKEEP
+  .M03_AXIS_TKEEP(sp_rd_cmd_axis_tkeep),            // output wire [7 : 0] M03_AXIS_TKEEP
+  .M00_AXIS_TLAST(ch_wr_cmd_axis_tlast),            // output wire M00_AXIS_TLAST
+  .M01_AXIS_TLAST(sp_wr_cmd_axis_tlast),            // output wire M01_AXIS_TLAST
+  .M02_AXIS_TLAST(ch_rd_cmd_axis_tlast),            // output wire M02_AXIS_TLAST
+  .M03_AXIS_TLAST(sp_rd_cmd_axis_tlast),            // output wire M03_AXIS_TLAST
+  .M00_AXIS_TID(ch_wr_cmd_axis_tid),                // output wire [3 : 0] M00_AXIS_TID
+  .M01_AXIS_TID(sp_wr_cmd_axis_tid),                // output wire [3 : 0] M01_AXIS_TID
+  .M02_AXIS_TID(ch_rd_cmd_axis_tid),                // output wire [3 : 0] M02_AXIS_TID
+  .M03_AXIS_TID(sp_rd_cmd_axis_tid),                // output wire [3 : 0] M03_AXIS_TID
+  .M00_AXIS_TDEST(ch_wr_cmd_axis_tdest),            // output wire [3 : 0] M00_AXIS_TDEST
+  .M01_AXIS_TDEST(sp_wr_cmd_axis_tdest),            // output wire [3 : 0] M01_AXIS_TDEST
+  .M02_AXIS_TDEST(ch_rd_cmd_axis_tdest),            // output wire [3 : 0] M02_AXIS_TDEST
+  .M03_AXIS_TDEST(sp_rd_cmd_axis_tdest),            // output wire [3 : 0] M03_AXIS_TDEST
+  .M00_AXIS_TUSER(ch_wr_cmd_axis_tuser),            // output wire [223 : 0] M00_AXIS_TUSER
+  .M01_AXIS_TUSER(sp_wr_cmd_axis_tuser),            // output wire [223 : 0] M01_AXIS_TUSER
+  .M02_AXIS_TUSER(ch_rd_cmd_axis_tuser),            // output wire [63 : 0] M02_AXIS_TUSER
+  .M03_AXIS_TUSER(sp_rd_cmd_axis_tuser),            // output wire [63 : 0] M03_AXIS_TUSER
+  .S00_DECODE_ERR(S00_CMD_DECODE_ERR),            // output wire S00_DECODE_ERR
+  .S00_FIFO_DATA_COUNT(S00_CMD_FIFO_DATA_COUNT),  // output wire [31 : 0] S00_FIFO_DATA_COUNT
+  .M00_FIFO_DATA_COUNT(M00_CMD_FIFO_DATA_COUNT),  // output wire [31 : 0] M00_FIFO_DATA_COUNT
+  .M01_FIFO_DATA_COUNT(M01_CMD_FIFO_DATA_COUNT),  // output wire [31 : 0] M01_FIFO_DATA_COUNT
+  .M02_FIFO_DATA_COUNT(M02_CMD_FIFO_DATA_COUNT),  // output wire [31 : 0] M02_FIFO_DATA_COUNT
+  .M03_FIFO_DATA_COUNT(M03_CMD_FIFO_DATA_COUNT)  // output wire [31 : 0] M03_FIFO_DATA_COUNT
 );
 
-rx_cmd_axis_dwidth_converter rx_cmd_axis_dwidth_converter_inst (
-  .aclk(gtx_clk_bufg),                    // input wire aclk
-  .aresetn(gtx_resetn),              // input wire aresetn
-  .s_axis_tvalid(cmd_pkt_s_axis_tvalid),  // input wire s_axis_tvalid
-  .s_axis_tready(cmd_pkt_s_axis_tready),  // output wire s_axis_tready
-  .s_axis_tdata(cmd_pkt_s_axis_tdata),    // input wire [31 : 0] s_axis_tdata
-  .s_axis_tlast(cmd_pkt_s_axis_tlast),    // input wire s_axis_tlast
-  .m_axis_tvalid(cmd_pkt_m_axis_tvalid),  // output wire m_axis_tvalid
-  .m_axis_tready(cmd_pkt_m_axis_tready),  // input wire m_axis_tready
-  .m_axis_tdata(cmd_pkt_m_axis_tdata),    // output wire [191 : 0] m_axis_tdata
-  .m_axis_tkeep(cmd_pkt_m_axis_tkeep),    // output wire [23 : 0] m_axis_tkeep
-  .m_axis_tlast(cmd_pkt_m_axis_tlast)    // output wire m_axis_tlast
-);
 
 assign fmc150_ctrl_bus_bypass = {3'b0,gpio_dip_sw[3],1'b0,1'b0,1'b0,1'b0};
 //fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};
@@ -263,7 +418,13 @@ axi_rx_command_gen #(
            .tdata       (cmd_pkt_s_axis_tdata),
            .tvalid       (cmd_pkt_s_axis_tvalid),
            .tlast       (cmd_pkt_s_axis_tlast),
+           .tuser       (cmd_pkt_s_axis_tuser),
+           .tdest       (cmd_pkt_s_axis_tdest),
+           .tid       (cmd_pkt_s_axis_tid),
+           .tkeep       (cmd_pkt_s_axis_tkeep),
            .tready      (cmd_pkt_s_axis_tready)
+
+
 
 );
 
@@ -308,11 +469,11 @@ signal_hold #(
 );
 
 always @(posedge gtx_clk_bufg) begin
-if (!gtx_resetn)    
+if (!gtx_resetn)
     hold_en <= 0;
-else 
+else
     hold_en <= !hold_en;
-end    
+end
 
 always @(posedge hold_en) begin
     tlast_hold_en = tlast_hold2;

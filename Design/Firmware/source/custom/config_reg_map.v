@@ -55,7 +55,8 @@ parameter REG_ADDR_WIDTH                            = 8,
 parameter CORE_DATA_WIDTH                           = 32,
 parameter CORE_BE_WIDTH                             = CORE_DATA_WIDTH/8,
 
-parameter RX_PKT_CMD_DWIDTH                         = 192,
+parameter RX_WR_CMD_DWIDTH                         = 192,
+parameter RX_RD_CMD_DWIDTH                         = 192,
 
 parameter  CHIRP_CLK_FREQ                           = 245760000,    // Hz
 
@@ -77,12 +78,25 @@ parameter ADC_CLK_FREQ                              = 245.7
 
   input                                 network_cmd_en,
 
+  // // Decoded Commands from RGMII RX fifo
+  // input [RX_WR_CMD_DWIDTH-1:0]         cmd_axis_tdata,
+  // input                                 cmd_axis_tvalid,
+  // input                                 cmd_axis_tlast,
+  // input [RX_WR_CMD_DWIDTH/8-1:0]       cmd_axis_tkeep,
+  // output                                cmd_axis_tready,
   // Decoded Commands from RGMII RX fifo
-  input [RX_PKT_CMD_DWIDTH-1:0]         cmd_axis_tdata,
-  input                                 cmd_axis_tvalid,
-  input                                 cmd_axis_tlast,
-  input [RX_PKT_CMD_DWIDTH/8-1:0]       cmd_axis_tkeep,
-  output                                cmd_axis_tready,
+  input [RX_WR_CMD_DWIDTH-1:0]         ch_wr_cmd_axis_tdata,
+  input                                 ch_wr_cmd_axis_tvalid,
+  input                                 ch_wr_cmd_axis_tlast,
+  input [RX_WR_CMD_DWIDTH/8-1:0]       ch_wr_cmd_axis_tkeep,
+  output                                ch_wr_cmd_axis_tready,
+
+  // Decoded Commands from RGMII RX fifo
+  input [RX_WR_CMD_DWIDTH-1:0]         sp_wr_cmd_axis_tdata,
+  input                                 sp_wr_cmd_axis_tvalid,
+  input                                 sp_wr_cmd_axis_tlast,
+  input [RX_WR_CMD_DWIDTH/8-1:0]       sp_wr_cmd_axis_tkeep,
+  output                                sp_wr_cmd_axis_tready,
 
  // input [7:0]                             gpio_dip_sw,
   // Chirp Control registers
@@ -146,14 +160,15 @@ reg [4:0] Set_CH_A_iDelay = 5'h1e;
 reg [4:0] Set_CH_B_iDelay = 5'h00;
 reg [4:0] Set_CLK_iDelay = 5'h00;
 reg [15:0] Register_Address = 16'h0004;
-reg [31:0] SPI_Register_Data_to_FMC150 = 32'h00000077;;
+reg [31:0] SPI_Register_Data_to_FMC150 = 32'h00000077;
 reg RW = 0;
 reg CDCE72010 = 0;
 reg ADS62P49 = 0;
 reg DAC3283 = 0;
 reg AMC7823 = 0;
 
-reg cmd_axis_tready_int;
+reg ch_wr_cmd_axis_tready_int;
+reg sp_wr_cmd_axis_tready_int;
 
 wire gen_tx_data;                           // depricated
 wire chk_tx_data;                          // depticated
@@ -190,14 +205,26 @@ assign chk_tx_data = 1'b0;
 always @(posedge clk)
 begin
   if (!rst_n)
-    cmd_axis_tready_int <= 1'b0;
+    ch_wr_cmd_axis_tready_int <= 1'b0;
   else if (network_cmd_en)
-    cmd_axis_tready_int <= 1'b1;
+    ch_wr_cmd_axis_tready_int <= 1'b1;
   else
-    cmd_axis_tready_int <= 1'b0;
+    ch_wr_cmd_axis_tready_int <= 1'b0;
 end
 
-assign cmd_axis_tready = cmd_axis_tready_int;
+assign ch_wr_cmd_axis_tready = ch_wr_cmd_axis_tready_int;
+
+always @(posedge clk)
+begin
+  if (!rst_n)
+    sp_wr_cmd_axis_tready_int <= 1'b0;
+  else if (network_cmd_en)
+    sp_wr_cmd_axis_tready_int <= 1'b1;
+  else
+    sp_wr_cmd_axis_tready_int <= 1'b0;
+end
+
+assign sp_wr_cmd_axis_tready = sp_wr_cmd_axis_tready_int;
 
 always @(posedge clk)
 begin
@@ -232,6 +259,7 @@ assign addr_low                                     = wr_addr[3:0];
 
 always @(posedge clk)
 begin
+if (!rst_n) begin
   Set_CH_A_iDelay             <= 5'h1e; //fmc150_spi_ctrl_bus_in(4 downto 0);
   Set_CH_B_iDelay             <= 5'h00; //fmc150_spi_ctrl_bus_in(9 downto 5);
   Set_CLK_iDelay              <= 5'h00; //fmc150_spi_ctrl_bus_in(14 downto 10);
@@ -242,6 +270,31 @@ begin
   ADS62P49  <= 1'b0; //fmc150_spi_ctrl_bus_in(65 downto 65);
   DAC3283   <= 1'b0; //fmc150_spi_ctrl_bus_in(66 downto 66);
   AMC7823   <= 1'b0; //fmc150_spi_ctrl_bus_in(67 downto 67);
+end else if(network_cmd_en) begin
+    if (sp_wr_cmd_axis_tvalid & sp_wr_cmd_axis_tready_int) begin
+      Set_CH_A_iDelay             <= sp_wr_cmd_axis_tdata[4:0]; //fmc150_spi_ctrl_bus_in(4 downto 0);
+      Set_CH_B_iDelay             <= sp_wr_cmd_axis_tdata[12:8]; //fmc150_spi_ctrl_bus_in(9 downto 5);
+      Set_CLK_iDelay              <= sp_wr_cmd_axis_tdata[20:16]; //fmc150_spi_ctrl_bus_in(14 downto 10);
+      Register_Address            <= sp_wr_cmd_axis_tdata[47:32]; //fmc150_spi_ctrl_bus_in(30 downto 15);
+      SPI_Register_Data_to_FMC150 <= sp_wr_cmd_axis_tdata[95:64]; //fmc150_spi_ctrl_bus_in(62 downto 31);
+      RW        <= sp_wr_cmd_axis_tdata[96]; //fmc150_spi_ctrl_bus_in(63 downto 63);
+      CDCE72010 <= sp_wr_cmd_axis_tdata[128]; //fmc150_spi_ctrl_bus_in(64 downto 64);
+      ADS62P49  <= sp_wr_cmd_axis_tdata[136]; //fmc150_spi_ctrl_bus_in(65 downto 65);
+      DAC3283   <= sp_wr_cmd_axis_tdata[144]; //fmc150_spi_ctrl_bus_in(66 downto 66);
+      AMC7823   <= sp_wr_cmd_axis_tdata[152]; //fmc150_spi_ctrl_bus_in(67 downto 67);
+    end else begin
+      Set_CH_A_iDelay             <= Set_CH_A_iDelay; //fmc150_spi_ctrl_bus_in(4 downto 0);
+      Set_CH_B_iDelay             <= Set_CH_B_iDelay; //fmc150_spi_ctrl_bus_in(9 downto 5);
+      Set_CLK_iDelay              <= Set_CLK_iDelay; //fmc150_spi_ctrl_bus_in(14 downto 10);
+      Register_Address            <= Register_Address; //fmc150_spi_ctrl_bus_in(30 downto 15);
+      SPI_Register_Data_to_FMC150 <= SPI_Register_Data_to_FMC150; //fmc150_spi_ctrl_bus_in(62 downto 31);
+      RW        <= RW; //fmc150_spi_ctrl_bus_in(63 downto 63);
+      CDCE72010 <= CDCE72010; //fmc150_spi_ctrl_bus_in(64 downto 64);
+      ADS62P49  <= ADS62P49; //fmc150_spi_ctrl_bus_in(65 downto 65);
+      DAC3283   <= DAC3283; //fmc150_spi_ctrl_bus_in(66 downto 66);
+      AMC7823   <= AMC7823; //fmc150_spi_ctrl_bus_in(67 downto 67);
+    end
+end
 end
 
 
@@ -259,13 +312,13 @@ begin
       adc_sample_time      <= 32'hc8;
 
   end else if(network_cmd_en) begin
-    if (cmd_axis_tvalid & cmd_axis_tready_int) begin
-      ch_prf_int <= cmd_axis_tdata[31:0];
-      ch_prf_frac <= cmd_axis_tdata[63:32];
-      adc_sample_time <= cmd_axis_tdata[95:64];
-      ch_freq_offset <= cmd_axis_tdata[127:96];
-      ch_tuning_coef<= cmd_axis_tdata[159:128];
-      ch_counter_max <= cmd_axis_tdata[191:160]-1'b1;
+    if (ch_wr_cmd_axis_tvalid & ch_wr_cmd_axis_tready_int) begin
+      ch_prf_int <= ch_wr_cmd_axis_tdata[31:0];
+      ch_prf_frac <= ch_wr_cmd_axis_tdata[63:32];
+      adc_sample_time <= ch_wr_cmd_axis_tdata[95:64];
+      ch_freq_offset <= ch_wr_cmd_axis_tdata[127:96];
+      ch_tuning_coef<= ch_wr_cmd_axis_tdata[159:128];
+      ch_counter_max <= ch_wr_cmd_axis_tdata[191:160]-1'b1;
     end else begin
       ch_prf_int <= ch_prf_int;
       ch_prf_frac <= ch_prf_frac;

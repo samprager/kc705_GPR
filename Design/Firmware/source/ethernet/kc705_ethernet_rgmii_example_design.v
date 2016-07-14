@@ -191,6 +191,10 @@ module kc705_ethernet_rgmii_example_design
        output     [31:0] cmd_axis_tdata,
        output           cmd_axis_tvalid,
        output           cmd_axis_tlast,
+       output     [31:0]cmd_axis_tuser,
+       output      [3:0] cmd_axis_tdest,
+       output      [3:0] cmd_axis_tid,
+       output      [3:0] cmd_axis_tkeep,
        input            cmd_axis_tready,
 
       // Main example design controls
@@ -707,6 +711,10 @@ module kc705_ethernet_rgmii_example_design
           .tdata       (cmd_axis_tdata),
           .tvalid       (cmd_axis_tvalid),
           .tlast       (cmd_axis_tlast),
+          .tuser       (cmd_axis_tuser),
+          .tdest       (cmd_axis_tdest),
+          .tid        (cmd_axis_tid),
+          .tkeep       (cmd_axis_tkeep),
           .tready      (cmd_axis_tready)
     );
 
