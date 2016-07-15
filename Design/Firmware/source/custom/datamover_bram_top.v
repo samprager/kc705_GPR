@@ -27,7 +27,7 @@ module datamover_bram_top(
     localparam     IDLE        = 3'b000,
                    WR_CMD        = 3'b001,
                    WR_DATA    = 3'b010,
-                   WR_CMD        = 3'b011,
+                   RD_CMD        = 3'b011,
                    RD_DATA    = 3'b100;
                    
     localparam FIXED = 1'b0;
@@ -218,7 +218,7 @@ always @(posedge clk_in1)begin
     end
 end     
 always @(gen_state or wr_counter or rd_counter  or S_AXIS_MM2S_CMD_tvalid_reg or S_AXIS_MM2S_CMD_tready or S_AXIS_S2MM_CMD_tvalid_reg or S_AXIS_S2MM_CMD_tready or 
-    S_AXIS_S2MM_tlast_reg or S_AXIS_S2MM_tready or S_AXIS_S2MM_tvalid_reg or S_AXIS_MM2s_tlast or S_AXIS_MM2S_tready_reg or S_AXIS_MM2S_tvalid)
+    S_AXIS_S2MM_tlast_reg or S_AXIS_S2MM_tready or S_AXIS_S2MM_tvalid_reg or M_AXIS_MM2S_tlast or M_AXIS_MM2S_tready_reg or M_AXIS_MM2S_tvalid)
 begin
    next_gen_state = gen_state;
    case (gen_state)
@@ -233,14 +233,14 @@ begin
       end
       WR_DATA : begin
          if (wr_counter == NUM_WRITE & S_AXIS_S2MM_tready)
-            next_gen_state = WR_CMD;
+            next_gen_state = RD_CMD;
       end
       RD_CMD : begin
          if (S_AXIS_MM2S_CMD_tready & S_AXIS_MM2S_CMD_tvalid_reg)
             next_gen_state = RD_DATA;
       end
       RD_DATA : begin
-        if (S_AXIS_MM2S_tready_int & S_AXIS_MM2S_tlast)
+        if (M_AXIS_MM2S_tready_reg & M_AXIS_MM2S_tlast)
          next_gen_state = IDLE;
       end
       
@@ -271,7 +271,7 @@ assign S_AXIS_S2MM_CMD_tvalid = S_AXIS_S2MM_CMD_tvalid_reg;
 
 assign S_AXIS_S2MM_tdata = S_AXIS_S2MM_tdata_reg;
 assign S_AXIS_S2MM_tkeep = S_AXIS_S2MM_tkeep_reg;
-assign S_AXIS_S2MM_tlas = S_AXIS_S2MM_tlast_reg;
+assign S_AXIS_S2MM_tlast = S_AXIS_S2MM_tlast_reg;
 assign S_AXIS_S2MM_tvalid = S_AXIS_S2MM_tvalid_reg;   
             
     design_1 design_1_i (
