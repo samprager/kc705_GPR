@@ -56,7 +56,6 @@ module bram_stream_wrapper(
 
  wire m_axi_mm2s_aclk;
  wire m_axi_mm2s_aresetn;
- wire mm2s_err;
  wire m_axis_mm2s_cmdsts_aclk;
  wire m_axis_mm2s_cmdsts_aresetn;
 
@@ -75,16 +74,11 @@ module bram_stream_wrapper(
  wire m_axi_mm2s_rlast;
  wire m_axi_mm2s_rvalid;
  wire m_axi_mm2s_rready;
- wire [31 : 0] m_axis_mm2s_tdata;
- wire [3 : 0] m_axis_mm2s_tkeep;
 
  wire m_axi_s2mm_aclk;
  wire m_axi_s2mm_aresetn;
- wire s2mm_err;
  wire m_axis_s2mm_cmdsts_awclk;
  wire m_axis_s2mm_cmdsts_aresetn;
- wire s_axis_s2mm_cmd_tvalid;
- wire s_axis_s2mm_cmd_tready;
 
  wire [3 : 0] m_axi_s2mm_awid;
  wire [31 : 0] m_axi_s2mm_awaddr;

@@ -23,7 +23,7 @@
 module datamover_bram_sim_tb;
 
 localparam FMC_TCLK_PERIOD          = 4069;         // 245.76 MHz
-localparam RESET_PERIOD = 320000; //in pSec 
+localparam RESET_PERIOD = 16276; //in pSec 
 reg fmc_tresetn_i;
 reg fmc_tclk_i;   
 wire                   fmc_tclk;

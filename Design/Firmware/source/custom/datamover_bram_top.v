@@ -86,6 +86,8 @@ module datamover_bram_top(
     reg [31:0] wr_addr = 32'hC0000000;
     reg [31:0] wr_counter;
     reg [31:0] rd_counter;
+    reg [2:0] wr_cmd_counter;
+    reg [1:0] rd_cmd_counter;
 
 always @(posedge clk_in1)begin
     if(!aresetn) begin
@@ -100,9 +102,21 @@ end
 
 always @(posedge clk_in1)begin
     if(!aresetn) begin
+        wr_cmd_counter <= 0;
+    end
+    else if (gen_state == WR_CMD & ((s_axis_s2mm_cmd_tvalid_reg & s_axis_s2mm_cmd_tready) | (|wr_cmd_counter))) begin
+        wr_cmd_counter <= wr_cmd_counter+1;
+    end
+    else begin
+        wr_cmd_counter <= 0;
+    end
+end
+
+always @(posedge clk_in1)begin
+    if(!aresetn) begin
         s_axis_s2mm_cmd_tvalid_reg <= 0;
     end
-    else if (gen_state == WR_CMD) begin
+    else if (gen_state == WR_CMD & !(s_axis_s2mm_cmd_tvalid_reg & s_axis_s2mm_cmd_tready) & (wr_cmd_counter == 0)) begin
         s_axis_s2mm_cmd_tvalid_reg <= 1;
     end
     else begin
@@ -114,7 +128,7 @@ always @(posedge clk_in1)begin
     if(!aresetn) begin
         s_axis_s2mm_cmd_tdata_reg <= 0;
     end
-    else if (gen_state == WR_CMD) begin
+    else if (gen_state == WR_CMD & (wr_cmd_counter == 0)) begin
         s_axis_s2mm_cmd_tdata_reg[67:64] <= 4'hE;   //test tag
         s_axis_s2mm_cmd_tdata_reg[63:32] <= wr_addr;
          s_axis_s2mm_cmd_tdata_reg[30] <= 1'b1;    // eof
@@ -124,9 +138,21 @@ always @(posedge clk_in1)begin
 end
 always @(posedge clk_in1)begin
     if(!aresetn) begin
+        rd_cmd_counter <= 0;
+    end
+    else if (gen_state == RD_CMD & ((s_axis_mm2s_cmd_tvalid_reg & s_axis_mm2s_cmd_tready) | (|rd_cmd_counter))) begin
+        rd_cmd_counter <= rd_cmd_counter+1;
+    end
+    else begin
+        rd_cmd_counter <= 0;
+    end
+end
+
+always @(posedge clk_in1)begin
+    if(!aresetn) begin
         s_axis_mm2s_cmd_tvalid_reg <= 0;
     end
-    else if (gen_state == RD_CMD)begin
+    else if ((gen_state == RD_CMD)&!(s_axis_mm2s_cmd_tvalid_reg & s_axis_mm2s_cmd_tready)&(rd_cmd_counter == 0))begin
         s_axis_mm2s_cmd_tvalid_reg <= 1;
     end
     else begin
@@ -160,41 +186,38 @@ end
 
 always @(posedge clk_in1)begin
     if(!aresetn) begin
-        s_axis_s2mm_tdata_reg <= 0;
         s_axis_s2mm_tkeep_reg <= 0;
+    end
+    else if (gen_state == WR_DATA) begin
+        s_axis_s2mm_tkeep_reg <= 4'hf;
+    end
+    else begin
+       s_axis_s2mm_tkeep_reg <= 0;
+    end
+end
+
+always @(posedge clk_in1)begin
+    if(!aresetn) begin
+        s_axis_s2mm_tdata_reg <= 0;
         wr_counter <= 0;
     end
     else if(gen_state == WR_DATA & s_axis_s2mm_tready & s_axis_s2mm_tvalid_reg) begin
-        s_axis_s2mm_tdata_reg <= wr_counter+32'h8;
-        s_axis_s2mm_tkeep_reg <= 4'hf;
+        s_axis_s2mm_tdata_reg <= wr_counter;
         wr_counter <= wr_counter + 1'b1;
     end
     else if(gen_state != WR_DATA) begin
-        wr_counter <= 0;
+        wr_counter <= 1'b1;
     end
 end
 always @(posedge clk_in1)begin
     if(!aresetn) begin
         s_axis_s2mm_tlast_reg <= 0;
     end
-    else if(gen_state == WR_DATA & wr_counter == NUM_WRITE & s_axis_s2mm_tready) begin
+    else if(gen_state == WR_DATA & (wr_counter == (NUM_WRITE-1)) & s_axis_s2mm_tready) begin
         s_axis_s2mm_tlast_reg <= 1;
     end
     else if(s_axis_s2mm_tready) begin
         s_axis_s2mm_tlast_reg <= 0;
-    end
-end
-always @(posedge clk_in1)begin
-    if(!aresetn) begin
-        s_axis_s2mm_tdata_reg <= 0;
-        wr_counter <= 0;
-    end
-    else if(gen_state == WR_DATA & s_axis_s2mm_tready & s_axis_s2mm_tvalid_reg) begin
-        s_axis_s2mm_tdata_reg <= wr_counter+32'h8;
-        wr_counter <= wr_counter + 1'b1;
-    end
-    else if(gen_state != WR_DATA) begin
-        wr_counter <= 0;
     end
 end
 
@@ -221,7 +244,7 @@ always @(posedge clk_in1)begin
     end
 end
 always @(gen_state or wr_counter or rd_counter  or s_axis_mm2s_cmd_tvalid_reg or s_axis_mm2s_cmd_tready or s_axis_s2mm_cmd_tvalid_reg or s_axis_s2mm_cmd_tready or
-    s_axis_s2mm_tlast_reg or s_axis_s2mm_tready or s_axis_s2mm_tvalid_reg or m_axis_mm2s_tlast or m_axis_mm2s_tready_reg or m_axis_mm2s_tvalid)
+    s_axis_s2mm_tlast_reg or s_axis_s2mm_tready or s_axis_s2mm_tvalid_reg or m_axis_mm2s_tlast or m_axis_mm2s_tready_reg or m_axis_mm2s_tvalid or wr_cmd_counter or rd_cmd_counter)
 begin
    next_gen_state = gen_state;
    case (gen_state)
@@ -231,15 +254,15 @@ begin
          end
       end
       WR_CMD : begin
-        if (s_axis_s2mm_cmd_tready & s_axis_s2mm_cmd_tvalid_reg)
+        if (&wr_cmd_counter)
             next_gen_state = WR_DATA;
       end
       WR_DATA : begin
-         if (wr_counter == NUM_WRITE & s_axis_s2mm_tready)
+         if ((wr_counter == (NUM_WRITE-1)) & s_axis_s2mm_tready)
             next_gen_state = RD_CMD;
       end
       RD_CMD : begin
-         if (s_axis_mm2s_cmd_tready & s_axis_mm2s_cmd_tvalid_reg)
+         if (s_axis_mm2s_cmd_tvalid_reg & s_axis_mm2s_cmd_tready)
             next_gen_state = RD_DATA;
       end
       RD_DATA : begin
