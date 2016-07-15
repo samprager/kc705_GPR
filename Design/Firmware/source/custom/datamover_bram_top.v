@@ -277,7 +277,8 @@ assign S_AXIS_S2MM_tkeep = S_AXIS_S2MM_tkeep_reg;
 assign S_AXIS_S2MM_tlast = S_AXIS_S2MM_tlast_reg;
 assign S_AXIS_S2MM_tvalid = S_AXIS_S2MM_tvalid_reg;   
             
-    design_1 design_1_i (
+ //   design_1 design_1_i (
+ bram_stream_wrapper bram_stream_wrapper_inst(
         .M_AXIS_MM2S_STS_tdata(M_AXIS_MM2S_STS_tdata),
          .M_AXIS_MM2S_STS_tkeep(M_AXIS_MM2S_STS_tkeep),
          .M_AXIS_MM2S_STS_tlast(M_AXIS_MM2S_STS_tlast),

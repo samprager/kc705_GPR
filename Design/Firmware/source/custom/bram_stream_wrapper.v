@@ -129,7 +129,7 @@ axi_waveform_bram_ctrl axi_waveform_bram_ctrl_inst (
       .s_axi_aclk(s_axi_aclk),        // input wire s_axi_aclk
       .s_axi_aresetn(s_axi_aresetn),  // input wire s_axi_aresetn
       .s_axi_awid(m_axi_s2mm_awid),        // input wire [3 : 0] s_axi_awid
-      .s_axi_awaddr(m_axi_s2mm_awaddr),    // input wire [17 : 0] s_axi_awaddr
+      .s_axi_awaddr(m_axi_s2mm_awaddr[17:0]),    // input wire [17 : 0] s_axi_awaddr
       .s_axi_awlen(m_axi_s2mm_awlen),      // input wire [7 : 0] s_axi_awlen
       .s_axi_awsize(m_axi_s2mm_awsize),    // input wire [2 : 0] s_axi_awsize
       .s_axi_awburst(m_axi_s2mm_awburst),  // input wire [1 : 0] s_axi_awburst
@@ -148,7 +148,7 @@ axi_waveform_bram_ctrl axi_waveform_bram_ctrl_inst (
       .s_axi_bvalid(m_axi_s2mm_bvalid),    // output wire s_axi_bvalid
       .s_axi_bready(m_axi_s2mm_bready),    // input wire s_axi_bready
       .s_axi_arid(m_axi_mm2s_arid),        // input wire [3 : 0] s_axi_arid
-      .s_axi_araddr(m_axi_mm2s_araddr),    // input wire [17 : 0] s_axi_araddr
+      .s_axi_araddr(m_axi_mm2s_araddr[17:0]),    // input wire [17 : 0] s_axi_araddr
       .s_axi_arlen(m_axi_mm2s_arlen),      // input wire [7 : 0] s_axi_arlen
       .s_axi_arsize(m_axi_mm2s_arsize),    // input wire [2 : 0] s_axi_arsize
       .s_axi_arburst(m_axi_mm2s_arburst),  // input wire [1 : 0] s_axi_arburst
