@@ -33,7 +33,8 @@ module datamover_bram_top(
     localparam FIXED = 1'b0;
     localparam INCR = 1'b1;
     
-    localparam NUM_WRITE = 'h80;
+    localparam NUM_WRITE = 'h80;            // 32 bit words to write
+    localparam NUM_BTT = 4*NUM_WRITE;       // bytes to transfer
     
     wire [7:0]M_AXIS_MM2S_STS_tdata;
     wire [0:0]M_AXIS_MM2S_STS_tkeep;
@@ -117,7 +118,7 @@ always @(posedge clk_in1)begin
         S_AXIS_S2MM_CMD_tdata_reg[67:64] <= 4'hE;   //test tag
         S_AXIS_S2MM_CMD_tdata_reg[63:32] <= wr_addr;
         S_AXIS_S2MM_CMD_tdata_reg[23] <= INCR;
-        S_AXIS_S2MM_CMD_tdata_reg[22:0] <= 22'h80;
+        S_AXIS_S2MM_CMD_tdata_reg[22:0] <= NUM_BTT;
     end
 end
 always @(posedge clk_in1)begin
@@ -139,7 +140,7 @@ always @(posedge clk_in1)begin
         S_AXIS_MM2S_CMD_tdata_reg[67:64] <= 4'hE;   //test tag
         S_AXIS_MM2S_CMD_tdata_reg[63:32] <= rd_addr;
         S_AXIS_MM2S_CMD_tdata_reg[23] <= INCR;
-        S_AXIS_MM2S_CMD_tdata_reg[22:0] <= 22'h80;
+        S_AXIS_MM2S_CMD_tdata_reg[22:0] <= NUM_BTT;
     end
 end
 
