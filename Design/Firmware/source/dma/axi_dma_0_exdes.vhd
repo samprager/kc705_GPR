@@ -62,9 +62,9 @@ entity axi_dma_0_exdes is
 --        USE_ATG : integer range 0 to 1 := 0
 --   );
    port (
-         clock : in std_logic;
-         clock_lite : in std_logic;
-         resetn : in std_logic;
+         clk_in1_p : in std_logic;
+         clk_in1_n : in std_logic;
+         reset : in std_logic;
          start : in std_logic;
          done : out std_logic;
          status : out std_logic);
@@ -80,6 +80,17 @@ architecture impl of axi_dma_0_exdes is
 ATTRIBUTE SYN_BLACK_BOX : BOOLEAN;
 ATTRIBUTE BLACK_BOX_PAD_PIN : STRING;
 
+component clock_gen is
+     port (
+           clk_in1_p : in std_logic;
+           clk_in1_n : in std_logic;
+           reset    : in std_logic;
+           locked   : out std_logic;
+           clock_lite : out std_logic;
+           clock : out std_logic
+          );
+
+end component;
 
 component blk_mem_gen_0 IS
   PORT (
@@ -662,6 +673,10 @@ signal    m_axi_sg_rdata              :  std_logic_vector (C_M_AXI_SG_DATA_WIDTH
 signal    m_axi_sg_rresp              :  std_logic_vector(1 downto 0)      ;-- AXI4
 signal    m_axi_sg_rlast              :  std_logic                         ;-- AXI4
 
+  signal locked   : std_logic;
+  signal clock_lite : std_logic;
+  signal clock : std_logic;
+
   signal reset_lock : std_logic;
 
 ---
@@ -722,7 +737,17 @@ zero(0) <= '0';
 one_gnd <= '0';
 four_gnd <= "0000";
 
-reset_lock <= resetn;
+CLOCK_GEN_INST : clock_gen
+         port map (
+           clk_in1_p => clk_in1_p,
+           clk_in1_n => clk_in1_n,
+           reset    => reset,
+           locked   => locked,
+           clock_lite => clock_lite,
+           clock => clock
+  );
+
+reset_lock <= locked;
 
 --AXI4_LITE_LOGIC: if (USE_ATG = 0) generate
 --begin

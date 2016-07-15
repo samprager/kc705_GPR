@@ -18,7 +18,8 @@ end entity;
 
 architecture tb of axi_dma_0_exdes_tb is
 
-component axi_dma_0_exdes 
+--component axi_dma_0_exdes 
+component dma_vfifo_top
    port (
          clk_in1_p : in std_logic;
          clk_in1_n : in std_logic;
@@ -56,7 +57,8 @@ start <= '1' after 100 ns;
 
 --test <= '1' after 300 ns;
 
-DUT_TB: axi_dma_0_exdes
+--DUT_TB: axi_dma_0_exdes
+DUT_TB: dma_vfifo_top
       port map (
       clk_in1_p => clock,
       clk_in1_n => clock_n,
