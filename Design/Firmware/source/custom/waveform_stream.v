@@ -20,22 +20,27 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module waveform_stream(
+module waveform_stream # (
+    parameter WRITE_BEFORE_READ = 1'b1
+)(
     input aresetn,
     input clk_in1,
     input [127:0] waveform_parameters,
     input init_wf_write,
     output wf_write_ready,
+    output wf_read_ready,
     // data from ADC Data fifo
     input       [31:0]                    wfin_axis_tdata,
     input                                 wfin_axis_tvalid,
     input                                 wfin_axis_tlast,
+    input       [3:0]                     wfin_axis_tkeep,
     output                                wfin_axis_tready,
 
     // data from ADC Data fifo
     output       [31:0]                    wfout_axis_tdata,
     output                                 wfout_axis_tvalid,
     output                                 wfout_axis_tlast,
+    output       [3:0]                     wfout_axis_tkeep,
     input                                wfout_axis_tready
 
 );
@@ -95,6 +100,7 @@ reg s_axis_s2mm_tlast_reg;
 reg s_axis_s2mm_tvalid_reg;
 
 reg wf_write_ready_reg;
+reg wf_read_ready_reg;
 reg [31:0] wf_new_size;  // bytes to transfer
 reg [31:0] wf_cur_size;  // bytes to transfer
 
@@ -108,6 +114,19 @@ reg [31:0] rd_counter;
 reg [2:0] wr_cmd_counter;
 reg [1:0] rd_cmd_counter;
 
+reg wf_written = 1'b0;
+
+
+// register that tracks whether or not we have written to the bram...
+always @(posedge clk_in1) begin
+    if(!aresetn)
+        wf_written <= 0;
+    else if ((gen_state == WR_CMD) | (!WRITE_BEFORE_READ))
+        wf_written <= 1;
+    else
+        wf_written <= wf_written;
+end
+
 
 always @(posedge clk_in1) begin
     if(!aresetn)
@@ -116,6 +135,15 @@ always @(posedge clk_in1) begin
         wf_write_ready_reg <= 1;
    else
         wf_write_ready_reg <= 0;
+end
+
+always @(posedge clk_in1) begin
+    if(!aresetn)
+        wf_read_ready_reg <= 0;
+    else if (gen_state == IDLE)
+        wf_read_ready_reg <= 1;
+   else
+        wf_read_ready_reg <= 0;
 end
 
 always @(posedge clk_in1) begin
@@ -288,17 +316,17 @@ always @(posedge clk_in1)begin
         m_axis_mm2s_tready_reg <= 0;
     end
 end
-always @(gen_state or wr_counter or rd_counter  or s_axis_mm2s_cmd_tvalid_reg or s_axis_mm2s_cmd_tready or s_axis_s2mm_cmd_tvalid_reg or s_axis_s2mm_cmd_tready or m_axis_mm2s_tlast or wfout_axis_tready or wf_write_ready_reg or init_wf_write or wr_cmd_counter or rd_cmd_counter)
+always @(gen_state or wr_counter or rd_counter  or s_axis_mm2s_cmd_tvalid_reg or s_axis_mm2s_cmd_tready or s_axis_s2mm_cmd_tvalid_reg or s_axis_s2mm_cmd_tready or m_axis_mm2s_tlast or wfout_axis_tready or wf_write_ready_reg or init_wf_write or wf_read_ready or wr_cmd_counter or rd_cmd_counter)
 begin
    next_gen_state = gen_state;
    case (gen_state)
       IDLE : begin
-         if (wfout_axis_tready) begin
+        if (init_wf_write & wf_write_ready_reg) begin
+            next_gen_state = WR_CMD;
+        end
+        else if (wfout_axis_tready & wf_read_ready) begin
             next_gen_state = RD_CMD;
          end
-         else if (init_wf_write & wf_write_ready_reg) begin
-          next_gen_state = WR_CMD;
-        end
       end
       WR_CMD : begin
         if (&wr_cmd_counter)
@@ -332,6 +360,9 @@ begin
       gen_state <= next_gen_state;
    end
 end
+
+assign wf_read_ready = wf_read_ready_reg & wf_written;
+assign wf_write_ready = wf_write_ready_reg;
 
 assign s_axis_s2mm_tvalid = (gen_state == WR_DATA)? wfin_axis_tvalid : 0;
 assign s_axis_s2mm_tdata = wfin_axis_tdata;
