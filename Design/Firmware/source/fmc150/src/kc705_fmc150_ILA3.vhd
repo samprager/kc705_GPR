@@ -1626,11 +1626,7 @@ begin
     if (rst = '1') then
       adc_counter_out_sig <= (others=>'0');
     elsif ((adc_dout_valid = '1') and (adc_enable_sig = '1')) then
-      if (chirp_init_sig = '1') then
-        adc_counter_out_sig <= adc_counter_out_sig + 4;
-      else
         adc_counter_out_sig <= adc_counter_out_sig + '1';
-      end if;    
     end if;
   end if;
 end process generate_adc_counter;
