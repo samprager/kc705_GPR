@@ -40,8 +40,10 @@ module sim_tb_cmd_decoder;
   reg [7:0]                     temp_data;
 
   reg [127:0] test_packet_1 = 128'h5a0102030405a45e60ee9f3500260200;
-  reg [127:0] test_packet_2 = 128'h46465757fc1700001e00000004000000;
-  reg [127:0] test_packet_3 = 128'h77000000000000000000010001040001;
+  //reg [127:0] test_packet_2 = 128'h46465757fc1700001e00000004000000;
+  //reg [127:0] test_packet_3 = 128'h77000000000000000000010001040001;
+    reg [127:0]  test_packet_2 = 128'h43435757ce2b00000000000000010000;
+    reg [127:0]  test_packet_3 = 128'hc8000000000300000100000000100000;
   reg [31:0] test_packet_4 = 32'h00000000;
   
 
@@ -151,7 +153,7 @@ wire                                rx_axis_tuser;
       use_wr_packet = 1'b1;
       repeat(2048) @(posedge gtx_tclk_i);
       use_wr_packet = 1'b0;
-      repeat(2048) @(posedge gtx_tclk_i);
+      repeat(8192) @(posedge gtx_tclk_i);
       // tx_axis_tready_reg = 1'b0;
       // repeat(32) @(posedge gtx_tclk_i);
       // tx_axis_tready_reg = 1'b0;
@@ -207,14 +209,16 @@ wire                                rx_axis_tuser;
                 test_packet_2[95:88] <= test_packet_2[95:88]+1;
           end else if (data_counter >=8'hec & data_counter<8'hfc)begin
               rx_axis_tdata_reg <= test_packet_3[8'h80-(8'h8*(data_counter-8'hec))-1-:8];
-          end else if (data_counter >=8'hfc & data_counter<8'hfc)begin
+          end else if (data_counter >=8'hfc) begin
               rx_axis_tdata_reg <= test_packet_4[8'h20-(8'h8*(data_counter-8'hfc))-1-:8];
            end
           if (data_counter == 8'hff) begin
             command_type <= command_type + 1;
             if (command_type == 2'b0) begin
-             test_packet_2 <= 128'h46465757fc1700001e00000004000000;
-             test_packet_3 <= 128'h77000000000000000000010001040001;
+//             test_packet_2 <= 128'h46465757fc1700001e00000004000000;
+//             test_packet_3 <= 128'h77000000000000000000010001040001;
+               test_packet_2 <= 128'h43435757ce2b00000000000000010000;
+               test_packet_3<= 128'hc8000000000300000100000000100000;
            end else if (command_type == 2'b1) begin
             test_packet_2 <= 128'h46465757e42a00001e12070004000000;
             test_packet_3 <= 128'h77000000010101010000010001040001;

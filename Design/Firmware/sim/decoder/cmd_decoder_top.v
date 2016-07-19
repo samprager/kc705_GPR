@@ -30,7 +30,7 @@ output                                rx_axis_tready
 
 );
 
-  localparam RX_WR_CMD_DWIDTH = 192;
+  localparam RX_WR_CMD_DWIDTH = 224;
   localparam RX_RD_CMD_DWIDTH = 32;
   localparam RX_CMD_ID_WIDTH = 32;
 
