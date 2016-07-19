@@ -69,8 +69,9 @@ wire chirp_ready;
 wire chirp_done;
 wire chirp_active;
 wire chirp_init;
+reg chirp_init_reg;
 
-reg [1:0] chirp_count;
+reg [10:0] chirp_count;
         
 initial
 begin
@@ -116,9 +117,17 @@ always @(posedge fmc_tclk) begin
         rd_counter <= 0;
         wf_written <= 0;
         
-        chirp_count <= 1;
+        chirp_count <= 0;
+        chirp_init_reg <= 0;
     end
     else begin
+        chirp_count <= chirp_count + 1'b1;
+        if (chirp_count == 0) 
+            chirp_init_reg <= 1'b1;
+        else
+            chirp_init_reg <= 1'b0;
+            
+            
         counter <= counter + 1'b1;
         wfout_axis_tready_reg <= 1'b1;
         //wfout_axis_tready_reg <= wf_written;
@@ -207,7 +216,7 @@ CHIRP_DDS u_chirp_dds(
     .chirp_count_max_in            (32'd1024)
     
 );
-assign chirp_init=init_wf_write_reg & chirp_count[1];
+assign chirp_init=chirp_init_reg;
 
 assign init_wf_write = init_wf_write_reg;
 assign wfin_axis_tdata = wfin_axis_tdata_reg;
