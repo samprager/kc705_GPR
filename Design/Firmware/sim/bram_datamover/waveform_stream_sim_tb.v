@@ -70,7 +70,7 @@ wire chirp_done;
 wire chirp_active;
 wire chirp_init;
 
-reg 1:0] chirp_count;
+reg [1:0] chirp_count;
         
 initial
 begin
