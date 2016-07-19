@@ -424,16 +424,16 @@ end component fmc150_spi_ctrl;
 component CHIRP_DDS is
 port (
 	CLOCK           		: in std_logic;
-	CLOCK1           		: in std_logic;
-	CLOCK2           		: in std_logic;
+	-- CLOCK1           		: in std_logic;
+	-- CLOCK2           		: in std_logic;
 	RESET           		: in std_logic;
-	IF_FREQ					: in std_logic_vector(27 downto 0);
+	-- IF_FREQ					: in std_logic_vector(27 downto 0);
 
 	IF_OUT_I					: out std_logic_vector(15 downto 0);
 	IF_OUT_Q					: out std_logic_vector(15 downto 0);
 	IF_OUT_VALID			: out std_logic;
 
-	DUC_DCC_ROUTE_CTRL	: in std_logic_vector(2 downto 0);
+	-- DUC_DCC_ROUTE_CTRL	: in std_logic_vector(2 downto 0);
 
   chirp_ready  : out std_logic;
   chirp_done  : out std_logic;
@@ -1640,7 +1640,7 @@ begin
 --      adc_data_out_i_sig <= adc_test_pattern_iq(31 downto 16);
 --      adc_data_out_q_sig <= adc_test_pattern_iq(15 downto 0);
 --      adc_data_out_valid_sig <= adc_test_pattern_valid;
-    if (dac_loopback_sig = '1') then    
+    if (dac_loopback_sig = '1') then
         adc_data_out_i_sig <= dac_din_i;
         adc_data_out_q_sig <= dac_din_q;
         adc_data_out_valid_sig <= adc_dout_valid;
@@ -1984,16 +1984,17 @@ port map (
 
 CHIRP_DDS_inst : CHIRP_DDS
 port map(
-	clock           		=> clk_491_52mhz,
-	clock1           		=> clk_245_76mhz,
-	clock2					=> clk_15_36mhz,
+	-- clock           		=> clk_491_52mhz,
+	-- clock1           		=> clk_245_76mhz,
+	-- clock2					=> clk_15_36mhz,
+  clock           => clk_245_76mhz,
 	reset						=> rst,
-	if_freq					=> x"0000000",							-- unused / placeholder for I/F frequency for complex mixer
+--	if_freq					=> x"0000000",							-- unused / placeholder for I/F frequency for complex mixer
 
 	if_out_i					=> DUC_if_out_i,							-- i data to dac, 16-bit
 	if_out_q					=> DUC_if_out_q,							-- q data to dac, 16-bit,
 
-	duc_dcc_route_ctrl	=> duc_dcc_route_ctrl_sig,			-- control of various mux'es within duc_ddc module
+--	duc_dcc_route_ctrl	=> duc_dcc_route_ctrl_sig,			-- control of various mux'es within duc_ddc module
 
   chirp_ready  =>  chirp_ready_sig,
   chirp_done  => chirp_done_sig,

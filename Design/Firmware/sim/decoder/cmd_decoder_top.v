@@ -34,6 +34,23 @@ output                                rx_axis_tready
   localparam RX_RD_CMD_DWIDTH = 32;
   localparam RX_CMD_ID_WIDTH = 32;
 
+  localparam ADC_AXI_DATA_WIDTH = 512;//64;
+  localparam ADC_AXI_TID_WIDTH = 1;
+  localparam ADC_AXI_TDEST_WIDTH = 1;
+  localparam ADC_AXI_TUSER_WIDTH = 1;
+  localparam ADC_AXI_STREAM_ID = 1'b0;
+  localparam ADC_AXI_STREAM_DEST = 1'b1;
+
+  // --ADC AXI-Stream Data Out Signals from fmc150_dac_adc module
+ wire [ADC_AXI_DATA_WIDTH-1:0]   axis_adc_tdata;
+ wire                            axis_adc_tvalid;
+ wire                            axis_adc_tlast;
+ wire [ADC_AXI_DATA_WIDTH/8-1:0] axis_adc_tkeep;
+ wire [ADC_AXI_TID_WIDTH-1:0]    axis_adc_tid;
+ wire [ADC_AXI_TDEST_WIDTH-1:0]  axis_adc_tdest;
+ wire [ADC_AXI_TUSER_WIDTH-1:0]  axis_adc_tuser;
+ wire                            axis_adc_tready;
+ wire [ADC_AXI_DATA_WIDTH/8-1:0] axis_adc_tstrb;
 
 // Control Module Signals
 wire [3:0] fmc150_status_vector;
@@ -255,6 +272,59 @@ control_module #(
 
 
 );
+
+chirp_dds_top #(
+  .ADC_AXI_DATA_WIDTH(ADC_AXI_DATA_WIDTH),
+  .ADC_AXI_TID_WIDTH(ADC_AXI_TID_WIDTH),
+  .ADC_AXI_TDEST_WIDTH(ADC_AXI_TDEST_WIDTH),
+  .ADC_AXI_TUSER_WIDTH(ADC_AXI_TUSER_WIDTH),
+  .ADC_AXI_STREAM_ID(ADC_AXI_STREAM_ID),
+  .ADC_AXI_STREAM_DEST(ADC_AXI_STREAM_DEST)
+
+  )
+  chirp_dds_top_inst (
+  .clk_245 (clk_fmc150),
+  .clk_245_rst (!resetn_fmc150),
+
+  .aclk (ui_clk),
+  .aresetn (aresetn),
+
+  .cpu_reset(!resetn_fmc150),
+  //.aclk(sysclk_bufg),
+  //.aresetn (sysclk_resetn),
+   // --KC705 Resources - from fmc150 example design
+   .axis_adc_tdata                      (axis_adc_tdata),
+   .axis_adc_tvalid                     (axis_adc_tvalid),
+   .axis_adc_tlast                      (axis_adc_tlast),
+   .axis_adc_tkeep                      (axis_adc_tkeep),
+   .axis_adc_tid                        (axis_adc_tid),
+   .axis_adc_tdest                      (axis_adc_tdest),
+   .axis_adc_tuser                      (axis_adc_tuser),
+   .axis_adc_tready                     (axis_adc_tready),
+   .axis_adc_tstrb                      (axis_adc_tstrb),
+
+   .fmc150_status_vector                (fmc150_status_vector),
+   .chirp_ready                         (chirp_ready),
+   .chirp_done                          (chirp_done),
+   .chirp_active                        (chirp_active),
+   .chirp_init                          (chirp_init),
+   .chirp_enable                        (chirp_enable),
+   .adc_enable                          (adc_enable),
+
+   .chirp_control_word         (chirp_parameters[127:96]),
+   .chirp_freq_offset          (chirp_parameters[95:64]),
+   .chirp_tuning_word_coeff    (chirp_parameters[63:32]),
+   .chirp_count_max            (chirp_parameters[31:0]),
+
+  // .fmc150_ctrl_bus (fmc150_ctrl_bus),
+    .fmc150_ctrl_bus (fmc150_ctrl_bus),
+    .fmc150_spi_ctrl_bus_in (fmc150_spi_ctrl_bus_in),
+    .fmc150_spi_ctrl_bus_out (fmc150_spi_ctrl_bus_out)
+
+  );
+
+  assign axis_adc_tready = 1'b1;
+
 
 // rx_cmd_axis_data_fifo rx_cmd_axis_data_fifo_inst (
 //   .s_axis_aresetn(gtx_resetn),          // input wire s_axis_aresetn

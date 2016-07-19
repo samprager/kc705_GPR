@@ -190,7 +190,7 @@ wire                                rx_axis_tuser;
         end else if(use_test_packet) begin
         if (use_wr_packet) begin
          data_counter <= data_counter + 1'b1;
-          if (data_counter < 8'hd0)
+          if (data_counter < 8'hcc)
               rx_axis_tvalid_reg <= 1'b0;
           else
               rx_axis_tvalid_reg <= 1'b1;
