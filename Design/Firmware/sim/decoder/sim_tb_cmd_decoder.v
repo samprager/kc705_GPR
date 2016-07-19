@@ -45,7 +45,7 @@ module sim_tb_cmd_decoder;
     reg [127:0]  test_packet_2 = 128'h43435757ce2b00000000000000010000;
     reg [127:0]  test_packet_3 = 128'hc8000000000300000100000000100000;
   reg [31:0] test_packet_4 = 32'h00000000;
-  
+
 
   reg [127:0] test_packet_rd_1 = 128'h5a0102030405a45e60ee9f35000e0100;
   reg[95:0] test_packet_rd_2 = 96'h4343525204000000efbeedfe;
@@ -220,15 +220,15 @@ wire                                rx_axis_tuser;
                test_packet_2 <= 128'h43435757ce2b00000000000000010000;
                test_packet_3<= 128'hc8000000000300000100000000100000;
            end else if (command_type == 2'b1) begin
-            test_packet_2 <= 128'h46465757e42a00001e12070004000000;
-            test_packet_3 <= 128'h77000000010101010000010001040001;
+            // test_packet_2 <= 128'h46465757e42a00001e12070004000000;
+            // test_packet_3 <= 128'h77000000010101010000010001040001;
            end else if (command_type == 2'b10)begin
-            test_packet_2 <= 128'h464657573e2b00001e120700edfe0000;
-            test_packet_3<= 128'h04030201010101010000000101080010;
+            // test_packet_2 <= 128'h464657573e2b00001e120700edfe0000;
+            // test_packet_3<= 128'h04030201010101010000000101080010;
            end
            else if (command_type == 2'b11)begin
-            test_packet_2 <= 128'h43435757ce2b00000000000000007c92;
-            test_packet_3<= 128'hc8000000000300000100000000100000;
+            // test_packet_2 <= 128'h43435757ce2b00000000000000007c92;
+            // test_packet_3<= 128'hc8000000000300000100000000100000;
            end
            end
           end else begin
