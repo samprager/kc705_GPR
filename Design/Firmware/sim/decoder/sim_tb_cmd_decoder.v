@@ -39,12 +39,27 @@ module sim_tb_cmd_decoder;
 
   reg [7:0]                     temp_data;
 
-  reg [127:0] test_packet_1 = 128'h5a0102030405a45e60ee9f3500260200;
+  //reg [127:0] test_packet_1 = 128'h5a0102030405a45e60ee9f3500260200;
   //reg [127:0] test_packet_2 = 128'h46465757fc1700001e00000004000000;
   //reg [127:0] test_packet_3 = 128'h77000000000000000000010001040001;
-    reg [127:0]  test_packet_2 = 128'h43435757ce2b00000000000000010000;
-    reg [127:0]  test_packet_3 = 128'hc8000000000300000100000000100000;
+  //reg [127:0]  test_packet_2 = 128'h43435757ce2b00000000000000010000;
+  //reg [127:0]  test_packet_3 = 128'hc8000000000300000100000000100000;
+  //reg [31:0] test_packet_4 = 32'h00000000;
+
+  reg [127:0] test_packet_1 = 128'h5a0102030405985aebdb066f00260000;
+  reg [127:0] test_packet_2 = 128'h434357572747000000000000f6000000;
+  reg [127:0] test_packet_3 = 128'hc8000000000300000100000000100000;
   reg [31:0] test_packet_4 = 32'h00000000;
+
+  // reg [127:0] chirp_fast_packet_1 = 128'h5a0102030405985aebdb066f00260000;
+  // reg [127:0] chirp_fast_packet_2 = 128'h434357572747000000000000f6000000;
+  // reg [127:0] chirp_fast_packet_3 = 128'hc8000000000300000100000000100000;
+  // reg [31:0] chirp_fast_packet_4 = 32'h00000000;
+
+  reg [127:0] chirp_default_packet_1 = 128'h5a0102030405985aebdb066f00260000;
+  reg [127:0] chirp_default_packet_2 = 128'h43435757621600000000000000007c92;
+  reg [127:0] chirp_default_packet_3 = 128'hc8000000000300000100000000100000;
+  reg [31:0] chirp_default_packet_4 = 32'h00000000;
 
 
   reg [127:0] test_packet_rd_1 = 128'h5a0102030405a45e60ee9f35000e0100;
@@ -180,7 +195,7 @@ wire                                rx_axis_tuser;
     end
 
     always @(posedge  gtx_tclk_i) begin
-       if (~gtx_tresetn_i) begin
+      if (~gtx_tresetn_i) begin
            data_counter <= 'b0;
            rx_axis_tdata_reg <= 8'h02;
            rx_axis_tvalid_reg <= 1'b0;
@@ -189,13 +204,14 @@ wire                                rx_axis_tuser;
            cmd_id_reg <= 'b0;
            command_type <= 0;
 
-        end else if(use_test_packet) begin
+      end else if(use_test_packet) begin
         if (use_wr_packet) begin
          data_counter <= data_counter + 1'b1;
           if (data_counter < 8'hcc)
               rx_axis_tvalid_reg <= 1'b0;
           else
               rx_axis_tvalid_reg <= 1'b1;
+
           if (data_counter == 8'hff)
              rx_axis_tlast_reg <= 1'b1;
           else
@@ -211,27 +227,28 @@ wire                                rx_axis_tuser;
               rx_axis_tdata_reg <= test_packet_3[8'h80-(8'h8*(data_counter-8'hec))-1-:8];
           end else if (data_counter >=8'hfc) begin
               rx_axis_tdata_reg <= test_packet_4[8'h20-(8'h8*(data_counter-8'hfc))-1-:8];
-           end
-          if (data_counter == 8'hff) begin
-            command_type <= command_type + 1;
-            if (command_type == 2'b0) begin
-//             test_packet_2 <= 128'h46465757fc1700001e00000004000000;
-//             test_packet_3 <= 128'h77000000000000000000010001040001;
-               test_packet_2 <= 128'h43435757ce2b00000000000000010000;
-               test_packet_3<= 128'hc8000000000300000100000000100000;
-           end else if (command_type == 2'b1) begin
-            // test_packet_2 <= 128'h46465757e42a00001e12070004000000;
-            // test_packet_3 <= 128'h77000000010101010000010001040001;
-           end else if (command_type == 2'b10)begin
-            // test_packet_2 <= 128'h464657573e2b00001e120700edfe0000;
-            // test_packet_3<= 128'h04030201010101010000000101080010;
-           end
-           else if (command_type == 2'b11)begin
-            // test_packet_2 <= 128'h43435757ce2b00000000000000007c92;
-            // test_packet_3<= 128'hc8000000000300000100000000100000;
-           end
-           end
-          end else begin
+          end
+
+//           if (data_counter == 8'hff) begin
+//             command_type <= command_type + 1;
+//             if (command_type == 2'b0) begin
+// //             test_packet_2 <= 128'h46465757fc1700001e00000004000000;
+// //             test_packet_3 <= 128'h77000000000000000000010001040001;
+//                test_packet_2 <= 128'h43435757ce2b00000000000000010000;
+//                test_packet_3<= 128'hc8000000000300000100000000100000;
+//            end else if (command_type == 2'b1) begin
+//             // test_packet_2 <= 128'h46465757e42a00001e12070004000000;
+//             // test_packet_3 <= 128'h77000000010101010000010001040001;
+//            end else if (command_type == 2'b10)begin
+//             // test_packet_2 <= 128'h464657573e2b00001e120700edfe0000;
+//             // test_packet_3<= 128'h04030201010101010000000101080010;
+//            end
+//            else if (command_type == 2'b11)begin
+//             // test_packet_2 <= 128'h43435757ce2b00000000000000007c92;
+//             // test_packet_3<= 128'hc8000000000300000100000000100000;
+//            end
+//           end
+        end else begin
           data_counter <= data_counter + 1'b1;
            if (data_counter < 8'he4)
                rx_axis_tvalid_reg <= 1'b0;
