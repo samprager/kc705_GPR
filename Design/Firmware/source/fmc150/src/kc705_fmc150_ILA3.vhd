@@ -137,15 +137,20 @@ library unisim;
 -------------------------------------------------------------------------------------
 entity KC705_fmc150 is
 generic (
+  DDS_LATENCY : integer := 2;   
   MAX_PATTERN_CNT : integer := 2000 -- value of 15000 = approx 1 sec for ramp of length 2^14 samples @ 245.76 MSPS
 );
 port (
 
 -- ADC data re-mux'd to 245.76 MSPS in fabric, extended to 16-bit
-  adc_data_out_i : out std_logic_vector(15 downto 0);
-  adc_data_out_q : out std_logic_vector(15 downto 0);
-  adc_counter_out : out std_logic_vector(31 downto 0);
-  adc_data_out_valid : out std_logic;
+--  adc_data_out_i : out std_logic_vector(15 downto 0);
+--  adc_data_out_q : out std_logic_vector(15 downto 0);
+--  adc_counter_out : out std_logic_vector(31 downto 0);
+--  adc_data_out_valid : out std_logic;
+  
+  adc_data_out_iq : out std_logic_vector(31 downto 0);
+  dac_data_out_iq : out std_logic_vector(31 downto 0);
+  data_out_valid : out std_logic;
 
   fmc150_status_vector : out std_logic_vector(3 downto 0);
   chirp_ready  : out std_logic;
@@ -422,6 +427,9 @@ port (
 end component fmc150_spi_ctrl;
 
 component CHIRP_DDS is
+generic (
+  DDS_LATENCY : integer := 2 -- value of 15000 = approx 1 sec for ramp of length 2^14 samples @ 245.76 MSPS
+);
 port (
 	CLOCK           		: in std_logic;
 	-- CLOCK1           		: in std_logic;
@@ -664,8 +672,9 @@ signal baseband_out_valid_sig_dly1_1	: std_logic_vector(0 downto 0) := "1";
 
 signal adc_data_out_i_sig : std_logic_vector(15 downto 0);
 signal adc_data_out_q_sig : std_logic_vector(15 downto 0);
-signal adc_data_out_ila_sig : std_logic_vector(63 downto 0);
 signal adc_data_out_valid_sig : std_logic;
+
+signal adc_data_out_ila_sig : std_logic_vector(63 downto 0);
 signal adc_data_out_valid_ila_sig : std_logic_vector(0 downto 0);
 
 signal adc_counter_out_sig : std_logic_vector(31 downto 0);
@@ -1620,7 +1629,7 @@ end process;
 --  end if;
 --end process generate_test_pattern;
 
-generate_adc_counter: process (clk_245_76MHz)
+generate_adc_counter_out: process (clk_245_76MHz)
 begin
   if rising_edge(clk_245_76MHz) then
     if (rst = '1') then
@@ -1629,7 +1638,15 @@ begin
         adc_counter_out_sig <= adc_counter_out_sig + '1';
     end if;
   end if;
-end process generate_adc_counter;
+end process generate_adc_counter_out;
+
+--dac_data_mux: process (clk_245_76MHz)
+--begin
+--  if rising_edge(clk_245_76MHz) then
+--        dac_data_out_i_sig <= dac_din_i;
+--        dac_data_out_q_sig <= dac_din_q;
+--  end if;
+--end process adc_test_pattern_mux;
 
 adc_test_pattern_mux: process (clk_245_76MHz)
 begin
@@ -1643,7 +1660,7 @@ begin
     if (dac_loopback_sig = '1') then
         adc_data_out_i_sig <= dac_din_i;
         adc_data_out_q_sig <= dac_din_q;
-        adc_data_out_valid_sig <= adc_dout_valid;
+        adc_data_out_valid_sig <= adc_dout_valid;   
     else
       adc_data_out_i_sig <= adc_dout_i;
       adc_data_out_q_sig <= adc_dout_q;
@@ -1652,11 +1669,14 @@ begin
   end if;
 end process adc_test_pattern_mux;
 
-adc_data_out_i <= adc_data_out_i_sig;
-adc_data_out_q <= adc_data_out_q_sig;
-adc_data_out_valid <= adc_data_out_valid_sig;
+--adc_data_out_i <= adc_data_out_i_sig;
+--adc_data_out_q <= adc_data_out_q_sig;
+--adc_data_out_valid <= adc_data_out_valid_sig;
+--adc_counter_out <= adc_counter_out_sig;
 
-adc_counter_out <= adc_counter_out_sig;
+adc_data_out_iq <= adc_dout_i & adc_dout_q;
+dac_data_out_iq <= dac_din_i & dac_din_q;
+data_out_valid <= adc_dout_valid;
 
 ------------------------------------------------------------------------------------
 ---- ILA for monitor of ADC calibration
@@ -1983,6 +2003,9 @@ port map (
 );
 
 CHIRP_DDS_inst : CHIRP_DDS
+generic map(
+    DDS_LATENCY => DDS_LATENCY
+)
 port map(
 	-- clock           		=> clk_491_52mhz,
 	-- clock1           		=> clk_245_76mhz,

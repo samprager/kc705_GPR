@@ -60,6 +60,9 @@ parameter RX_RD_CMD_DWIDTH                         = 32,
 
 parameter  CHIRP_CLK_FREQ                           = 245760000,    // Hz
 
+parameter CHIRP_PRF_INT_COUNT_INIT = 32'h00000000,
+parameter CHIRP_PRF_FRAC_COUNT_INIT = 32'h927c0000,
+
 parameter ADC_CLK_FREQ                              = 245.7
 )
 (
@@ -100,8 +103,8 @@ parameter ADC_CLK_FREQ                              = 245.7
 
  // input [7:0]                             gpio_dip_sw,
   // Chirp Control registers
-  output reg [31:0]                 ch_prf_int = 32'b0, // prf in sec
-  output reg [31:0]                 ch_prf_frac = 32'h927c0000, //10*CHIRP_CLK_FREQ;  = 245760000  (10 sec)
+  output reg [31:0]                 ch_prf_int = CHIRP_PRF_INT_COUNT_INIT, // prf in sec
+  output reg [31:0]                 ch_prf_frac = CHIRP_PRF_FRAC_COUNT_INIT, //10*CHIRP_CLK_FREQ;  = 245760000  (10 sec)
 
   // Chirp Waveform Configuration registers
   output reg [31:0]                 ch_tuning_coef = 32'b1,
@@ -305,8 +308,8 @@ begin
         wr_valid_reg                                   <= 1'b0;
         wr_err                                   <= 2'b0;
       // Chirp Control registers
-      ch_prf_int           <= 32'd0; // prf in sec
-      ch_prf_frac          <= 32'h927c0000;
+      ch_prf_int           <= CHIRP_PRF_INT_COUNT_INIT; // prf in sec
+      ch_prf_frac          <= CHIRP_PRF_FRAC_COUNT_INIT;
       ch_tuning_coef       <= 32'b1;
       ch_counter_max      <= 32'h00000fff;
       ch_freq_offset       <= 32'h0600;

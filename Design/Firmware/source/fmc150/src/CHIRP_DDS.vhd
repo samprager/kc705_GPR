@@ -50,6 +50,9 @@ library ieee;
   use ieee.std_logic_unsigned.all;
 
 entity CHIRP_DDS is
+generic (
+  DDS_LATENCY : integer := 2 -- value of 15000 = approx 1 sec for ramp of length 2^14 samples @ 245.76 MSPS
+);
 port (
 	CLOCK           		: in std_logic;
 	RESET           		: in std_logic;
@@ -71,8 +74,6 @@ port (
 end CHIRP_DDS;
 
 architecture CHIRP_DDS_syn of CHIRP_DDS is
-
-
 -- Added by SP
 component SP_DDS
 port (
@@ -118,6 +119,7 @@ signal chirp_count_max  :std_logic_vector(31 downto 0) := (11 downto 0 => '1',ot
 signal tuning_word_coeff :std_logic_vector(31 downto 0) := (0=> '1',others=>'0');
 signal freq_offset  :std_logic_vector(31 downto 0) := (10=>'1',9=>'1',others=>'0');
 
+signal dds_latency_counter  :std_logic_vector(3 downto 0) := (others=>'0');
 
 
 -- Use if using library ieee.numeric_std.all:
@@ -184,6 +186,8 @@ Chirp_Gen: process (clk)    -- 491.52 MHz clock
         tuning_word_coeff <= (0=> '1',others=>'0');
         freq_offset <= (10=>'1',9=>'1',others=>'0');
         chirp_count_max <= (11 downto 0 => '1',others => '0');
+        
+        dds_latency_counter <= (others => '0');
 
       elsif (chirp_init_r = '1' and chirp_active_r = '0') then
         chirp_count <= (others => '0');
@@ -201,11 +205,19 @@ Chirp_Gen: process (clk)    -- 491.52 MHz clock
         tuning_word_coeff <= tuning_word_coeff_in;
         freq_offset <= freq_offset_in;
         chirp_count_max <= chirp_count_max_in;
+        
+        dds_latency_counter <= (others => '0');
 
       elsif(chirp_active_r = '1') then
 
-        chirp_i <= dds_dout_chirp_i;
-        chirp_q <= dds_dout_chirp_q;
+        if (dds_latency_counter >= (DDS_LATENCY-1)) then
+            chirp_i <= dds_dout_chirp_i;
+            chirp_q <= dds_dout_chirp_q;
+        else 
+            dds_latency_counter <= dds_latency_counter + 1;
+            chirp_i  <= (others => '0');
+            chirp_q  <= (others => '0');
+        end if;    
 
         if (chirp_done_r = '1') then
             chirp_active_r <= '0';
@@ -222,8 +234,16 @@ Chirp_Gen: process (clk)    -- 491.52 MHz clock
             phase_acc_long(31 downto 0) <= phase_acc_long(31 downto 0) + tuning_word(31 downto 0);
         end if;
       else
-          chirp_i  <= (others => '0');
-          chirp_q  <= (others => '0');
+          if (dds_latency_counter > 0) then
+              chirp_i <= dds_dout_chirp_i;
+              chirp_q <= dds_dout_chirp_q;
+              dds_latency_counter <= dds_latency_counter - 1;
+          else 
+              chirp_i  <= (others => '0');
+              chirp_q  <= (others => '0');
+          end if;    
+--          chirp_i  <= (others => '0');
+--          chirp_q  <= (others => '0');
       end if;
     end if;
   end process Chirp_Gen;
@@ -245,19 +265,21 @@ chirp_done <= chirp_done_r;
 ----------------------------------------------------------------------------------------------------
 -- Output MUX - Select data connected to the physical DAC interface
 ----------------------------------------------------------------------------------------------------
---TX_mux_to_DAC: process (clk)
---begin
---  if (rising_edge(clk)) then
---	  if_out_i_sig <= chirp_i;	-- connect Chirp DDS output directly to DAC @ 245.76 MSPS
---      if_out_q_sig <= chirp_q;
---  end if;
---end process TX_mux_to_DAC;
+TX_mux_to_DAC: process (clk)
+begin
+  if (rising_edge(clk)) then
+	  if_out_i_sig <= chirp_i;	-- connect Chirp DDS output directly to DAC @ 245.76 MSPS
+      if_out_q_sig <= chirp_q;
+      if_out_valid_sig <= '1';
+  end if;
+end process TX_mux_to_DAC;
 
---IF_OUT_I <= if_out_i_sig;
---IF_OUT_Q <= if_out_q_sig;
-IF_OUT_I <= chirp_i;
-IF_OUT_Q <= chirp_q;
-IF_OUT_VALID <= '1';
+IF_OUT_I <= if_out_i_sig;
+IF_OUT_Q <= if_out_q_sig;
+IF_OUT_VALID <= if_out_valid_sig;
+--IF_OUT_I <= chirp_i;
+--IF_OUT_Q <= chirp_q;
+--IF_OUT_VALID <= '1';
 
 
 ----------------------------------------------------------------------------------------------------

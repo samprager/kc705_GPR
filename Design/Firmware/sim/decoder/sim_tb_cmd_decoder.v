@@ -8,6 +8,9 @@ module sim_tb_cmd_decoder;
    localparam RESET_PERIOD = 320000; //in pSec
    localparam HOST_MAC_ADDR = 48'h985aebdb066f;
    localparam FPGA_MAC_ADDR = 48'h5a0102030405;
+   
+   localparam CHIRP_PRF_INT_COUNT_INIT = 32'h00000000;
+   localparam CHIRP_PRF_FRAC_COUNT_INIT = 32'h00000010;//32'h927c0000;
 
    localparam use_test_packet = 1;
 
@@ -327,6 +330,9 @@ wire                                rx_axis_tuser;
       end
 
  cmd_decoder_top #(
+ .SIMULATION(1),
+ .CHIRP_PRF_INT_COUNT_INIT(CHIRP_PRF_INT_COUNT_INIT),
+ .CHIRP_PRF_FRAC_COUNT_INIT(CHIRP_PRF_FRAC_COUNT_INIT)
   ) u_cmd_decoder_top (
         .gtx_clk_bufg (gtx_tclk),
         .gtx_resetn (gtx_tresetn),

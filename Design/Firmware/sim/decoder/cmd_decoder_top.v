@@ -2,6 +2,8 @@
 
 module cmd_decoder_top #(
     parameter SIMULATION = 1,
+    parameter CHIRP_PRF_INT_COUNT_INIT = 32'h00000000,
+    parameter CHIRP_PRF_FRAC_COUNT_INIT = 32'h927c0000,
     parameter DEST_ADDR       =48'h985aebdb066f,
     parameter SRC_ADDR        = 48'h5a0102030405
 )
@@ -203,7 +205,9 @@ assign tx_axis_tlast = 'b0;
 
 control_module #(
     .SIMULATION(SIMULATION),
-    .RX_WR_CMD_DWIDTH (RX_WR_CMD_DWIDTH)
+    .RX_WR_CMD_DWIDTH (RX_WR_CMD_DWIDTH),
+    .CHIRP_PRF_INT_COUNT_INIT(CHIRP_PRF_INT_COUNT_INIT),
+    .CHIRP_PRF_FRAC_COUNT_INIT(CHIRP_PRF_FRAC_COUNT_INIT)
 )control_module_inst(
   .s_axi_aclk   (s_axi_aclk),
   .s_axi_resetn  (s_axi_resetn),
@@ -286,8 +290,8 @@ chirp_dds_top #(
   .clk_245 (clk_fmc150),
   .clk_245_rst (!resetn_fmc150),
 
-  .aclk (ui_clk),
-  .aresetn (aresetn),
+  .aclk (s_axi_aclk),
+  .aresetn (s_axi_resetn),
 
   .cpu_reset(!resetn_fmc150),
   //.aclk(sysclk_bufg),
