@@ -259,7 +259,7 @@ Chirp_Gen: process (clk1)    -- 491.52 MHz clock
         if (chirp_count >= chirp_count_max) then
             chirp_count <= (others => '0');
             --tuning_word(31 downto 0) <= (others => '0');
-
+            phase_acc_long <= (others => '0');
             tuning_word(31 downto 0) <= freq_offset(31 downto 0);
             -- Push the initial freq beyon baseband
         --elsif (chirp_count(10 downto 0) = "00000000000") then
@@ -300,16 +300,19 @@ chirp_done <= chirp_done_r;
 ----------------------------------------------------------------------------------------------------
 -- Output MUX - Select data connected to the physical DAC interface
 ----------------------------------------------------------------------------------------------------
-TX_mux_to_DAC: process (clk1)
-begin
-  if (rising_edge(clk)) then
-			if_out_i_sig <= chirp_i;	-- connect Chirp DDS output directly to DAC @ 245.76 MSPS
-      if_out_q_sig <= chirp_q;
-  end if;
-end process TX_mux_to_DAC;
+--TX_mux_to_DAC: process (clk1)
+--begin
+--  if (rising_edge(clk)) then
+--	  if_out_i_sig <= chirp_i;	-- connect Chirp DDS output directly to DAC @ 245.76 MSPS
+--      if_out_q_sig <= chirp_q;
+--  end if;
+--end process TX_mux_to_DAC;
 
-IF_OUT_I <= if_out_i_sig;
-IF_OUT_Q <= if_out_q_sig;
+--IF_OUT_I <= if_out_i_sig;
+--IF_OUT_Q <= if_out_q_sig;
+
+IF_OUT_I <= chirp_i;
+IF_OUT_Q <= chirp_q;
 
 
 ----------------------------------------------------------------------------------------------------

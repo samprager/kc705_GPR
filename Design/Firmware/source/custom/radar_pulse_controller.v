@@ -114,69 +114,21 @@ reg [31:0] ch_freq_offset_rr = 32'h0600;
 reg [31:0] ch_tuning_coef_rrr = 32'b1;
 reg [31:0] ch_counter_max_rrr = 32'h00000fff;
 reg [31:0] ch_freq_offset_rrr = 32'h0600;
+reg [31:0] ch_ctrl_word_r = 32'b0;
+reg [31:0] ch_ctrl_word_rr = 32'b0;
+reg [31:0] ch_ctrl_word_rrr = 32'b0;
 reg update_ch_tuning_coef = 1'b0;
 reg update_ch_counter_max = 1'b0;
 reg update_ch_freq_offset = 1'b0;
+reg update_ch_ctrl_word = 1'b0;
 
 reg[63:0] chirp_prf_count_max = CHIRP_PRF_COUNT_SLOW;
 
 reg[31:0] adc_collect_count_max = ADC_LIMIT;
 
-assign chirp_parameters_out = {32'b0,ch_freq_offset_rrr,ch_tuning_coef_rrr,ch_counter_max_rrr};
+assign chirp_parameters_out = {ch_ctrl_word_rrr,ch_freq_offset_rrr,ch_tuning_coef_rrr,ch_counter_max_rrr};
 
 // sync chirp param control inputs from reg map
-//always @(posedge clk_fmc150) begin
-//    if(~resetn_fmc150) begin
-//        ch_freq_offset_r <= 32'h0600;
-//        ch_tuning_coef_r <= 32'b1;
-//        ch_counter_max_r <= 32'h00000fff;
-//        ch_freq_offset_rr <= 32'h0600;
-//        ch_tuning_coef_rr <= 32'b1;
-//        ch_counter_max_rr <= 32'h00000fff;
-//        ch_freq_offset_rrr <= 32'h0600;
-//        ch_tuning_coef_rrr <= 32'b1;
-//        ch_counter_max_rrr <= 32'h00000fff;
-//        update_ch_freq_offset <= 1'b0;
-//        update_ch_tuning_coef  <= 1'b0;
-//        update_ch_counter_max <= 1'b0;
-//     end else begin
-//       ch_freq_offset_r <= chirp_parameters_in[95:64];
-//       ch_tuning_coef_r <= chirp_parameters_in[63:32];
-//       ch_counter_max_r <= chirp_parameters_in[31:0];
-//       ch_freq_offset_rr <= ch_freq_offset_r;
-//       ch_tuning_coef_rr <= ch_tuning_coef_r;
-//       ch_counter_max_rr <= ch_counter_max_r;
-//       if (ch_tuning_coef_rrr !== ch_tuning_coef_rr) begin
-//           ch_tuning_coef_rrr <= ch_tuning_coef_rr;
-//           ch_counter_max_rrr <= ch_counter_max_rrr;
-//           ch_freq_offset_rrr <= ch_freq_offset_rrr;
-//           update_ch_tuning_coef <= 1'b1;
-//           update_ch_counter_max <= 1'b0;
-//           update_ch_freq_offset <= 1'b0;
-//       end else if (ch_counter_max_rrr !== ch_counter_max_rr) begin
-//           ch_tuning_coef_rrr <= ch_tuning_coef_rrr;
-//           ch_counter_max_rrr <= ch_counter_max_rr;
-//           ch_freq_offset_rrr <= ch_freq_offset_rrr;
-//            update_ch_tuning_coef <= 1'b0;
-//            update_ch_counter_max <= 1'b1;
-//            update_ch_freq_offset <= 1'b0;
-//       end else if (ch_freq_offset_rrr !== ch_freq_offset_rr) begin
-//            ch_tuning_coef_rrr <= ch_tuning_coef_rrr;
-//            ch_counter_max_rrr <= ch_counter_max_rrr;
-//            ch_freq_offset_rrr <= ch_freq_offset_rr;
-//            update_ch_tuning_coef <= 1'b0;
-//            update_ch_counter_max <= 1'b0;
-//            update_ch_freq_offset <= 1'b1;
-//        end else begin
-//            ch_tuning_coef_rrr <= ch_tuning_coef_rrr;
-//            ch_counter_max_rrr <= ch_counter_max_rrr;
-//            ch_freq_offset_rrr <= ch_freq_offset_rrr;
-//            update_ch_tuning_coef <= 1'b0;
-//            update_ch_counter_max <= 1'b0;
-//            update_ch_freq_offset <= 1'b0;
-//         end
-//    end
-//end
 always @(posedge clk_fmc150) begin
     if(~resetn_fmc150) begin
         ch_tuning_coef_r <= 32'b1;
@@ -229,6 +181,25 @@ always @(posedge clk_fmc150) begin
         end else begin   
              ch_counter_max_rrr <= ch_counter_max_rrr;
              update_ch_counter_max <= 1'b0;
+        end
+    end
+end    
+
+always @(posedge clk_fmc150) begin
+    if(~resetn_fmc150) begin
+        ch_ctrl_word_r <= 32'h00000000;
+        ch_ctrl_word_rr <= 32'h00000000;
+        ch_ctrl_word_rrr <= 32'h00000000;
+        update_ch_ctrl_word <= 1'b0;
+    end else begin   
+        ch_ctrl_word_r <= chirp_parameters_in[127:96];
+        ch_ctrl_word_rr <= ch_ctrl_word_r;
+        if (ch_ctrl_word_rrr !== ch_ctrl_word_rr) begin
+            ch_ctrl_word_rrr <= ch_ctrl_word_rr;
+            update_ch_ctrl_word <= 1'b1;
+        end else begin   
+             ch_ctrl_word_rrr <= ch_ctrl_word_rrr;
+             update_ch_ctrl_word <= 1'b0;
         end
     end
 end       

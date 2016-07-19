@@ -56,8 +56,8 @@ parameter REG_ADDR_WIDTH                            = 8,
 parameter CORE_DATA_WIDTH                           = 32,
 parameter CORE_BE_WIDTH                             = CORE_DATA_WIDTH/8,
 parameter ADC_CLK_FREQ                              = 245.7,
-parameter RX_WR_CMD_DWIDTH                         = 192,
-parameter RX_RD_CMD_DWIDTH                         = 192,
+parameter RX_WR_CMD_DWIDTH                         = 224,
+parameter RX_RD_CMD_DWIDTH                         = 32,
 
 parameter CHIRP_CLK_FREQ = 245760000    // Hz
 )
@@ -135,6 +135,7 @@ parameter CHIRP_CLK_FREQ = 245760000    // Hz
 );
 
 // Chirp Control registers
+wire [31:0]         chirp_control_word;
 wire [31:0]          chirp_freq_offset;
 wire [31:0]    chirp_tuning_word_coeff;
 wire [31:0]            chirp_count_max;
@@ -220,7 +221,7 @@ radar_pulse_controller_inst (
   .data_tx_enable (data_tx_enable)     // continuous high while transmit enabled
 );
 
-assign chirp_parameters_axiclk = {32'b0,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
+assign chirp_parameters_axiclk = {chirp_control_word,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
 
 reg_map_cmd_gen reg_map_cmd_gen_inst (
   .aclk (s_axi_aclk),
@@ -284,6 +285,7 @@ config_reg_map_inst (
   .ch_prf_int (ch_prf_int), // prf in sec
   .ch_prf_frac (ch_prf_frac),
 
+  .ch_ctrl_word (chirp_control_word),
   .ch_tuning_coef (chirp_tuning_word_coeff),
   .ch_counter_max  (chirp_count_max),
   .ch_freq_offset (chirp_freq_offset),

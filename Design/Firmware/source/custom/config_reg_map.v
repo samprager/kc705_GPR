@@ -55,8 +55,8 @@ parameter REG_ADDR_WIDTH                            = 8,
 parameter CORE_DATA_WIDTH                           = 32,
 parameter CORE_BE_WIDTH                             = CORE_DATA_WIDTH/8,
 
-parameter RX_WR_CMD_DWIDTH                         = 192,
-parameter RX_RD_CMD_DWIDTH                         = 192,
+parameter RX_WR_CMD_DWIDTH                         = 224,
+parameter RX_RD_CMD_DWIDTH                         = 32,
 
 parameter  CHIRP_CLK_FREQ                           = 245760000,    // Hz
 
@@ -107,6 +107,7 @@ parameter ADC_CLK_FREQ                              = 245.7
   output reg [31:0]                 ch_tuning_coef = 32'b1,
   output reg [31:0]                 ch_counter_max = 32'h00000fff,
   output reg [31:0]                 ch_freq_offset = 32'h0600,
+  output reg [31:0]                 ch_ctrl_word = 32'b0,
 
   // ADC Sample time after chirp data_tx_done -
   output reg [31:0]                 adc_sample_time = 32'hc8,
@@ -309,6 +310,7 @@ begin
       ch_tuning_coef       <= 32'b1;
       ch_counter_max      <= 32'h00000fff;
       ch_freq_offset       <= 32'h0600;
+      ch_ctrl_word         <= 32'b0;
       adc_sample_time      <= 32'hc8;
 
   end else if(network_cmd_en) begin
@@ -319,6 +321,7 @@ begin
       ch_freq_offset <= ch_wr_cmd_axis_tdata[127:96];
       ch_tuning_coef<= ch_wr_cmd_axis_tdata[159:128];
       ch_counter_max <= ch_wr_cmd_axis_tdata[191:160]-1'b1;
+      ch_ctrl_word <= ch_wr_cmd_axis_tdata[223:192];
     end else begin
       ch_prf_int <= ch_prf_int;
       ch_prf_frac <= ch_prf_frac;
@@ -326,6 +329,7 @@ begin
       ch_freq_offset <= ch_freq_offset;
       ch_tuning_coef<= ch_tuning_coef;
       ch_counter_max <= ch_counter_max;
+      ch_ctrl_word <= ch_ctrl_word;
     end
   end else if(wr_cmd & wr_ready_reg) begin
 

@@ -289,8 +289,8 @@ function integer clogb2 (input integer size);
   localparam ADC_AXI_STREAM_ID = 1'b0;
   localparam ADC_AXI_STREAM_DEST = 1'b1;
 
-  localparam RX_WR_CMD_DWIDTH = 192;
-  localparam RX_RD_CMD_DWIDTH = 192;
+  localparam RX_WR_CMD_DWIDTH = 224;
+  localparam RX_RD_CMD_DWIDTH = 32;
   localparam RX_CMD_ID_WIDTH = 32;
 
   wire                          clk_245_76MHz;
@@ -424,7 +424,7 @@ wire [7:0] ethernet_ctrl_bus_bypass;
 // ethernet_ctrl_bus = {3'b0,enable_adc_pkt,gen_tx_data,chk_tx_data,mac_speed};
 
 wire [127:0] chirp_parameters;
-// chirp_parameters = {32'b0,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
+// chirp_parameters = {chirp_control_word,chirp_freq_offset,chirp_tuning_word_coeff,chirp_count_max};
 
 
 wire [31:0]   cmd_pkt_s_axis_tdata;
@@ -949,6 +949,7 @@ fmc150_dac_adc_inst
      .chirp_enable                        (chirp_enable),
      .adc_enable                          (adc_enable),
 
+     .chirp_control_word         (chirp_parameters[127:96]),
      .chirp_freq_offset          (chirp_parameters[95:64]),
      .chirp_tuning_word_coeff    (chirp_parameters[63:32]),
      .chirp_count_max            (chirp_parameters[31:0]),

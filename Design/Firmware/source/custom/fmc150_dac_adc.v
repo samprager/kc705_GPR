@@ -41,6 +41,7 @@ module fmc150_dac_adc #
   input  chirp_enable,
   input  adc_enable,
 
+  input [31:0] chirp_control_word,
   input [31:0] chirp_freq_offset,
   input [31:0] chirp_tuning_word_coeff,
   input [31:0] chirp_count_max,
@@ -191,6 +192,7 @@ module fmc150_dac_adc #
         .chirp_enable  (chirp_enable),
         .adc_enable    (adc_enable),
 
+        .dac_loopback               (chirp_control_word[0]),
         .chirp_freq_offset          (chirp_freq_offset),
         .chirp_tuning_word_coeff    (chirp_tuning_word_coeff),
         .chirp_count_max            (chirp_count_max),
@@ -348,10 +350,12 @@ module fmc150_dac_adc #
 
    assign adc_data_iq = {adc_data_i,adc_data_q};
    assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
-   assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
+   //assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
+   assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable;
+
    assign adc_fifo_wr_tlast = adc_fifo_wr_tlast_reg;
 
-   assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
+   assign adc_fifo_wr_en = adc_enable & adc_data_valid;
    //assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
 
 assign rd_fifo_clk = aclk;

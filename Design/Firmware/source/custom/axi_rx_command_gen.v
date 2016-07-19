@@ -23,7 +23,7 @@
 
 module axi_rx_command_gen #(
     parameter               REG_WIDTH = 4,        // size of data registers in bytes
-    parameter               NUM_REG = 6
+    parameter               NUM_REG = 7
 
 )(
    input                   axi_tclk,
