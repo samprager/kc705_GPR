@@ -226,8 +226,10 @@ Chirp_Gen: process (clk1)    -- 491.52 MHz clock
 
       elsif (chirp_init_r = '1' and chirp_active_r = '0') then
         chirp_count <= (others => '0');
-        tuning_word(31 downto 0) <= freq_offset_in(31 downto 0);
-        phase_acc_long <= (others => '0');
+        --tuning_word(31 downto 0) <= freq_offset_in(31 downto 0);
+        --phase_acc_long <= (others => '0');
+        tuning_word(31 downto 0) <= freq_offset_in(31 downto 0) + tuning_word_coeff_in(31 downto 0);
+        phase_acc_long <= freq_offset_in(31 downto 0);
         chirp_i  <= (others => '0');
         chirp_q  <= (others => '0');
 
@@ -258,8 +260,6 @@ Chirp_Gen: process (clk1)    -- 491.52 MHz clock
         --if (chirp_count(11 downto 0) = "111111111111") then
         if (chirp_count >= chirp_count_max) then
             chirp_count <= (others => '0');
-            --tuning_word(31 downto 0) <= (others => '0');
-            phase_acc_long <= (others => '0');
             tuning_word(31 downto 0) <= freq_offset(31 downto 0);
             -- Push the initial freq beyon baseband
         --elsif (chirp_count(10 downto 0) = "00000000000") then
@@ -267,14 +267,15 @@ Chirp_Gen: process (clk1)    -- 491.52 MHz clock
             chirp_done_r <= '1';
             chirp_active_r <= '0'; 
             
-            chirp_i  <= (others => '0');
-            chirp_q  <= (others => '0');
         else
             chirp_count <= chirp_count + 1;
             tuning_word(31 downto 0) <= tuning_word(31 downto 0) + tuning_word_coeff;
         end if;
       else
           chirp_done_r <= '0';
+          phase_acc_long <= (others => '0');
+          chirp_i  <= (others => '0');
+          chirp_q  <= (others => '0');
       end if;
     end if;
   end process Chirp_Gen;
