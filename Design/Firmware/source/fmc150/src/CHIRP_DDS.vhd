@@ -304,7 +304,7 @@ chirp_done <= chirp_done_r;
 ----------------------------------------------------------------------------------------------------
 TX_mux_to_DAC: process (clk1)
 begin
-  if (rising_edge(clk)) then
+  if (rising_edge(clk1)) then
 	  if_out_i_sig <= chirp_i;	-- connect Chirp DDS output directly to DAC @ 245.76 MSPS
       if_out_q_sig <= chirp_q;
   end if;

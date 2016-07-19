@@ -76,7 +76,7 @@ reg [10:0] chirp_count;
 initial
 begin
       fmc_tclk_i = 1'b0;
-      fmc_tclk_fast_i = 1'b0;
+      fmc_tclk_fast_i = 1'b1;
 end
 
 initial begin
