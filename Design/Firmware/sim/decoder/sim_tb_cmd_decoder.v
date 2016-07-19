@@ -39,9 +39,11 @@ module sim_tb_cmd_decoder;
 
   reg [7:0]                     temp_data;
 
-  reg [127:0] test_packet_1 = 128'h5a0102030405a45e60ee9f3500220200;
+  reg [127:0] test_packet_1 = 128'h5a0102030405a45e60ee9f3500260200;
   reg [127:0] test_packet_2 = 128'h46465757fc1700001e00000004000000;
   reg [127:0] test_packet_3 = 128'h77000000000000000000010001040001;
+  reg [31:0] test_packet_4 = 32'h00000000;
+  
 
   reg [127:0] test_packet_rd_1 = 128'h5a0102030405a45e60ee9f35000e0100;
   reg[95:0] test_packet_rd_2 = 96'h4343525204000000efbeedfe;
@@ -197,14 +199,16 @@ wire                                rx_axis_tuser;
           else
               rx_axis_tlast_reg <= 1'b0;
 
-          if (data_counter >=8'hd0 & data_counter<8'he0) begin
-              rx_axis_tdata_reg <= test_packet_1[8'h80-(8'h8*(data_counter-8'hd0))-1-:8];
-          end else if (data_counter >=8'he0 & data_counter<8'hf0) begin
-              rx_axis_tdata_reg <= test_packet_2[8'h80-(8'h8*(data_counter-8'he0))-1-:8];
-              if (data_counter == 8'he5)
+          if (data_counter >=8'hcc & data_counter<8'hdc) begin
+              rx_axis_tdata_reg <= test_packet_1[8'h80-(8'h8*(data_counter-8'hcc))-1-:8];
+          end else if (data_counter >=8'hdc & data_counter<8'hec) begin
+              rx_axis_tdata_reg <= test_packet_2[8'h80-(8'h8*(data_counter-8'hdc))-1-:8];
+              if (data_counter == 8'he1)
                 test_packet_2[95:88] <= test_packet_2[95:88]+1;
-          end else if (data_counter >=8'hf0)begin
-              rx_axis_tdata_reg <= test_packet_3[8'h80-(8'h8*(data_counter-8'hf0))-1-:8];
+          end else if (data_counter >=8'hec & data_counter<8'hfc)begin
+              rx_axis_tdata_reg <= test_packet_3[8'h80-(8'h8*(data_counter-8'hec))-1-:8];
+          end else if (data_counter >=8'hfc & data_counter<8'hfc)begin
+              rx_axis_tdata_reg <= test_packet_4[8'h20-(8'h8*(data_counter-8'hfc))-1-:8];
            end
           if (data_counter == 8'hff) begin
             command_type <= command_type + 1;
