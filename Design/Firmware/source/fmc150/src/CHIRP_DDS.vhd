@@ -226,10 +226,9 @@ Chirp_Gen: process (clk1)    -- 491.52 MHz clock
 
       elsif (chirp_init_r = '1' and chirp_active_r = '0') then
         chirp_count <= (others => '0');
-        --tuning_word(31 downto 0) <= freq_offset_in(31 downto 0);
-        --phase_acc_long <= (others => '0');
-        tuning_word(31 downto 0) <= freq_offset_in(31 downto 0) + tuning_word_coeff_in(31 downto 0);
-        phase_acc_long <= freq_offset_in(31 downto 0);
+        tuning_word(31 downto 0) <= freq_offset_in(31 downto 0);
+        phase_acc_long <= (others => '0');
+
         chirp_i  <= (others => '0');
         chirp_q  <= (others => '0');
 
@@ -242,7 +241,7 @@ Chirp_Gen: process (clk1)    -- 491.52 MHz clock
 
       elsif(chirp_active_r = '1') then
         --chirp_count <= chirp_count + 1;
-        phase_acc_long(31 downto 0) <= phase_acc_long(31 downto 0) + tuning_word(31 downto 0);
+       -- phase_acc_long(31 downto 0) <= phase_acc_long(31 downto 0) + tuning_word(31 downto 0);
 
         -- if phase_acc_long is unsigned use:
        -- phase_acc(15 downto 0) <= std_logic_vector(phase_acc_long(15 downto 0));
@@ -250,8 +249,8 @@ Chirp_Gen: process (clk1)    -- 491.52 MHz clock
        -- if phase_acc_long is std logic vector use:
        --phase_acc(15 downto 0) <= phase_acc_long(15 downto 0);
 
-        chirp_i <= dds_dout_chirp_i;
-        chirp_q <= dds_dout_chirp_q;
+--        chirp_i <= dds_dout_chirp_i;
+--        chirp_q <= dds_dout_chirp_q;
 
         -- For 2048 samples/ chirp
         --if (chirp_count(10 downto 0) = "11111111111") then
@@ -266,16 +265,18 @@ Chirp_Gen: process (clk1)    -- 491.52 MHz clock
         --elsif (chirp_count(11 downto 0) = "000000000000") then
             chirp_done_r <= '1';
             chirp_active_r <= '0'; 
-            
+            chirp_i  <= (others => '0');
+            chirp_q  <= (others => '0');
+            phase_acc_long <= (others => '0');           
         else
             chirp_count <= chirp_count + 1;
             tuning_word(31 downto 0) <= tuning_word(31 downto 0) + tuning_word_coeff;
+            phase_acc_long(31 downto 0) <= phase_acc_long(31 downto 0) + tuning_word(31 downto 0);
+            chirp_i <= dds_dout_chirp_i;
+            chirp_q <= dds_dout_chirp_q;
         end if;
       else
           chirp_done_r <= '0';
-          phase_acc_long <= (others => '0');
-          chirp_i  <= (others => '0');
-          chirp_q  <= (others => '0');
       end if;
     end if;
   end process Chirp_Gen;
