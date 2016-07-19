@@ -104,6 +104,9 @@ always @(posedge fmc_tclk) begin
         //wfout_axis_tready_reg <= wf_written;
         if (counter == 0) begin
             init_wf_write_reg <= 1'b1;
+            waveform_parameters_reg[127:96] <= 32'b0; 
+            waveform_parameters_reg[95:64] <= 32'h0600; 
+            waveform_parameters_reg[63:32] <= 32'b1; 
             waveform_parameters_reg[31:0] <= 32'h00000080; 
             wr_counter <= 'b0;
             rd_counter <= 'b0;
