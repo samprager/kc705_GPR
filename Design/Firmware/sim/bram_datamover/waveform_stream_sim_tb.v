@@ -26,7 +26,9 @@ localparam FMC_TCLK_PERIOD          = 4069;         // 245.76 MHz
 localparam RESET_PERIOD = 16276; //in pSec 
 reg fmc_tresetn_i;
 reg fmc_tclk_i;   
+reg fmc_tclk_fast_i;  
 wire                   fmc_tclk;
+wire                fmc_tclk_fast;
 wire                   fmc_tresetn;
 
 wire [127:0] waveform_parameters;
@@ -60,10 +62,20 @@ reg [7:0]               counter = 'b0;
 reg [7:0]               wr_counter = 'b0;
 reg [7:0]               rd_counter = 'b0;
 reg                     wf_written = 0;
+
+wire [15:0] dds_out_i;
+wire [15:0] dds_out_q;
+wire chirp_ready;
+wire chirp_done;
+wire chirp_active;
+wire chirp_init;
+
+reg 1:0] chirp_count;
         
 initial
 begin
       fmc_tclk_i = 1'b0;
+      fmc_tclk_fast_i = 1'b0;
 end
 
 initial begin
@@ -77,8 +89,14 @@ always
       fmc_tclk_i = #(FMC_TCLK_PERIOD/2.0) ~fmc_tclk_i;
 end    
 
+always
+  begin
+      fmc_tclk_fast_i = #(FMC_TCLK_PERIOD/4.0) ~fmc_tclk_fast_i;
+end    
+
 assign fmc_tresetn = fmc_tresetn_i;
 assign fmc_tclk = fmc_tclk_i;
+assign fmc_tclk_fast = fmc_tclk_fast_i;
 
 initial begin
       repeat(4096)@(posedge fmc_tclk_i); // wait for reset
@@ -97,12 +115,15 @@ always @(posedge fmc_tclk) begin
         wr_counter <= 0;
         rd_counter <= 0;
         wf_written <= 0;
+        
+        chirp_count <= 1;
     end
     else begin
         counter <= counter + 1'b1;
         wfout_axis_tready_reg <= 1'b1;
         //wfout_axis_tready_reg <= wf_written;
         if (counter == 0) begin
+            chirp_count <= chirp_count + 1;
             init_wf_write_reg <= 1'b1;
             waveform_parameters_reg[127:96] <= 32'b0; 
             waveform_parameters_reg[95:64] <= 32'h0600; 
@@ -164,6 +185,29 @@ waveform_stream #(
     .wfout_axis_tkeep(wfout_axis_tkeep),
     .wfout_axis_tready(wfout_axis_tready)
 );
+CHIRP_DDS u_chirp_dds(
+    .CLOCK(fmc_tclk_fast),
+    .CLOCK1(fmc_tclk),
+    .CLOCK2(1'b0),
+    .RESET(!fmc_tresetn),
+    .IF_FREQ(28'b0),
+    .IF_OUT_I(dds_out_i),
+    .IF_OUT_Q(dds_out_q),
+    .IF_OUT_VALID(),
+    .DUC_DCC_ROUTE_CTRL(3'b0),
+
+    .chirp_ready (chirp_ready),
+    .chirp_done  (chirp_done),
+    .chirp_active (chirp_active),
+    .chirp_init  (chirp_init),
+    .chirp_enable (1'b1),
+    
+    .freq_offset_in          (32'd768),
+    .tuning_word_coeff_in    (32'd1),
+    .chirp_count_max_in            (32'd1024)
+    
+);
+assign chirp_init=init_wf_write_reg & chirp_count[1];
 
 assign init_wf_write = init_wf_write_reg;
 assign wfin_axis_tdata = wfin_axis_tdata_reg;
