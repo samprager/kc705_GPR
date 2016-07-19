@@ -350,13 +350,13 @@ module fmc150_dac_adc #
 
    assign adc_data_iq = {adc_data_i,adc_data_q};
    assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
-   //assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
-   assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable;
+   assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
+ //  assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable;
 
    assign adc_fifo_wr_tlast = adc_fifo_wr_tlast_reg;
 
-   assign adc_fifo_wr_en = adc_enable & adc_data_valid;
-   //assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
+ //  assign adc_fifo_wr_en = adc_enable & adc_data_valid;
+   assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
 
 assign rd_fifo_clk = aclk;
 
