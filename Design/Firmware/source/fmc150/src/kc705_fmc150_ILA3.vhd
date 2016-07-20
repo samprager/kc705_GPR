@@ -143,14 +143,14 @@ generic (
 port (
 
 -- ADC data re-mux'd to 245.76 MSPS in fabric, extended to 16-bit
---  adc_data_out_i : out std_logic_vector(15 downto 0);
---  adc_data_out_q : out std_logic_vector(15 downto 0);
---  adc_counter_out : out std_logic_vector(31 downto 0);
---  adc_data_out_valid : out std_logic;
+  adc_data_out_i : out std_logic_vector(15 downto 0);
+  adc_data_out_q : out std_logic_vector(15 downto 0);
+  adc_counter_out : out std_logic_vector(31 downto 0);
+  adc_data_out_valid : out std_logic;
   
-  adc_data_out_iq : out std_logic_vector(31 downto 0);
-  dac_data_out_iq : out std_logic_vector(31 downto 0);
-  data_out_valid : out std_logic;
+--  adc_data_out_iq : out std_logic_vector(31 downto 0);
+--  dac_data_out_iq : out std_logic_vector(31 downto 0);
+--  data_out_valid : out std_logic;
 
   fmc150_status_vector : out std_logic_vector(3 downto 0);
   chirp_ready  : out std_logic;
@@ -1632,24 +1632,24 @@ end process;
 --  end if;
 --end process generate_test_pattern;
 
---generate_adc_counter_out: process (clk_245_76MHz)
---begin
---  if rising_edge(clk_245_76MHz) then
---    if (rst = '1') then
---      adc_counter_out_sig <= (others=>'0');
---    elsif ((adc_dout_valid = '1') and (adc_enable_sig = '1')) then
---        adc_counter_out_sig <= adc_counter_out_sig + '1';
---    end if;
---  end if;
---end process generate_adc_counter_out;
-
-dac_data_mux: process (clk_245_76MHz)
+generate_adc_counter_out: process (clk_245_76MHz)
 begin
   if rising_edge(clk_245_76MHz) then
-        dac_data_out_i_sig <= dac_din_i;
-        dac_data_out_q_sig <= dac_din_q;
+    if (rst = '1') then
+      adc_counter_out_sig <= (others=>'0');
+    elsif ((adc_dout_valid = '1') and (adc_enable_sig = '1')) then
+        adc_counter_out_sig <= adc_counter_out_sig + '1';
+    end if;
   end if;
-end process dac_data_mux;
+end process generate_adc_counter_out;
+
+--dac_data_mux: process (clk_245_76MHz)
+--begin
+--  if rising_edge(clk_245_76MHz) then
+--        dac_data_out_i_sig <= dac_din_i;
+--        dac_data_out_q_sig <= dac_din_q;
+--  end if;
+--end process dac_data_mux;
 
 adc_test_pattern_mux: process (clk_245_76MHz)
 begin
@@ -1660,26 +1660,26 @@ begin
 --      adc_data_out_i_sig <= adc_test_pattern_iq(31 downto 16);
 --      adc_data_out_q_sig <= adc_test_pattern_iq(15 downto 0);
 --      adc_data_out_valid_sig <= adc_test_pattern_valid;
---    if (dac_loopback_sig = '1') then
---        adc_data_out_i_sig <= dac_din_i;
---        adc_data_out_q_sig <= dac_din_q;
---        adc_data_out_valid_sig <= adc_dout_valid;   
---    else
+    if (dac_loopback_sig = '1') then
+        adc_data_out_i_sig <= dac_din_i;
+        adc_data_out_q_sig <= dac_din_q;
+        adc_data_out_valid_sig <= adc_dout_valid;   
+    else
       adc_data_out_i_sig <= adc_dout_i;
       adc_data_out_q_sig <= adc_dout_q;
       adc_data_out_valid_sig <= adc_dout_valid;
---	end if;
+	end if;
   end if;
 end process adc_test_pattern_mux;
 
---adc_data_out_i <= adc_data_out_i_sig;
---adc_data_out_q <= adc_data_out_q_sig;
---adc_data_out_valid <= adc_data_out_valid_sig;
---adc_counter_out <= adc_counter_out_sig;
+adc_data_out_i <= adc_data_out_i_sig;
+adc_data_out_q <= adc_data_out_q_sig;
+adc_data_out_valid <= adc_data_out_valid_sig;
+adc_counter_out <= adc_counter_out_sig;
 
-adc_data_out_iq <= adc_data_out_i_sig & adc_data_out_q_sig;
-dac_data_out_iq <= dac_data_out_i_sig & dac_data_out_q_sig;
-data_out_valid <= adc_data_out_valid_sig;
+--adc_data_out_iq <= adc_data_out_i_sig & adc_data_out_q_sig;
+--dac_data_out_iq <= dac_data_out_i_sig & dac_data_out_q_sig;
+--data_out_valid <= adc_data_out_valid_sig;
 
 ------------------------------------------------------------------------------------
 ---- ILA for monitor of ADC calibration

@@ -53,7 +53,7 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
 
    );
    
-   localparam DDS_LATENCY = 4;
+   localparam DDS_LATENCY = 2;
 
   wire rd_fifo_clk;
   wire clk_245_76MHz;
@@ -86,6 +86,8 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
   
   wire [31:0] data_out_lower;
   wire [31:0] data_out_upper;
+   reg [31:0] data_out_lower_r;
+  reg [31:0] data_out_upper_r;
 //  reg data_out_lower_valid;
 //  reg data_out_upper_valid;
   reg [3:0] dds_latency_counter;
@@ -121,24 +123,25 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
         adc_data_valid_reg <= dds_out_valid;
      end
      
-//     always @(posedge clk_245_76MHz) begin
-//      if (cpu_reset) begin
-//        adc_counter_reg <= 'b0;
-//      end
-//      else begin
-//        if (adc_enable_rr & adc_data_valid_reg)
-//          adc_counter_reg <= adc_counter_reg+1;
-//      end
-//     end
+     always @(posedge clk_245_76MHz) begin
+      if (cpu_reset) begin
+        adc_counter_reg <= 'b0;
+      end
+      else begin
+        if (adc_enable_rr & adc_data_valid_reg)
+          adc_counter_reg <= adc_counter_reg+1;
+      end
+     end
      
-//     always @(posedge clk_245_76MHz) begin
-//      if (cpu_reset) begin
-//        glbl_counter_reg <= 'b0;
-//      end
-//      else begin
-//        glbl_counter_reg <= glbl_counter_reg+1;
-//      end
-//     end
+     always @(posedge clk_245_76MHz) begin
+      if (cpu_reset) begin
+        glbl_counter_reg <= 'b0;
+      end
+      else begin
+        glbl_counter_reg <= glbl_counter_reg+1;
+      end
+     end
+     
      assign adc_data_iq = {adc_data_i_reg,adc_data_q_reg};
      assign dac_data_iq = {dds_out_i,dds_out_q};
      assign data_valid = adc_data_valid_reg;
@@ -198,15 +201,36 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
 //    end                
 //  end
   
-  assign data_out_lower  = (dds_route_ctrl_l == 2'b00) ? adc_data_iq : 1'bz,
-        data_out_lower  = (dds_route_ctrl_l == 2'b01) ? dac_data_iq : 1'bz,
-        data_out_lower  = (dds_route_ctrl_l == 2'b10) ? adc_counter_reg : 1'bz,
-        data_out_lower  = (dds_route_ctrl_l == 2'b11) ? glbl_counter_reg : 1'bz;
+//  always @(dds_route_ctrl_l or adc_data_iq or dac_data_iq or adc_counter or glbl_counter  ) begin
+//    case (dds_route_ctrl_l)
+//    2'b00: data_out_lower_r = adc_data_iq; 
+//    2'b01: data_out_lower_r = dac_data_iq; 
+//    2'b10: data_out_lower_r = adc_counter; 
+//    2'b11: data_out_lower_r = glbl_counter; 
+//    default: data_out_lower_r = adc_data_iq; 
+//    endcase 
+//  end  
+
+// always @(dds_route_ctrl_u or adc_data_iq or dac_data_iq or adc_counter or glbl_counter  ) begin
+//    case (dds_route_ctrl_u)
+//    2'b00: data_out_upper_r = adc_data_iq; 
+//    2'b01: data_out_upper_r = dac_data_iq; 
+//    2'b10: data_out_upper_r = adc_counter; 
+//    2'b11: data_out_upper_r = glbl_counter; 
+//    default: data_out_upper_r = adc_counter; 
+//    endcase 
+//  end  
+//  assign data_out_lower = data_out_lower_r;
+//  assign data_out_upper = data_out_upper_r;
+  assign data_out_lower  = (dds_route_ctrl_l == 2'b00) ? adc_data_iq : 32'bz,
+        data_out_lower  = (dds_route_ctrl_l == 2'b01) ? dac_data_iq : 32'bz,
+        data_out_lower  = (dds_route_ctrl_l == 2'b10) ? adc_counter : 32'bz,
+        data_out_lower  = (dds_route_ctrl_l == 2'b11) ? glbl_counter : 32'bz;
  
-   assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 1'bz,
-              data_out_upper  = (dds_route_ctrl_u == 2'b01) ? dac_data_iq : 1'bz,
-              data_out_upper  = (dds_route_ctrl_u == 2'b10) ? adc_counter_reg : 1'bz,
-              data_out_upper  = (dds_route_ctrl_u == 2'b11) ? glbl_counter_reg : 1'bz;    
+   assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 32'bz,
+              data_out_upper  = (dds_route_ctrl_u == 2'b01) ? dac_data_iq : 32'bz,
+              data_out_upper  = (dds_route_ctrl_u == 2'b10) ? adc_counter_reg : 32'bz,
+              data_out_upper  = (dds_route_ctrl_u == 2'b11) ? glbl_counter_reg : 32'bz;    
                  
   
 // always @(posedge clk_245_76MHz) begin

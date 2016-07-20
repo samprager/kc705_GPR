@@ -131,21 +131,22 @@ module fmc150_dac_adc #
 
    );
 
-  localparam DDS_LATENCY = 4;
+  localparam DDS_LATENCY = 2;
   
   wire rd_fifo_clk;
   wire clk_245_76MHz;
   wire clk_491_52MHz;
 
-//  wire [15:0] adc_data_i;
-//  wire [15:0] adc_data_q;
+  wire [15:0] adc_data_i;
+  wire [15:0] adc_data_q;
   wire [31:0] adc_data_iq;
   wire [31:0] dac_data_iq;
   wire [31:0] adc_counter;
-  //wire adc_data_valid;
-  wire data_valid;
-  reg [7:0] dds_route_ctrl_reg;
-  wire [7:0] dds_route_ctrl;
+  wire adc_data_valid;
+  
+ // wire data_valid;
+//  reg [7:0] dds_route_ctrl_reg;
+//  wire [7:0] dds_route_ctrl;
 
   wire [63:0] adc_fifo_wr_tdata;
   wire       adc_fifo_wr_tvalid;
@@ -171,13 +172,13 @@ module fmc150_dac_adc #
      reg                      adc_enable_rr;
      
      reg [3:0] dds_latency_counter;
-     reg [31:0] glbl_counter_reg;
-     reg [31:0] adc_counter_reg;
+//     reg [31:0] glbl_counter_reg;
+//     reg [31:0] adc_counter_reg;
      
-     reg [31:0] data_out_upper;
-     reg [31:0] data_out_lower;
-     reg data_out_upper_valid;
-     reg data_out_lower_valid;
+//     reg [31:0] data_out_upper;
+//     reg [31:0] data_out_lower;
+//     reg data_out_upper_valid;
+//     reg data_out_lower_valid;
 
 
 
@@ -186,14 +187,14 @@ module fmc150_dac_adc #
    ) KC705_fmc150_inst
    (
         // --KC705 Resources - from fmc150 example design
-//        .adc_data_out_i (adc_data_i),
-//        .adc_data_out_q (adc_data_q),
-//        .adc_counter_out (adc_counter),
-//        .adc_data_out_valid (adc_data_valid),
+        .adc_data_out_i (adc_data_i),
+        .adc_data_out_q (adc_data_q),
+        .adc_counter_out (adc_counter),
+        .adc_data_out_valid (adc_data_valid),
         
-        .adc_data_out_iq (adc_data_iq),
-        .dac_data_out_iq (dac_data_iq),
-        .data_out_valid  (data_valid),
+//        .adc_data_out_iq (adc_data_iq),
+//        .dac_data_out_iq (dac_data_iq),
+//        .data_out_valid  (data_valid),
 
         .clk_out_245_76MHz  (clk_245_76MHz),
         .clk_out_491_52MHz  (clk_491_52MHz),
@@ -316,49 +317,49 @@ module fmc150_dac_adc #
 //   end
 
 //assign dds_route_ctrl = chirp_control_word[7:0];  
-  always @(posedge clk_245_76MHz) begin
-    if (clk_245_rst) 
-      dds_route_ctrl_reg <= 8'h20;
-    else if (chirp_init) 
-      dds_route_ctrl_reg <= chirp_control_word[7:0];
-  end  
- assign dds_route_ctrl = dds_route_ctrl_reg; 
+//  always @(posedge clk_245_76MHz) begin
+//    if (clk_245_rst) 
+//      dds_route_ctrl_reg <= 8'h20;
+//    else if (chirp_init) 
+//      dds_route_ctrl_reg <= chirp_control_word[7:0];
+//  end  
+// assign dds_route_ctrl = dds_route_ctrl_reg; 
     
-  always @(posedge clk_245_76MHz) begin
-    if (clk_245_rst) begin
-      data_out_lower <= 'b0;
-      data_out_lower_valid <= 1'b0;
-    end
-    else begin 
-        data_out_lower_valid <= data_valid;
-        if( dds_route_ctrl[3:0] == 4'b0001)
-          data_out_lower <= dac_data_iq;
-        else if( dds_route_ctrl[3:0] == 4'b0010)
-            data_out_lower <= adc_counter_reg;  
-        else if( dds_route_ctrl[3:0] == 4'b0011)
-            data_out_lower <= glbl_counter_reg; 
-        else
-            data_out_lower <= adc_data_iq; 
-    end                
-  end
+//  always @(posedge clk_245_76MHz) begin
+//    if (clk_245_rst) begin
+//      data_out_lower <= 'b0;
+//      data_out_lower_valid <= 1'b0;
+//    end
+//    else begin 
+//        data_out_lower_valid <= data_valid;
+//        if( dds_route_ctrl[3:0] == 4'b0001)
+//          data_out_lower <= dac_data_iq;
+//        else if( dds_route_ctrl[3:0] == 4'b0010)
+//            data_out_lower <= adc_counter_reg;  
+//        else if( dds_route_ctrl[3:0] == 4'b0011)
+//            data_out_lower <= glbl_counter_reg; 
+//        else
+//            data_out_lower <= adc_data_iq; 
+//    end                
+//  end
   
- always @(posedge clk_245_76MHz) begin
-    if (clk_245_rst) begin
-      data_out_upper <= 'b0;
-      data_out_upper_valid <= 1'b0;
-    end
-    else begin 
-        data_out_upper_valid <= data_valid;
-        if( dds_route_ctrl[7:4] == 4'b0001)
-          data_out_upper <= dac_data_iq;
-        else if( dds_route_ctrl[7:4] == 4'b0010)
-            data_out_upper <= adc_counter_reg;  
-        else if( dds_route_ctrl[7:4] == 4'b0011)
-            data_out_upper <= glbl_counter_reg; 
-        else
-            data_out_upper <= adc_data_iq; 
-    end                
-  end
+// always @(posedge clk_245_76MHz) begin
+//    if (clk_245_rst) begin
+//      data_out_upper <= 'b0;
+//      data_out_upper_valid <= 1'b0;
+//    end
+//    else begin 
+//        data_out_upper_valid <= data_valid;
+//        if( dds_route_ctrl[7:4] == 4'b0001)
+//          data_out_upper <= dac_data_iq;
+//        else if( dds_route_ctrl[7:4] == 4'b0010)
+//            data_out_upper <= adc_counter_reg;  
+//        else if( dds_route_ctrl[7:4] == 4'b0011)
+//            data_out_upper <= glbl_counter_reg; 
+//        else
+//            data_out_upper <= adc_data_iq; 
+//    end                
+//  end
   
    always @(posedge clk_245_76MHz) begin
     if (clk_245_rst) begin
@@ -400,24 +401,24 @@ module fmc150_dac_adc #
       adc_fifo_wr_tlast_rr <= adc_fifo_wr_tlast_rr;
    end
    
-   always @(posedge clk_245_76MHz) begin
-    if (clk_245_rst) begin
-      adc_counter_reg <= 'b0;
-    end
-    else begin
-      if (adc_enable_rr & data_valid)
-        adc_counter_reg <= adc_counter_reg+1;
-    end
-   end
+//   always @(posedge clk_245_76MHz) begin
+//    if (clk_245_rst) begin
+//      adc_counter_reg <= 'b0;
+//    end
+//    else begin
+//      if (adc_enable_rr & data_valid)
+//        adc_counter_reg <= adc_counter_reg+1;
+//    end
+//   end
    
-   always @(posedge clk_245_76MHz) begin
-    if (clk_245_rst) begin
-      glbl_counter_reg <= 'b0;
-    end
-    else begin
-      glbl_counter_reg <= glbl_counter_reg+1;
-    end
-   end
+//   always @(posedge clk_245_76MHz) begin
+//    if (clk_245_rst) begin
+//      glbl_counter_reg <= 'b0;
+//    end
+//    else begin
+//      glbl_counter_reg <= glbl_counter_reg+1;
+//    end
+//   end
    
 // asynchoronous fifo for converting 245.76 MHz 32 bit adc samples (16 i, 16 q)
 // to rd clk domain 64 bit adc samples (i1 q1 i2 q2)
@@ -471,18 +472,18 @@ module fmc150_dac_adc #
       .tready                     (axis_adc_tready)
       );
 
-//   assign adc_data_iq = {adc_data_i,adc_data_q};
-//   assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
-//   assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
+   assign adc_data_iq = {adc_data_i,adc_data_q};
+   assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
+   assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
 
-   assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
-   assign adc_fifo_wr_tvalid = data_out_upper_valid & data_out_lower_valid & adc_enable_rr;
+//   assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
+//   assign adc_fifo_wr_tvalid = data_out_upper_valid & data_out_lower_valid & adc_enable_rr;
    
    
    assign adc_fifo_wr_tlast = adc_fifo_wr_tlast_rr;
 
-//   assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
-   assign adc_fifo_wr_en = adc_enable_rr & data_out_upper_valid & data_out_lower_valid;
+   assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
+//   assign adc_fifo_wr_en = adc_enable_rr & data_out_upper_valid & data_out_lower_valid;
 
 assign rd_fifo_clk = aclk;
 
