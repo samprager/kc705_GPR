@@ -139,14 +139,18 @@ module fmc150_dac_adc #
 
   wire [15:0] adc_data_i;
   wire [15:0] adc_data_q;
+  wire [15:0] dac_data_i;
+  wire [15:0] dac_data_q;
   wire [31:0] adc_data_iq;
   wire [31:0] dac_data_iq;
+  
   wire [31:0] adc_counter;
   wire adc_data_valid;
   
  // wire data_valid;
 //  reg [7:0] dds_route_ctrl_reg;
-//  wire [7:0] dds_route_ctrl;
+  wire [1:0] dds_route_ctrl_u;
+  wire [1:0] dds_route_ctrl_l;
 
   wire [63:0] adc_fifo_wr_tdata;
   wire       adc_fifo_wr_tvalid;
@@ -172,11 +176,13 @@ module fmc150_dac_adc #
      reg                      adc_enable_rr;
      
      reg [3:0] dds_latency_counter;
-//     reg [31:0] glbl_counter_reg;
-//     reg [31:0] adc_counter_reg;
+     reg [31:0] glbl_counter_reg;
      
-//     reg [31:0] data_out_upper;
-//     reg [31:0] data_out_lower;
+     reg [31:0] adc_counter_reg;
+     wire [31:0] glbl_counter;
+     
+     wire [31:0] data_out_upper;
+     wire [31:0] data_out_lower;
 //     reg data_out_upper_valid;
 //     reg data_out_lower_valid;
 
@@ -191,6 +197,9 @@ module fmc150_dac_adc #
         .adc_data_out_q (adc_data_q),
         .adc_counter_out (adc_counter),
         .adc_data_out_valid (adc_data_valid),
+        
+        .dac_data_out_i (dac_data_i),
+        .dac_data_out_q (dac_data_q),
         
 //        .adc_data_out_iq (adc_data_iq),
 //        .dac_data_out_iq (dac_data_iq),
@@ -316,51 +325,20 @@ module fmc150_dac_adc #
 //      adc_fifo_wr_tlast_reg <= 1'b0;
 //   end
 
-//assign dds_route_ctrl = chirp_control_word[7:0];  
-//  always @(posedge clk_245_76MHz) begin
-//    if (clk_245_rst) 
-//      dds_route_ctrl_reg <= 8'h20;
-//    else if (chirp_init) 
-//      dds_route_ctrl_reg <= chirp_control_word[7:0];
-//  end  
-// assign dds_route_ctrl = dds_route_ctrl_reg; 
-    
-//  always @(posedge clk_245_76MHz) begin
-//    if (clk_245_rst) begin
-//      data_out_lower <= 'b0;
-//      data_out_lower_valid <= 1'b0;
-//    end
-//    else begin 
-//        data_out_lower_valid <= data_valid;
-//        if( dds_route_ctrl[3:0] == 4'b0001)
-//          data_out_lower <= dac_data_iq;
-//        else if( dds_route_ctrl[3:0] == 4'b0010)
-//            data_out_lower <= adc_counter_reg;  
-//        else if( dds_route_ctrl[3:0] == 4'b0011)
-//            data_out_lower <= glbl_counter_reg; 
-//        else
-//            data_out_lower <= adc_data_iq; 
-//    end                
-//  end
-  
-// always @(posedge clk_245_76MHz) begin
-//    if (clk_245_rst) begin
-//      data_out_upper <= 'b0;
-//      data_out_upper_valid <= 1'b0;
-//    end
-//    else begin 
-//        data_out_upper_valid <= data_valid;
-//        if( dds_route_ctrl[7:4] == 4'b0001)
-//          data_out_upper <= dac_data_iq;
-//        else if( dds_route_ctrl[7:4] == 4'b0010)
-//            data_out_upper <= adc_counter_reg;  
-//        else if( dds_route_ctrl[7:4] == 4'b0011)
-//            data_out_upper <= glbl_counter_reg; 
-//        else
-//            data_out_upper <= adc_data_iq; 
-//    end                
-//  end
-  
+assign dds_route_ctrl_l = chirp_control_word[1:0];  
+assign dds_route_ctrl_u = chirp_control_word[5:4]; 
+
+assign data_out_lower  = (dds_route_ctrl_l == 2'b00) ? adc_data_iq : 32'bz,
+    data_out_lower  = (dds_route_ctrl_l == 2'b01) ? dac_data_iq : 32'bz,
+    data_out_lower  = (dds_route_ctrl_l == 2'b10) ? adc_counter : 32'bz,
+    data_out_lower  = (dds_route_ctrl_l == 2'b11) ? glbl_counter : 32'bz;
+
+assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 32'bz,
+          data_out_upper  = (dds_route_ctrl_u == 2'b01) ? dac_data_iq : 32'bz,
+          data_out_upper  = (dds_route_ctrl_u == 2'b10) ? adc_counter : 32'bz,
+          data_out_upper  = (dds_route_ctrl_u == 2'b11) ? glbl_counter : 32'bz;  
+          
+                
    always @(posedge clk_245_76MHz) begin
     if (clk_245_rst) begin
       adc_enable_r <= 1'b0;
@@ -410,15 +388,17 @@ module fmc150_dac_adc #
 //        adc_counter_reg <= adc_counter_reg+1;
 //    end
 //   end
+//assign adc_count = adc_counter_reg;
    
-//   always @(posedge clk_245_76MHz) begin
-//    if (clk_245_rst) begin
-//      glbl_counter_reg <= 'b0;
-//    end
-//    else begin
-//      glbl_counter_reg <= glbl_counter_reg+1;
-//    end
-//   end
+   always @(posedge clk_245_76MHz) begin
+    if (clk_245_rst) begin
+      glbl_counter_reg <= 'b0;
+    end
+    else begin
+      glbl_counter_reg <= glbl_counter_reg+1;
+    end
+   end
+   assign glbl_counter = glbl_counter_reg;
    
 // asynchoronous fifo for converting 245.76 MHz 32 bit adc samples (16 i, 16 q)
 // to rd clk domain 64 bit adc samples (i1 q1 i2 q2)
@@ -473,7 +453,10 @@ module fmc150_dac_adc #
       );
 
    assign adc_data_iq = {adc_data_i,adc_data_q};
-   assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
+   assign dac_data_iq = {dac_data_i,dac_data_q};
+   
+    assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
+  // assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
    assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
 
 //   assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};

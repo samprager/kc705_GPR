@@ -148,6 +148,8 @@ port (
   adc_counter_out : out std_logic_vector(31 downto 0);
   adc_data_out_valid : out std_logic;
   
+  dac_data_out_i : out std_logic_vector(15 downto 0);
+  dac_data_out_q : out std_logic_vector(15 downto 0);
 --  adc_data_out_iq : out std_logic_vector(31 downto 0);
 --  dac_data_out_iq : out std_logic_vector(31 downto 0);
 --  data_out_valid : out std_logic;
@@ -1660,15 +1662,18 @@ begin
 --      adc_data_out_i_sig <= adc_test_pattern_iq(31 downto 16);
 --      adc_data_out_q_sig <= adc_test_pattern_iq(15 downto 0);
 --      adc_data_out_valid_sig <= adc_test_pattern_valid;
-    if (dac_loopback_sig = '1') then
-        adc_data_out_i_sig <= dac_din_i;
-        adc_data_out_q_sig <= dac_din_q;
-        adc_data_out_valid_sig <= adc_dout_valid;   
-    else
+--    if (dac_loopback_sig = '1') then
+--        adc_data_out_i_sig <= dac_din_i;
+--        adc_data_out_q_sig <= dac_din_q;
+--        adc_data_out_valid_sig <= adc_dout_valid;   
+--    else
+        dac_data_out_i_sig <= dac_din_i;
+        dac_data_out_q_sig <= dac_din_q;
+        
       adc_data_out_i_sig <= adc_dout_i;
       adc_data_out_q_sig <= adc_dout_q;
       adc_data_out_valid_sig <= adc_dout_valid;
-	end if;
+--	end if;
   end if;
 end process adc_test_pattern_mux;
 
@@ -1677,6 +1682,8 @@ adc_data_out_q <= adc_data_out_q_sig;
 adc_data_out_valid <= adc_data_out_valid_sig;
 adc_counter_out <= adc_counter_out_sig;
 
+dac_data_out_i <= dac_data_out_i_sig;
+dac_data_out_q <= dac_data_out_q_sig;
 --adc_data_out_iq <= adc_data_out_i_sig & adc_data_out_q_sig;
 --dac_data_out_iq <= dac_data_out_i_sig & dac_data_out_q_sig;
 --data_out_valid <= adc_data_out_valid_sig;
