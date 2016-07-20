@@ -92,8 +92,6 @@ wire          cmd_pkt_axis_tvalid;
 wire          cmd_pkt_axis_tlast;
 wire          cmd_pkt_axis_tready;
 
-
-
 wire [31:0]   chirp_cmd_word;
 
 wire [RX_WR_CMD_DWIDTH-1:0]   cmd_pkt_m_axis_tdata;

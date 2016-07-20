@@ -1497,307 +1497,6 @@
       <obj_property name="ElementShortName">tlast_hold0</obj_property>
       <obj_property name="ObjectShortName">tlast_hold0</obj_property>
    </wvobject>
-   <wvobject fp_name="group461" type="group">
-      <obj_property name="label">chirp_top_signals</obj_property>
-      <obj_property name="DisplayName">label</obj_property>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/aclk" type="logic">
-         <obj_property name="ElementShortName">aclk</obj_property>
-         <obj_property name="ObjectShortName">aclk</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/aresetn" type="logic">
-         <obj_property name="ElementShortName">aresetn</obj_property>
-         <obj_property name="ObjectShortName">aresetn</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/clk_245" type="logic">
-         <obj_property name="ElementShortName">clk_245</obj_property>
-         <obj_property name="ObjectShortName">clk_245</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/clk_245_rst" type="logic">
-         <obj_property name="ElementShortName">clk_245_rst</obj_property>
-         <obj_property name="ObjectShortName">clk_245_rst</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/cpu_reset" type="logic">
-         <obj_property name="ElementShortName">cpu_reset</obj_property>
-         <obj_property name="ObjectShortName">cpu_reset</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tdata" type="array">
-         <obj_property name="ElementShortName">axis_adc_tdata[511:0]</obj_property>
-         <obj_property name="ObjectShortName">axis_adc_tdata[511:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tvalid" type="logic">
-         <obj_property name="ElementShortName">axis_adc_tvalid</obj_property>
-         <obj_property name="ObjectShortName">axis_adc_tvalid</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tlast" type="logic">
-         <obj_property name="ElementShortName">axis_adc_tlast</obj_property>
-         <obj_property name="ObjectShortName">axis_adc_tlast</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tkeep" type="array">
-         <obj_property name="ElementShortName">axis_adc_tkeep[63:0]</obj_property>
-         <obj_property name="ObjectShortName">axis_adc_tkeep[63:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tstrb" type="array">
-         <obj_property name="ElementShortName">axis_adc_tstrb[63:0]</obj_property>
-         <obj_property name="ObjectShortName">axis_adc_tstrb[63:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tid" type="array">
-         <obj_property name="ElementShortName">axis_adc_tid[0:0]</obj_property>
-         <obj_property name="ObjectShortName">axis_adc_tid[0:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tdest" type="array">
-         <obj_property name="ElementShortName">axis_adc_tdest[0:0]</obj_property>
-         <obj_property name="ObjectShortName">axis_adc_tdest[0:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tuser" type="array">
-         <obj_property name="ElementShortName">axis_adc_tuser[0:0]</obj_property>
-         <obj_property name="ObjectShortName">axis_adc_tuser[0:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tready" type="logic">
-         <obj_property name="ElementShortName">axis_adc_tready</obj_property>
-         <obj_property name="ObjectShortName">axis_adc_tready</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/fmc150_status_vector" type="array">
-         <obj_property name="ElementShortName">fmc150_status_vector[3:0]</obj_property>
-         <obj_property name="ObjectShortName">fmc150_status_vector[3:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_ready" type="logic">
-         <obj_property name="ElementShortName">chirp_ready</obj_property>
-         <obj_property name="ObjectShortName">chirp_ready</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_done" type="logic">
-         <obj_property name="ElementShortName">chirp_done</obj_property>
-         <obj_property name="ObjectShortName">chirp_done</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_active" type="logic">
-         <obj_property name="ElementShortName">chirp_active</obj_property>
-         <obj_property name="ObjectShortName">chirp_active</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_init" type="logic">
-         <obj_property name="ElementShortName">chirp_init</obj_property>
-         <obj_property name="ObjectShortName">chirp_init</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_enable" type="logic">
-         <obj_property name="ElementShortName">chirp_enable</obj_property>
-         <obj_property name="ObjectShortName">chirp_enable</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_enable" type="logic">
-         <obj_property name="ElementShortName">adc_enable</obj_property>
-         <obj_property name="ObjectShortName">adc_enable</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_control_word" type="array">
-         <obj_property name="ElementShortName">chirp_control_word[31:0]</obj_property>
-         <obj_property name="ObjectShortName">chirp_control_word[31:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_freq_offset" type="array">
-         <obj_property name="ElementShortName">chirp_freq_offset[31:0]</obj_property>
-         <obj_property name="ObjectShortName">chirp_freq_offset[31:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_tuning_word_coeff" type="array">
-         <obj_property name="ElementShortName">chirp_tuning_word_coeff[31:0]</obj_property>
-         <obj_property name="ObjectShortName">chirp_tuning_word_coeff[31:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_count_max" type="array">
-         <obj_property name="ElementShortName">chirp_count_max[31:0]</obj_property>
-         <obj_property name="ObjectShortName">chirp_count_max[31:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/fmc150_ctrl_bus" type="array">
-         <obj_property name="ElementShortName">fmc150_ctrl_bus[7:0]</obj_property>
-         <obj_property name="ObjectShortName">fmc150_ctrl_bus[7:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/fmc150_spi_ctrl_bus_in" type="array">
-         <obj_property name="ElementShortName">fmc150_spi_ctrl_bus_in[67:0]</obj_property>
-         <obj_property name="ObjectShortName">fmc150_spi_ctrl_bus_in[67:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/fmc150_spi_ctrl_bus_out" type="array">
-         <obj_property name="ElementShortName">fmc150_spi_ctrl_bus_out[47:0]</obj_property>
-         <obj_property name="ObjectShortName">fmc150_spi_ctrl_bus_out[47:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/rd_fifo_clk" type="logic">
-         <obj_property name="ElementShortName">rd_fifo_clk</obj_property>
-         <obj_property name="ObjectShortName">rd_fifo_clk</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/clk_245_76MHz" type="logic">
-         <obj_property name="ElementShortName">clk_245_76MHz</obj_property>
-         <obj_property name="ObjectShortName">clk_245_76MHz</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/clk_491_52MHz" type="logic">
-         <obj_property name="ElementShortName">clk_491_52MHz</obj_property>
-         <obj_property name="ObjectShortName">clk_491_52MHz</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_i" type="array">
-         <obj_property name="ElementShortName">adc_data_i[15:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_data_i[15:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_q" type="array">
-         <obj_property name="ElementShortName">adc_data_q[15:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_data_q[15:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_iq" type="array">
-         <obj_property name="ElementShortName">adc_data_iq[31:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_data_iq[31:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_counter" type="array">
-         <obj_property name="ElementShortName">adc_counter[31:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_counter[31:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_valid" type="logic">
-         <obj_property name="ElementShortName">adc_data_valid</obj_property>
-         <obj_property name="ObjectShortName">adc_data_valid</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_i_reg" type="array">
-         <obj_property name="ElementShortName">adc_data_i_reg[15:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_data_i_reg[15:0]</obj_property>
-         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_q_reg" type="array">
-         <obj_property name="ElementShortName">adc_data_q_reg[15:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_data_q_reg[15:0]</obj_property>
-         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_counter_reg" type="array">
-         <obj_property name="ElementShortName">adc_counter_reg[31:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_counter_reg[31:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_valid_reg" type="logic">
-         <obj_property name="ElementShortName">adc_data_valid_reg</obj_property>
-         <obj_property name="ObjectShortName">adc_data_valid_reg</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tdata" type="array">
-         <obj_property name="ElementShortName">adc_fifo_wr_tdata[63:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_wr_tdata[63:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tvalid" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_wr_tvalid</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_wr_tvalid</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tlast" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_wr_tlast</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_wr_tlast</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tlast_reg" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_wr_tlast_reg</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_wr_tlast_reg</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_out_i" type="array">
-         <obj_property name="ElementShortName">dds_out_i[15:0]</obj_property>
-         <obj_property name="ObjectShortName">dds_out_i[15:0]</obj_property>
-         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
-         <obj_property name="WaveformStyle">STYLE_DIGITAL</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_out_q" type="array">
-         <obj_property name="ElementShortName">dds_out_q[15:0]</obj_property>
-         <obj_property name="ObjectShortName">dds_out_q[15:0]</obj_property>
-         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
-         <obj_property name="WaveformStyle">STYLE_DIGITAL</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_out_valid" type="logic">
-         <obj_property name="ElementShortName">dds_out_valid</obj_property>
-         <obj_property name="ObjectShortName">dds_out_valid</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tdata_count" type="array">
-         <obj_property name="ElementShortName">adc_fifo_wr_tdata_count[12:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_wr_tdata_count[12:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_rd_data_count" type="array">
-         <obj_property name="ElementShortName">adc_fifo_rd_data_count[9:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_rd_data_count[9:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_ack" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_wr_ack</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_wr_ack</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_valid" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_valid</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_valid</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_almost_full" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_almost_full</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_almost_full</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_almost_empty" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_almost_empty</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_almost_empty</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_en" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_wr_en</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_wr_en</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_rd_en" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_rd_en</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_rd_en</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_data_out" type="array">
-         <obj_property name="ElementShortName">adc_fifo_data_out[511:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_data_out[511:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_full" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_full</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_full</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_empty" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_empty</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_empty</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_enable_r" type="logic">
-         <obj_property name="ElementShortName">adc_enable_r</obj_property>
-         <obj_property name="ObjectShortName">adc_enable_r</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_enable_rr" type="logic">
-         <obj_property name="ElementShortName">adc_enable_rr</obj_property>
-         <obj_property name="ObjectShortName">adc_enable_rr</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_DATA_WIDTH" type="array">
-         <obj_property name="ElementShortName">ADC_AXI_DATA_WIDTH[31:0]</obj_property>
-         <obj_property name="ObjectShortName">ADC_AXI_DATA_WIDTH[31:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_TID_WIDTH" type="array">
-         <obj_property name="ElementShortName">ADC_AXI_TID_WIDTH[31:0]</obj_property>
-         <obj_property name="ObjectShortName">ADC_AXI_TID_WIDTH[31:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_TDEST_WIDTH" type="array">
-         <obj_property name="ElementShortName">ADC_AXI_TDEST_WIDTH[31:0]</obj_property>
-         <obj_property name="ObjectShortName">ADC_AXI_TDEST_WIDTH[31:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_TUSER_WIDTH" type="array">
-         <obj_property name="ElementShortName">ADC_AXI_TUSER_WIDTH[31:0]</obj_property>
-         <obj_property name="ObjectShortName">ADC_AXI_TUSER_WIDTH[31:0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_STREAM_ID" type="logic">
-         <obj_property name="ElementShortName">ADC_AXI_STREAM_ID</obj_property>
-         <obj_property name="ObjectShortName">ADC_AXI_STREAM_ID</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_STREAM_DEST" type="logic">
-         <obj_property name="ElementShortName">ADC_AXI_STREAM_DEST</obj_property>
-         <obj_property name="ObjectShortName">ADC_AXI_STREAM_DEST</obj_property>
-      </wvobject>
-   </wvobject>
    <wvobject fp_name="group2729" type="group">
       <obj_property name="label">chirp_dds_signals</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -1967,6 +1666,322 @@
          <obj_property name="ElementShortName">freq_offset[31:0]</obj_property>
          <obj_property name="ObjectShortName">freq_offset[31:0]</obj_property>
          <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group4744" type="group">
+      <obj_property name="label">chirp_top_signals</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/aclk" type="logic">
+         <obj_property name="ElementShortName">aclk</obj_property>
+         <obj_property name="ObjectShortName">aclk</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/aresetn" type="logic">
+         <obj_property name="ElementShortName">aresetn</obj_property>
+         <obj_property name="ObjectShortName">aresetn</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/clk_245" type="logic">
+         <obj_property name="ElementShortName">clk_245</obj_property>
+         <obj_property name="ObjectShortName">clk_245</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/clk_245_rst" type="logic">
+         <obj_property name="ElementShortName">clk_245_rst</obj_property>
+         <obj_property name="ObjectShortName">clk_245_rst</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/cpu_reset" type="logic">
+         <obj_property name="ElementShortName">cpu_reset</obj_property>
+         <obj_property name="ObjectShortName">cpu_reset</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tdata" type="array">
+         <obj_property name="ElementShortName">axis_adc_tdata[511:0]</obj_property>
+         <obj_property name="ObjectShortName">axis_adc_tdata[511:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tvalid" type="logic">
+         <obj_property name="ElementShortName">axis_adc_tvalid</obj_property>
+         <obj_property name="ObjectShortName">axis_adc_tvalid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tlast" type="logic">
+         <obj_property name="ElementShortName">axis_adc_tlast</obj_property>
+         <obj_property name="ObjectShortName">axis_adc_tlast</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tkeep" type="array">
+         <obj_property name="ElementShortName">axis_adc_tkeep[63:0]</obj_property>
+         <obj_property name="ObjectShortName">axis_adc_tkeep[63:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tstrb" type="array">
+         <obj_property name="ElementShortName">axis_adc_tstrb[63:0]</obj_property>
+         <obj_property name="ObjectShortName">axis_adc_tstrb[63:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tid" type="array">
+         <obj_property name="ElementShortName">axis_adc_tid[0:0]</obj_property>
+         <obj_property name="ObjectShortName">axis_adc_tid[0:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tdest" type="array">
+         <obj_property name="ElementShortName">axis_adc_tdest[0:0]</obj_property>
+         <obj_property name="ObjectShortName">axis_adc_tdest[0:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tuser" type="array">
+         <obj_property name="ElementShortName">axis_adc_tuser[0:0]</obj_property>
+         <obj_property name="ObjectShortName">axis_adc_tuser[0:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/axis_adc_tready" type="logic">
+         <obj_property name="ElementShortName">axis_adc_tready</obj_property>
+         <obj_property name="ObjectShortName">axis_adc_tready</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/fmc150_status_vector" type="array">
+         <obj_property name="ElementShortName">fmc150_status_vector[3:0]</obj_property>
+         <obj_property name="ObjectShortName">fmc150_status_vector[3:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_ready" type="logic">
+         <obj_property name="ElementShortName">chirp_ready</obj_property>
+         <obj_property name="ObjectShortName">chirp_ready</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_done" type="logic">
+         <obj_property name="ElementShortName">chirp_done</obj_property>
+         <obj_property name="ObjectShortName">chirp_done</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_active" type="logic">
+         <obj_property name="ElementShortName">chirp_active</obj_property>
+         <obj_property name="ObjectShortName">chirp_active</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_init" type="logic">
+         <obj_property name="ElementShortName">chirp_init</obj_property>
+         <obj_property name="ObjectShortName">chirp_init</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_enable" type="logic">
+         <obj_property name="ElementShortName">chirp_enable</obj_property>
+         <obj_property name="ObjectShortName">chirp_enable</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_enable" type="logic">
+         <obj_property name="ElementShortName">adc_enable</obj_property>
+         <obj_property name="ObjectShortName">adc_enable</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_control_word" type="array">
+         <obj_property name="ElementShortName">chirp_control_word[31:0]</obj_property>
+         <obj_property name="ObjectShortName">chirp_control_word[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_freq_offset" type="array">
+         <obj_property name="ElementShortName">chirp_freq_offset[31:0]</obj_property>
+         <obj_property name="ObjectShortName">chirp_freq_offset[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_tuning_word_coeff" type="array">
+         <obj_property name="ElementShortName">chirp_tuning_word_coeff[31:0]</obj_property>
+         <obj_property name="ObjectShortName">chirp_tuning_word_coeff[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/chirp_count_max" type="array">
+         <obj_property name="ElementShortName">chirp_count_max[31:0]</obj_property>
+         <obj_property name="ObjectShortName">chirp_count_max[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/fmc150_ctrl_bus" type="array">
+         <obj_property name="ElementShortName">fmc150_ctrl_bus[7:0]</obj_property>
+         <obj_property name="ObjectShortName">fmc150_ctrl_bus[7:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/fmc150_spi_ctrl_bus_in" type="array">
+         <obj_property name="ElementShortName">fmc150_spi_ctrl_bus_in[67:0]</obj_property>
+         <obj_property name="ObjectShortName">fmc150_spi_ctrl_bus_in[67:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/fmc150_spi_ctrl_bus_out" type="array">
+         <obj_property name="ElementShortName">fmc150_spi_ctrl_bus_out[47:0]</obj_property>
+         <obj_property name="ObjectShortName">fmc150_spi_ctrl_bus_out[47:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/rd_fifo_clk" type="logic">
+         <obj_property name="ElementShortName">rd_fifo_clk</obj_property>
+         <obj_property name="ObjectShortName">rd_fifo_clk</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/clk_245_76MHz" type="logic">
+         <obj_property name="ElementShortName">clk_245_76MHz</obj_property>
+         <obj_property name="ObjectShortName">clk_245_76MHz</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/clk_491_52MHz" type="logic">
+         <obj_property name="ElementShortName">clk_491_52MHz</obj_property>
+         <obj_property name="ObjectShortName">clk_491_52MHz</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_i" type="array">
+         <obj_property name="ElementShortName">adc_data_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">adc_data_i[15:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_q" type="array">
+         <obj_property name="ElementShortName">adc_data_q[15:0]</obj_property>
+         <obj_property name="ObjectShortName">adc_data_q[15:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_iq" type="array">
+         <obj_property name="ElementShortName">adc_data_iq[31:0]</obj_property>
+         <obj_property name="ObjectShortName">adc_data_iq[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dac_data_iq" type="array">
+         <obj_property name="ElementShortName">dac_data_iq[31:0]</obj_property>
+         <obj_property name="ObjectShortName">dac_data_iq[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/data_valid" type="logic">
+         <obj_property name="ElementShortName">data_valid</obj_property>
+         <obj_property name="ObjectShortName">data_valid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_counter" type="array">
+         <obj_property name="ElementShortName">adc_counter[31:0]</obj_property>
+         <obj_property name="ObjectShortName">adc_counter[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_valid" type="logic">
+         <obj_property name="ElementShortName">adc_data_valid</obj_property>
+         <obj_property name="ObjectShortName">adc_data_valid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_i_reg" type="array">
+         <obj_property name="ElementShortName">adc_data_i_reg[15:0]</obj_property>
+         <obj_property name="ObjectShortName">adc_data_i_reg[15:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_q_reg" type="array">
+         <obj_property name="ElementShortName">adc_data_q_reg[15:0]</obj_property>
+         <obj_property name="ObjectShortName">adc_data_q_reg[15:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_counter_reg" type="array">
+         <obj_property name="ElementShortName">adc_counter_reg[31:0]</obj_property>
+         <obj_property name="ObjectShortName">adc_counter_reg[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_valid_reg" type="logic">
+         <obj_property name="ElementShortName">adc_data_valid_reg</obj_property>
+         <obj_property name="ObjectShortName">adc_data_valid_reg</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tdata" type="array">
+         <obj_property name="ElementShortName">adc_fifo_wr_tdata[63:0]</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_wr_tdata[63:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tvalid" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_wr_tvalid</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_wr_tvalid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tlast" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_wr_tlast</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_wr_tlast</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tlast_r" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_wr_tlast_r</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_wr_tlast_r</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tlast_rr" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_wr_tlast_rr</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_wr_tlast_rr</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_out_i" type="array">
+         <obj_property name="ElementShortName">dds_out_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">dds_out_i[15:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_out_q" type="array">
+         <obj_property name="ElementShortName">dds_out_q[15:0]</obj_property>
+         <obj_property name="ObjectShortName">dds_out_q[15:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_out_valid" type="logic">
+         <obj_property name="ElementShortName">dds_out_valid</obj_property>
+         <obj_property name="ObjectShortName">dds_out_valid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/data_out_lower" type="array">
+         <obj_property name="ElementShortName">data_out_lower[31:0]</obj_property>
+         <obj_property name="ObjectShortName">data_out_lower[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/data_out_upper" type="array">
+         <obj_property name="ElementShortName">data_out_upper[31:0]</obj_property>
+         <obj_property name="ObjectShortName">data_out_upper[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/data_out_lower_valid" type="logic">
+         <obj_property name="ElementShortName">data_out_lower_valid</obj_property>
+         <obj_property name="ObjectShortName">data_out_lower_valid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/data_out_upper_valid" type="logic">
+         <obj_property name="ElementShortName">data_out_upper_valid</obj_property>
+         <obj_property name="ObjectShortName">data_out_upper_valid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_latency_counter" type="array">
+         <obj_property name="ElementShortName">dds_latency_counter[3:0]</obj_property>
+         <obj_property name="ObjectShortName">dds_latency_counter[3:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/glbl_counter_reg" type="array">
+         <obj_property name="ElementShortName">glbl_counter_reg[31:0]</obj_property>
+         <obj_property name="ObjectShortName">glbl_counter_reg[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/glbl_counter" type="array">
+         <obj_property name="ElementShortName">glbl_counter[31:0]</obj_property>
+         <obj_property name="ObjectShortName">glbl_counter[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_route_ctrl" type="array">
+         <obj_property name="ElementShortName">dds_route_ctrl[7:0]</obj_property>
+         <obj_property name="ObjectShortName">dds_route_ctrl[7:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tdata_count" type="array">
+         <obj_property name="ElementShortName">adc_fifo_wr_tdata_count[12:0]</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_wr_tdata_count[12:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_rd_data_count" type="array">
+         <obj_property name="ElementShortName">adc_fifo_rd_data_count[9:0]</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_rd_data_count[9:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_ack" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_wr_ack</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_wr_ack</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_valid" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_valid</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_valid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_almost_full" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_almost_full</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_almost_full</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_almost_empty" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_almost_empty</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_almost_empty</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_en" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_wr_en</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_wr_en</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_rd_en" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_rd_en</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_rd_en</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_data_out" type="array">
+         <obj_property name="ElementShortName">adc_fifo_data_out[511:0]</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_data_out[511:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_full" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_full</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_full</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_empty" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_empty</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_empty</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_enable_r" type="logic">
+         <obj_property name="ElementShortName">adc_enable_r</obj_property>
+         <obj_property name="ObjectShortName">adc_enable_r</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_enable_rr" type="logic">
+         <obj_property name="ElementShortName">adc_enable_rr</obj_property>
+         <obj_property name="ObjectShortName">adc_enable_rr</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_DATA_WIDTH" type="array">
+         <obj_property name="ElementShortName">ADC_AXI_DATA_WIDTH[31:0]</obj_property>
+         <obj_property name="ObjectShortName">ADC_AXI_DATA_WIDTH[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_TID_WIDTH" type="array">
+         <obj_property name="ElementShortName">ADC_AXI_TID_WIDTH[31:0]</obj_property>
+         <obj_property name="ObjectShortName">ADC_AXI_TID_WIDTH[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_TDEST_WIDTH" type="array">
+         <obj_property name="ElementShortName">ADC_AXI_TDEST_WIDTH[31:0]</obj_property>
+         <obj_property name="ObjectShortName">ADC_AXI_TDEST_WIDTH[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_TUSER_WIDTH" type="array">
+         <obj_property name="ElementShortName">ADC_AXI_TUSER_WIDTH[31:0]</obj_property>
+         <obj_property name="ObjectShortName">ADC_AXI_TUSER_WIDTH[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_STREAM_ID" type="logic">
+         <obj_property name="ElementShortName">ADC_AXI_STREAM_ID</obj_property>
+         <obj_property name="ObjectShortName">ADC_AXI_STREAM_ID</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/ADC_AXI_STREAM_DEST" type="logic">
+         <obj_property name="ElementShortName">ADC_AXI_STREAM_DEST</obj_property>
+         <obj_property name="ObjectShortName">ADC_AXI_STREAM_DEST</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/DDS_LATENCY" type="array">
+         <obj_property name="ElementShortName">DDS_LATENCY[31:0]</obj_property>
+         <obj_property name="ObjectShortName">DDS_LATENCY[31:0]</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

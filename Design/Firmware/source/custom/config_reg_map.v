@@ -110,7 +110,7 @@ parameter ADC_CLK_FREQ                              = 245.7
   output reg [31:0]                 ch_tuning_coef = 32'b1,
   output reg [31:0]                 ch_counter_max = 32'h00000fff,
   output reg [31:0]                 ch_freq_offset = 32'h0600,
-  output reg [31:0]                 ch_ctrl_word = 32'b0,
+  output reg [31:0]                 ch_ctrl_word = 32'h00000020,
 
   // ADC Sample time after chirp data_tx_done -
   output reg [31:0]                 adc_sample_time = 32'hc8,
@@ -313,7 +313,7 @@ begin
       ch_tuning_coef       <= 32'b1;
       ch_counter_max      <= 32'h00000fff;
       ch_freq_offset       <= 32'h0600;
-      ch_ctrl_word         <= 32'b0;
+      ch_ctrl_word         <= 32'h20;
       adc_sample_time      <= 32'hc8;
 
   end else if(network_cmd_en) begin

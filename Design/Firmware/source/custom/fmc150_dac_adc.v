@@ -131,7 +131,7 @@ module fmc150_dac_adc #
 
    );
 
-  localparam DDS_LATENCY = 2;
+  localparam DDS_LATENCY = 4;
   
   wire rd_fifo_clk;
   wire clk_245_76MHz;
@@ -144,6 +144,7 @@ module fmc150_dac_adc #
   wire [31:0] adc_counter;
   //wire adc_data_valid;
   wire data_valid;
+  reg [7:0] dds_route_ctrl_reg;
   wire [7:0] dds_route_ctrl;
 
   wire [63:0] adc_fifo_wr_tdata;
@@ -314,10 +315,17 @@ module fmc150_dac_adc #
 //      adc_fifo_wr_tlast_reg <= 1'b0;
 //   end
 
-  assign dds_route_ctrl = chirp_control_word[7:0];
-
+//assign dds_route_ctrl = chirp_control_word[7:0];  
   always @(posedge clk_245_76MHz) begin
-    if (cpu_reset) begin
+    if (clk_245_rst) 
+      dds_route_ctrl_reg <= 8'h20;
+    else if (chirp_init) 
+      dds_route_ctrl_reg <= chirp_control_word[7:0];
+  end  
+ assign dds_route_ctrl = dds_route_ctrl_reg; 
+    
+  always @(posedge clk_245_76MHz) begin
+    if (clk_245_rst) begin
       data_out_lower <= 'b0;
       data_out_lower_valid <= 1'b0;
     end
@@ -335,7 +343,7 @@ module fmc150_dac_adc #
   end
   
  always @(posedge clk_245_76MHz) begin
-    if (cpu_reset) begin
+    if (clk_245_rst) begin
       data_out_upper <= 'b0;
       data_out_upper_valid <= 1'b0;
     end
@@ -353,7 +361,7 @@ module fmc150_dac_adc #
   end
   
    always @(posedge clk_245_76MHz) begin
-    if (cpu_reset) begin
+    if (clk_245_rst) begin
       adc_enable_r <= 1'b0;
       adc_enable_rr <= 1'b0;
     end else begin
@@ -366,7 +374,7 @@ module fmc150_dac_adc #
    end
    
   always @(posedge clk_245_76MHz) begin
-    if (cpu_reset) 
+    if (clk_245_rst) 
       dds_latency_counter <= 'b0;
     else if( chirp_init)
       dds_latency_counter <= DDS_LATENCY-1;
@@ -375,7 +383,7 @@ module fmc150_dac_adc #
   end
 
    always @(posedge clk_245_76MHz) begin
-    if (cpu_reset)
+    if (clk_245_rst)
       adc_fifo_wr_tlast_r <= 1'b0;
     else if (adc_enable_r & !adc_enable)
       adc_fifo_wr_tlast_r <= 1'b1;
@@ -384,7 +392,7 @@ module fmc150_dac_adc #
    end
    
   always @(posedge clk_245_76MHz) begin
-    if (cpu_reset)
+    if (clk_245_rst)
       adc_fifo_wr_tlast_rr <= 1'b0;
     else if (!(|dds_latency_counter))
       adc_fifo_wr_tlast_rr <= adc_fifo_wr_tlast_r;
@@ -393,7 +401,7 @@ module fmc150_dac_adc #
    end
    
    always @(posedge clk_245_76MHz) begin
-    if (cpu_reset) begin
+    if (clk_245_rst) begin
       adc_counter_reg <= 'b0;
     end
     else begin
@@ -403,7 +411,7 @@ module fmc150_dac_adc #
    end
    
    always @(posedge clk_245_76MHz) begin
-    if (cpu_reset) begin
+    if (clk_245_rst) begin
       glbl_counter_reg <= 'b0;
     end
     else begin

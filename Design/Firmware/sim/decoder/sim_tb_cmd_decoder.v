@@ -96,6 +96,8 @@ wire                                rx_axis_tuser;
  reg [7:0] cmd_id_reg = 8'h00;
  reg [1:0] command_type;
  reg use_wr_packet = 1'b1;
+ 
+ reg [15:0] dds_route_ctrl;
 
 
  wire     frame_error;
@@ -206,6 +208,7 @@ wire                                rx_axis_tuser;
            rx_axis_tuser_reg <= 1'b0;
            cmd_id_reg <= 'b0;
            command_type <= 0;
+           dds_route_ctrl <= 'b1;
 
       end else if(use_test_packet) begin
         if (use_wr_packet) begin
@@ -232,6 +235,10 @@ wire                                rx_axis_tuser;
               rx_axis_tdata_reg <= test_packet_4[8'h20-(8'h8*(data_counter-8'hfc))-1-:8];
           end
 
+        if (data_counter == 8'hff) begin
+            test_packet_4[31:24] <= dds_route_ctrl[9:2];
+            dds_route_ctrl <= dds_route_ctrl+1'b1;
+        end
 //           if (data_counter == 8'hff) begin
 //             command_type <= command_type + 1;
 //             if (command_type == 2'b0) begin

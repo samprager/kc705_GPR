@@ -116,9 +116,9 @@ reg [31:0] ch_freq_offset_rr = 32'h0600;
 reg [31:0] ch_tuning_coef_rrr = 32'b1;
 reg [31:0] ch_counter_max_rrr = 32'h00000fff;
 reg [31:0] ch_freq_offset_rrr = 32'h0600;
-reg [31:0] ch_ctrl_word_r = 32'b0;
-reg [31:0] ch_ctrl_word_rr = 32'b0;
-reg [31:0] ch_ctrl_word_rrr = 32'b0;
+reg [31:0] ch_ctrl_word_r = 32'h20;
+reg [31:0] ch_ctrl_word_rr = 32'h20;
+reg [31:0] ch_ctrl_word_rrr = 32'h20;
 reg update_ch_tuning_coef = 1'b0;
 reg update_ch_counter_max = 1'b0;
 reg update_ch_freq_offset = 1'b0;
@@ -189,9 +189,9 @@ end
 
 always @(posedge clk_fmc150) begin
     if(~resetn_fmc150) begin
-        ch_ctrl_word_r <= 32'h00000000;
-        ch_ctrl_word_rr <= 32'h00000000;
-        ch_ctrl_word_rrr <= 32'h00000000;
+        ch_ctrl_word_r <= 32'h00000020;
+        ch_ctrl_word_rr <= 32'h00000020;
+        ch_ctrl_word_rrr <= 32'h00000020;
         update_ch_ctrl_word <= 1'b0;
     end else begin   
         ch_ctrl_word_r <= chirp_parameters_in[127:96];

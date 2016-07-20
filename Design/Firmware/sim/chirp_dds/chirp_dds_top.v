@@ -53,7 +53,7 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
 
    );
    
-   localparam DDS_LATENCY = 2;
+   localparam DDS_LATENCY = 4;
 
   wire rd_fifo_clk;
   wire clk_245_76MHz;
@@ -84,15 +84,16 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
   wire [15:0] dds_out_q;
   wire dds_out_valid;
   
-  reg [31:0] data_out_lower;
-  reg [31:0] data_out_upper;
-  reg data_out_lower_valid;
-  reg data_out_upper_valid;
+  wire [31:0] data_out_lower;
+  wire [31:0] data_out_upper;
+//  reg data_out_lower_valid;
+//  reg data_out_upper_valid;
   reg [3:0] dds_latency_counter;
   reg [31:0] glbl_counter_reg;
   wire [31:0] glbl_counter;
   
-  wire [7:0] dds_route_ctrl;
+  wire [1:0] dds_route_ctrl_l;
+  wire [1:0] dds_route_ctrl_u;
 
 
 
@@ -176,43 +177,55 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
 
      );
 
-  assign dds_route_ctrl = chirp_control_word[7:0];
+  assign dds_route_ctrl_l = chirp_control_word[1:0];
+  assign dds_route_ctrl_u = chirp_control_word[5:4];
 
-  always @(posedge clk_245_76MHz) begin
-    if (cpu_reset) begin
-      data_out_lower <= 'b0;
-      data_out_lower_valid <= 1'b0;
-    end
-    else begin 
-        data_out_lower_valid <= data_valid;
-        if( dds_route_ctrl[3:0] == 4'b0001)
-          data_out_lower <= dac_data_iq;
-        else if( dds_route_ctrl[3:0] == 4'b0010)
-            data_out_lower <= adc_counter_reg;  
-        else if( dds_route_ctrl[3:0] == 4'b0011)
-            data_out_lower <= glbl_counter_reg; 
-        else
-            data_out_lower <= adc_data_iq; 
-    end                
-  end
+//  always @(posedge clk_245_76MHz) begin
+//    if (cpu_reset) begin
+//      data_out_lower <= 'b0;
+//      data_out_lower_valid <= 1'b0;
+//    end
+//    else begin 
+//        data_out_lower_valid <= data_valid;
+//        if( dds_route_ctrl[3:0] == 4'b0001)
+//          data_out_lower <= dac_data_iq;
+//        else if( dds_route_ctrl[3:0] == 4'b0010)
+//            data_out_lower <= adc_counter_reg;  
+//        else if( dds_route_ctrl[3:0] == 4'b0011)
+//            data_out_lower <= glbl_counter_reg; 
+//        else
+//            data_out_lower <= adc_data_iq; 
+//    end                
+//  end
   
- always @(posedge clk_245_76MHz) begin
-    if (cpu_reset) begin
-      data_out_upper <= 'b0;
-      data_out_upper_valid <= 1'b0;
-    end
-    else begin 
-        data_out_upper_valid <= data_valid;
-        if( dds_route_ctrl[7:4] == 4'b0001)
-          data_out_upper <= dac_data_iq;
-        else if( dds_route_ctrl[7:4] == 4'b0010)
-            data_out_upper <= adc_counter_reg;  
-        else if( dds_route_ctrl[7:4] == 4'b0011)
-            data_out_upper <= glbl_counter_reg; 
-        else
-            data_out_upper <= adc_data_iq; 
-    end                
-  end
+  assign data_out_lower  = (dds_route_ctrl_l == 2'b00) ? adc_data_iq : 1'bz,
+        data_out_lower  = (dds_route_ctrl_l == 2'b01) ? dac_data_iq : 1'bz,
+        data_out_lower  = (dds_route_ctrl_l == 2'b10) ? adc_counter_reg : 1'bz,
+        data_out_lower  = (dds_route_ctrl_l == 2'b11) ? glbl_counter_reg : 1'bz;
+ 
+   assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 1'bz,
+              data_out_upper  = (dds_route_ctrl_u == 2'b01) ? dac_data_iq : 1'bz,
+              data_out_upper  = (dds_route_ctrl_u == 2'b10) ? adc_counter_reg : 1'bz,
+              data_out_upper  = (dds_route_ctrl_u == 2'b11) ? glbl_counter_reg : 1'bz;    
+                 
+  
+// always @(posedge clk_245_76MHz) begin
+//    if (cpu_reset) begin
+//      data_out_upper <= 'b0;
+//      data_out_upper_valid <= 1'b0;
+//    end
+//    else begin 
+//        data_out_upper_valid <= data_valid;
+//        if( dds_route_ctrl[7:4] == 4'b0001)
+//          data_out_upper <= dac_data_iq;
+//        else if( dds_route_ctrl[7:4] == 4'b0010)
+//            data_out_upper <= adc_counter_reg;  
+//        else if( dds_route_ctrl[7:4] == 4'b0011)
+//            data_out_upper <= glbl_counter_reg; 
+//        else
+//            data_out_upper <= adc_data_iq; 
+//    end                
+//  end
   
    always @(posedge clk_245_76MHz) begin
     if (cpu_reset) begin
@@ -373,13 +386,16 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
 //   assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
 
    assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
-   assign adc_fifo_wr_tvalid = data_out_upper_valid & data_out_lower_valid & adc_enable_rr;
+//   assign adc_fifo_wr_tvalid = data_out_upper_valid & data_out_lower_valid & adc_enable_rr;
+    assign adc_fifo_wr_tvalid = data_valid & adc_enable_rr;
    
    
    assign adc_fifo_wr_tlast = adc_fifo_wr_tlast_rr;
 
 //   assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
-   assign adc_fifo_wr_en = adc_enable_rr & data_out_upper_valid & data_out_lower_valid;
+ //  assign adc_fifo_wr_en = adc_enable_rr & data_out_upper_valid & data_out_lower_valid;
+    assign adc_fifo_wr_en = adc_enable_rr & data_valid;
+
 
 
 assign rd_fifo_clk = aclk;
