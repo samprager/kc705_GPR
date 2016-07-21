@@ -59,7 +59,7 @@ parameter ADC_CLK_FREQ                              = 245.7,
 parameter RX_WR_CMD_DWIDTH                         = 224,
 parameter RX_RD_CMD_DWIDTH                         = 32,
 
-parameter ADC_SAMPLE_COUNT_INIT = 32'h000000c6,
+parameter ADC_SAMPLE_COUNT_INIT = 32'h000000fe,
 parameter CHIRP_PRF_INT_COUNT_INIT = 32'h00000000,
 parameter CHIRP_PRF_FRAC_COUNT_INIT = 32'h927c0000,
 parameter CHIRP_CLK_FREQ = 245760000    // Hz
