@@ -141,19 +141,24 @@ else
     counter_jumps = [1, numel(counter)];
 end
 
+
 % Plot decoded counter
-chirpmin = 1; chirpmax = 5000; 
+chirpmin = 3;  chirpmax = 4298; 
 %chirpmin = counter_jumps(1); chirpmax = counter_jumps(2);
 
-% Plot a PSD with 90% Occupied BW of IQ data
 Fs = 245.76e6;
-x = I(chirpmin:chirpmax)+1i*Q(chirpmin:chirpmax);
-figure; 
-subplot(2,1,1); obw(real(x),Fs); 
-title(['I Channel: ',get(get(gca,'title'),'string')]);
+chirpBW = 15.360000e6;
+chirpT = 16.667e-6;
+nsamples = Fs*chirpT;
 
-subplot(2,1,2);  obw(imag(x),Fs);
-title(['Q Channel: ',get(get(gca,'title'),'string')]);
+% Plot a PSD with 90% Occupied BW of IQ data
+x = I(chirpmin:chirpmax)+1i*Q(chirpmin:chirpmax);
+% figure; 
+% subplot(2,1,1); obw(real(x),Fs); 
+% title(['I Channel: ',get(get(gca,'title'),'string')]);
+% 
+% subplot(2,1,2);  obw(imag(x),Fs);
+% title(['Q Channel: ',get(get(gca,'title'),'string')]);
 
 %figure; obw(x,Fs); title(['x = I+jQ: ',get(get(gca,'title'),'string')]);
 %figure; plot(20*log10(abs(fftshift(fft(x))))); title('fft of I+i*Q');
@@ -201,13 +206,103 @@ else
 
     figure; 
     subplot(2,1,1); hold on;
+    plot(I(chirpmin:chirpmax));plot(I2(chirpmin:chirpmax),'r');
+    title('I and I2 Channels');legend('I','I2');axis tight; hold off;
+    subplot(2,1,2); hold on;
+    plot(Q(chirpmin:chirpmax));plot(Q2(chirpmin:chirpmax),'r');
+    title('Q and Q2 Channels');legend('Q','Q2');axis tight; hold off;
+    
+    figure; 
+    subplot(2,1,1); hold on;
     plot(I);plot(I2,'r');
     title('I and I2 Channels');legend('I','I2');axis tight; hold off;
     subplot(2,1,2); hold on;
     plot(Q);plot(Q2,'r');
     title('Q and Q2 Channels');legend('Q','Q2');axis tight; hold off;
+    
+    % Plot a PSD with 90% Occupied BW of IQ data
+    x2 = I2(chirpmin:chirpmax)+1i*Q2(chirpmin:chirpmax);
+    figure; 
+    subplot(2,1,1); obw(real(x2),Fs); 
+    title(['I2 Channel: ',get(get(gca,'title'),'string')]);
+
+    subplot(2,1,2);  obw(imag(x2),Fs);
+    title(['Q2 Channel: ',get(get(gca,'title'),'string')]);
+   
+    
+    [If,Ifshift,Itshift] = getFreqShift(I(chirpmin:chirpmax),I2(chirpmin:chirpmax),Fs,chirpBW,chirpT);
+    [Qf,Qfshift,Qtshift] = getFreqShift(Q(chirpmin:chirpmax),Q2(chirpmin:chirpmax),Fs,chirpBW,chirpT);
+   
+    Qsdelay = Fs*Itshift;
+    Isdelay = Fs*Qtshift;
+        
+    fprintf('I ch. Freq Shift: %f Mhz\n',Ifshift/1e6);
+    fprintf('Q ch. Freq Shift: %f Mhz\n',Qfshift/1e6);
+    fprintf('I ch. time Shift: %f usec\n',Itshift*1e6);
+    fprintf('Q ch. time Shift: %f usec\n',Qtshift*1e6);
+    fprintf('I ch. sample delay: %f (%i samples)\n',Isdelay,round(Isdelay));
+    fprintf('Q ch. sample delay: %f (%i samples)\n',Qsdelay,round(Qsdelay));
+    
+    snum_i = 10;
+    snum_q = 0;
+    I2Shift = [zeros(snum_i,1);I2(chirpmin:chirpmax-snum_i)];
+    Q2Shift = [zeros(snum_q,1);Q2(chirpmin:chirpmax-snum_q)];
+    [If,Ifshift,Itshift] = getFreqShift(I(chirpmin:chirpmax),I2Shift,Fs,chirpBW,chirpT);
+    [Qf,Qfshift,Qtshift] = getFreqShift(Q(chirpmin:chirpmax),Q2Shift,Fs,chirpBW,chirpT);
+   
+    Qsdelay = Fs*Itshift;
+    Isdelay = Fs*Qtshift;
+        
+    fprintf('I Shift ch. Freq Shift: %f Mhz\n',Ifshift/1e6);
+    fprintf('Q Shift ch. Freq Shift: %f Mhz\n',Qfshift/1e6);
+    fprintf('I Shift ch. time Shift: %f usec\n',Itshift*1e6);
+    fprintf('Q Shift ch. time Shift: %f usec\n',Qtshift*1e6);
+    fprintf('I Shift ch. sample delay: %f (%i samples)\n',Isdelay,round(Isdelay));
+    fprintf('Q Shift ch. sample delay: %f (%i samples)\n',Qsdelay,round(Qsdelay));
+    
+    
+    %znum = 64000;
+    znum = ceil(Fs*nsamples/chirpBW)-(chirpmax-chirpmin+1);
+    Izp = [I(chirpmin:chirpmax);zeros(znum,1)];
+    I2zp = [I2(chirpmin:chirpmax);zeros(znum,1)];
+    I2Shiftzp = [I2Shift;zeros(znum,1)];
+    Qzp = [Q(chirpmin:chirpmax);zeros(znum,1)];
+    Q2zp = [Q2(chirpmin:chirpmax);zeros(znum,1)];
+    Q2Shiftzp = [Q2Shift;zeros(znum,1)];
+    
+    [If,Ifshift,Itshift] = getFreqShift(Izp,I2Shiftzp,Fs,chirpBW,chirpT);
+    [Qf,Qfshift,Qtshift] = getFreqShift(Qzp,Q2Shiftzp,Fs,chirpBW,chirpT);
+   
+    Qsdelay = Fs*Itshift;
+    Isdelay = Fs*Qtshift;
+        
+    fprintf('I zpad ch. Freq Shift: %f Mhz\n',Ifshift/1e6);
+    fprintf('Q zpad ch. Freq Shift: %f Mhz\n',Qfshift/1e6);
+    fprintf('I zpad ch. time Shift: %f usec\n',Itshift*1e6);
+    fprintf('Q zpad ch. time Shift: %f usec\n',Qtshift*1e6);
+    fprintf('I zpad ch. sample delay: %f (%i samples)\n',Isdelay,round(Isdelay));
+    fprintf('Q zpad ch. sample delay: %f (%i samples)\n',Qsdelay,round(Qsdelay));
+    
+    iSampledelay = round(Fs*Itshift)-1;
+    qSampledelay = round(Fs*Qtshift)-1;
+     
+    fvec = linspace(0,Fs/2e6,numel(If));
+%     figure;
+%     subplot(2,1,1); plot(fvec,abs(If)); title('I channel freq. shift');
+%     subplot(2,1,2); plot(fvec,abs(Qf)); title('Q channel freq. shift');
+
+    figure; 
+    subplot(2,1,1); hold on;
+    plot(I(chirpmin:chirpmax-iSampledelay));
+    plot(I2Shift(1+iSampledelay:end),'r');
+    title('Delay Shifted I and I2 Channels');legend('I','I2');axis tight; hold off;
+    subplot(2,1,2); hold on;
+    plot(Q(chirpmin:chirpmax-qSampledelay)); 
+    plot(Q2Shift(1+qSampledelay:end),'r');
+    title('Delay Shifted Q and Q2 Channels');legend('Q','Q2');axis tight; hold off;
 
 end
-figure; hold on;
-plot(I);plot(Q,'r');
-title('I and Q Channels');legend('I','Q');axis tight; hold off;
+    
+%     figure; hold on;
+%     plot(I);plot(Q,'r');
+%     title('I and Q Channels');legend('I','Q');axis tight; hold off;

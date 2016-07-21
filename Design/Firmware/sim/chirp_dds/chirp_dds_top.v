@@ -52,7 +52,7 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
 
 
    );
-   
+
    localparam DDS_LATENCY = 2;
 
   wire rd_fifo_clk;
@@ -63,14 +63,14 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
   wire [15:0] adc_data_q;
  wire [15:0] dac_data_i;
   wire [15:0] dac_data_q;
-  
+
   wire [31:0] adc_data_iq;
   wire [31:0] dac_data_iq;
   wire data_valid;
-  
+
   wire [31:0] adc_counter;
   wire adc_data_valid;
-  
+
   reg [15:0] adc_data_i_r;
   reg [15:0] adc_data_q_r;
   reg [15:0] adc_data_i_rr;
@@ -79,7 +79,7 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
   reg [15:0] dac_data_q_r;
   reg [15:0] dac_data_i_rr;
   reg [15:0] dac_data_q_rr;
-  
+
   reg [31:0] adc_counter_reg;
   reg adc_data_valid_r;
   reg adc_data_valid_rr;
@@ -94,7 +94,7 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
   wire [15:0] dds_out_i;
   wire [15:0] dds_out_q;
   wire dds_out_valid;
-  
+
   wire [31:0] data_out_lower;
   wire [31:0] data_out_upper;
    reg [31:0] data_out_lower_r;
@@ -104,7 +104,7 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
   reg [3:0] dds_latency_counter;
   reg [31:0] glbl_counter_reg;
   wire [31:0] glbl_counter;
-  
+
   wire [1:0] dds_route_ctrl_l;
   wire [1:0] dds_route_ctrl_u;
 
@@ -125,20 +125,20 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
      reg                      adc_enable_r;
      reg                      adc_enable_rr;
 
-wire [23 : 0] s_axis_fft_config_tdata
-.s_axis_config_tvalid(s_axis_fft_config_tvalid),              // input wire s_axis_fft_config_tvalid
-.s_axis_config_tready(s_axis_fft_config_tready),              // output wire s_axis_fft_config_tready
-.s_axis_data_tdata(s_axis_fft_data_tdata),                    // input wire [31 : 0] s_axis_fft_data_tdata
-.s_axis_data_tvalid(s_axis_fft_data_tvalid),                  // input wire s_axis_fft_data_tvalid
-.s_axis_data_tready(s_axis_fft_data_tready),                  // output wire s_axis_fft_data_tready
-.s_axis_data_tlast(s_axis_fft_data_tlast),                    // input wire s_axis_fft_data_tlast
-.m_axis_data_tdata(m_axis_fft_data_tdata),                    // output wire [31 : 0] m_axis_fft_data_tdata
-.m_axis_data_tvalid(m_axis_fft_data_tvalid),                  // output wire m_axis_fft_data_tvalid
-.m_axis_data_tlast(m_axis_fft_data_tlast),                    // output wire m_axis_fft_data_tlast
-.event_frame_started(fft_event_frame_started),                // output wire fft_event_frame_started
-.event_tlast_unexpected(fft_event_tlast_unexpected),          // output wire fft_event_tlast_unexpected
-.event_tlast_missing(fft_event_tlast_missing),                // output wire fft_event_tlast_missing
-.event_data_in_channel_halt(fft_event_data_in_channel_halt)  // output wire fft_event_data_in_channel_halt
+wire [23 : 0] s_axis_fft_config_tdata;
+ wire s_axis_fft_config_tvalid;
+ wire s_axis_fft_config_tready;
+ wire [31 : 0] s_axis_fft_data_tdata;
+ wire s_axis_fft_data_tvalid;
+ wire s_axis_fft_data_tready;
+ wire s_axis_fft_data_tlast;
+ wire [31 : 0] m_axis_fft_data_tdata;
+ wire m_axis_fft_data_tvalid;
+ wire m_axis_fft_data_tlast;
+ wire fft_event_frame_started;
+ wire fft_event_tlast_unexpected;
+ wire fft_event_tlast_missing;
+ wire fft_event_data_in_channel_halt;
 
 
      assign clk_245_76MHz = clk_245;
@@ -151,7 +151,7 @@ wire [23 : 0] s_axis_fft_config_tdata
         adc_data_q_rr <= adc_data_q_r;
         adc_data_valid_rr <= adc_data_valid_r;
      end
-     
+
      // simulate number of register stages in fmc150 module for dac (2)
      always @(posedge clk_245_76MHz) begin
         dac_data_i_r <= dds_out_i;
@@ -160,7 +160,7 @@ wire [23 : 0] s_axis_fft_config_tdata
         dac_data_q_rr <= dds_out_q;
 
      end
-     
+
      always @(posedge clk_245_76MHz) begin
       if (cpu_reset) begin
         adc_counter_reg <= 'b0;
@@ -170,7 +170,7 @@ wire [23 : 0] s_axis_fft_config_tdata
           adc_counter_reg <= adc_counter_reg+1;
       end
      end
-     
+
      always @(posedge clk_245_76MHz) begin
       if (cpu_reset) begin
         glbl_counter_reg <= 'b0;
@@ -179,26 +179,26 @@ wire [23 : 0] s_axis_fft_config_tdata
         glbl_counter_reg <= glbl_counter_reg+1;
       end
      end
-     
+
      assign adc_data_iq = {adc_data_i,adc_data_q};
      assign dac_data_iq = {dac_data_i,dac_data_q};
      assign data_valid = adc_data_valid_rr;
-     
+
      assign adc_data_i = adc_data_i_rr;
      assign adc_data_q = adc_data_q_rr;
      assign dac_data_i = dac_data_i_rr;
      assign dac_data_q = dac_data_q_rr;
-     
-     
+
+
      assign adc_counter = adc_counter_reg;
      assign adc_data_valid = adc_data_valid_rr;
      assign fmc150_spi_ctrl_bus_out = 'b0;
      assign fmc150_status_vector = 4'b1111;
-     
+
      assign glbl_counter = glbl_counter_reg;
 
 
-     
+
      CHIRP_DDS #(
      .DDS_LATENCY(DDS_LATENCY)
      ) u_chirp_dds(
@@ -228,69 +228,69 @@ wire [23 : 0] s_axis_fft_config_tdata
 //      data_out_lower <= 'b0;
 //      data_out_lower_valid <= 1'b0;
 //    end
-//    else begin 
+//    else begin
 //        data_out_lower_valid <= data_valid;
 //        if( dds_route_ctrl[3:0] == 4'b0001)
 //          data_out_lower <= dac_data_iq;
 //        else if( dds_route_ctrl[3:0] == 4'b0010)
-//            data_out_lower <= adc_counter_reg;  
+//            data_out_lower <= adc_counter_reg;
 //        else if( dds_route_ctrl[3:0] == 4'b0011)
-//            data_out_lower <= glbl_counter_reg; 
+//            data_out_lower <= glbl_counter_reg;
 //        else
-//            data_out_lower <= adc_data_iq; 
-//    end                
+//            data_out_lower <= adc_data_iq;
+//    end
 //  end
-  
+
 //  always @(dds_route_ctrl_l or adc_data_iq or dac_data_iq or adc_counter or glbl_counter  ) begin
 //    case (dds_route_ctrl_l)
-//    2'b00: data_out_lower_r = adc_data_iq; 
-//    2'b01: data_out_lower_r = dac_data_iq; 
-//    2'b10: data_out_lower_r = adc_counter; 
-//    2'b11: data_out_lower_r = glbl_counter; 
-//    default: data_out_lower_r = adc_data_iq; 
-//    endcase 
-//  end  
+//    2'b00: data_out_lower_r = adc_data_iq;
+//    2'b01: data_out_lower_r = dac_data_iq;
+//    2'b10: data_out_lower_r = adc_counter;
+//    2'b11: data_out_lower_r = glbl_counter;
+//    default: data_out_lower_r = adc_data_iq;
+//    endcase
+//  end
 
 // always @(dds_route_ctrl_u or adc_data_iq or dac_data_iq or adc_counter or glbl_counter  ) begin
 //    case (dds_route_ctrl_u)
-//    2'b00: data_out_upper_r = adc_data_iq; 
-//    2'b01: data_out_upper_r = dac_data_iq; 
-//    2'b10: data_out_upper_r = adc_counter; 
-//    2'b11: data_out_upper_r = glbl_counter; 
-//    default: data_out_upper_r = adc_counter; 
-//    endcase 
-//  end  
+//    2'b00: data_out_upper_r = adc_data_iq;
+//    2'b01: data_out_upper_r = dac_data_iq;
+//    2'b10: data_out_upper_r = adc_counter;
+//    2'b11: data_out_upper_r = glbl_counter;
+//    default: data_out_upper_r = adc_counter;
+//    endcase
+//  end
 //  assign data_out_lower = data_out_lower_r;
 //  assign data_out_upper = data_out_upper_r;
   assign data_out_lower  = (dds_route_ctrl_l == 2'b00) ? adc_data_iq : 32'bz,
         data_out_lower  = (dds_route_ctrl_l == 2'b01) ? dac_data_iq : 32'bz,
         data_out_lower  = (dds_route_ctrl_l == 2'b10) ? adc_counter : 32'bz,
         data_out_lower  = (dds_route_ctrl_l == 2'b11) ? glbl_counter : 32'bz;
- 
+
    assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 32'bz,
               data_out_upper  = (dds_route_ctrl_u == 2'b01) ? dac_data_iq : 32'bz,
               data_out_upper  = (dds_route_ctrl_u == 2'b10) ? adc_counter_reg : 32'bz,
-              data_out_upper  = (dds_route_ctrl_u == 2'b11) ? glbl_counter_reg : 32'bz;    
-                 
-  
+              data_out_upper  = (dds_route_ctrl_u == 2'b11) ? glbl_counter_reg : 32'bz;
+
+
 // always @(posedge clk_245_76MHz) begin
 //    if (cpu_reset) begin
 //      data_out_upper <= 'b0;
 //      data_out_upper_valid <= 1'b0;
 //    end
-//    else begin 
+//    else begin
 //        data_out_upper_valid <= data_valid;
 //        if( dds_route_ctrl[7:4] == 4'b0001)
 //          data_out_upper <= dac_data_iq;
 //        else if( dds_route_ctrl[7:4] == 4'b0010)
-//            data_out_upper <= adc_counter_reg;  
+//            data_out_upper <= adc_counter_reg;
 //        else if( dds_route_ctrl[7:4] == 4'b0011)
-//            data_out_upper <= glbl_counter_reg; 
+//            data_out_upper <= glbl_counter_reg;
 //        else
-//            data_out_upper <= adc_data_iq; 
-//    end                
+//            data_out_upper <= adc_data_iq;
+//    end
 //  end
-  
+
 
 
 
@@ -303,31 +303,31 @@ wire [23 : 0] s_axis_fft_config_tdata
       adc_enable_r <= adc_enable;
       if (!(|dds_latency_counter))
         adc_enable_rr <= adc_enable_r;
-      else 
+      else
         adc_enable_rr <=adc_enable_rr;
     end
    end
-   
-   
+
+
   always @(posedge clk_245_76MHz) begin
-    if (cpu_reset) 
+    if (cpu_reset)
       dds_latency_counter <= 'b0;
     else if( chirp_init)
       dds_latency_counter <= DDS_LATENCY;
     else if(adc_enable_r & !adc_enable)
-        dds_latency_counter <= DDS_LATENCY;  
+        dds_latency_counter <= DDS_LATENCY;
     else if(|dds_latency_counter)
       dds_latency_counter <= dds_latency_counter-1;
   end
-  
-  
+
+
      always @(posedge clk_245_76MHz) begin
       if (cpu_reset) begin
         adc_fifo_wr_first_r <= 1'b0;
       end else begin
         if (!(|dds_latency_counter)&(adc_enable_r)&(!adc_enable_rr))
           adc_fifo_wr_first_r <= 1'b1;
-        else 
+        else
           adc_fifo_wr_first_r <= 1'b0;
       end
      end
@@ -389,16 +389,16 @@ wire [23 : 0] s_axis_fft_config_tdata
 //   assign adc_data_iq = {adc_data_i,adc_data_q};
 //   assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
 //   assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
-   
+
  assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_counter,adc_counter} : {data_out_upper,data_out_lower};
-   
+
  //  assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
- 
+
 //   assign adc_fifo_wr_tvalid = data_out_upper_valid & data_out_lower_valid & adc_enable_rr;
     assign adc_fifo_wr_tvalid = data_valid & adc_enable_rr;
-   
+
    assign adc_fifo_wr_first = adc_fifo_wr_first_r;
-   
+
    assign adc_fifo_wr_tlast = (!(|dds_latency_counter))&(adc_enable_rr)&(!adc_enable_r);
 
 //   assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
