@@ -434,7 +434,7 @@ assign adc_counter = adc_counter_reg;
    assign adc_data_iq = {adc_data_i,adc_data_q};
    assign dac_data_iq = {dac_data_i,dac_data_q};
    
-    assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
+  //  assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
   // assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
   
  //  assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
