@@ -430,7 +430,11 @@ xfft_0 xfft_0_inst (
 .event_data_in_channel_halt(fft_event_data_in_channel_halt)  // output wire event_data_in_channel_halt
 );
 
-
+assign s_axis_fft_config_tdata = {1'b0,6'b0,1'b1,1'b0,13'b0,1'b0,5'd13}; // {pad,scale_sh,fwd/inv,pad,cp_len,pad,nfft}
+assign s_axis_fft_config_tvalid = 1'b1;
+assign s_axis_fft_data_tdata = {dac_data_q,dac_data_i};
+assign s_axis_fft_data_tvalid = adc_data_valid_rr;
+assign s_axis_fft_data_tlast = adc_fifo_wr_tlast;
 
 
 

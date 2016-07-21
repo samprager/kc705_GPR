@@ -68,9 +68,9 @@ module kc705_ethernet_rgmii_basic_pat_gen #(
  //   parameter                            DEST_ADDR       = 48'hda0102030405,
     parameter                            DEST_ADDR       = 48'h985aebdb066f,
     parameter                            SRC_ADDR        = 48'h5a0102030405,
-    parameter                            MAX_SIZE        = 16'd500,
+    parameter                            MAX_SIZE        = 16'd532,//16'd500,
  //   parameter                            MIN_SIZE        = 16'd64,
-    parameter                            MIN_SIZE        = 16'd500,
+    parameter                            MIN_SIZE        = 16'd532,//16'd500,
     parameter                            ENABLE_VLAN     = 1'b0,
     parameter                            VLAN_ID         = 12'd2,
     parameter                            VLAN_PRIORITY   = 3'd2
