@@ -124,9 +124,21 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
 
      reg                      adc_enable_r;
      reg                      adc_enable_rr;
-     
-     wire                       first_word;
-     wire                       last_word;
+
+wire [23 : 0] s_axis_fft_config_tdata
+.s_axis_config_tvalid(s_axis_fft_config_tvalid),              // input wire s_axis_fft_config_tvalid
+.s_axis_config_tready(s_axis_fft_config_tready),              // output wire s_axis_fft_config_tready
+.s_axis_data_tdata(s_axis_fft_data_tdata),                    // input wire [31 : 0] s_axis_fft_data_tdata
+.s_axis_data_tvalid(s_axis_fft_data_tvalid),                  // input wire s_axis_fft_data_tvalid
+.s_axis_data_tready(s_axis_fft_data_tready),                  // output wire s_axis_fft_data_tready
+.s_axis_data_tlast(s_axis_fft_data_tlast),                    // input wire s_axis_fft_data_tlast
+.m_axis_data_tdata(m_axis_fft_data_tdata),                    // output wire [31 : 0] m_axis_fft_data_tdata
+.m_axis_data_tvalid(m_axis_fft_data_tvalid),                  // output wire m_axis_fft_data_tvalid
+.m_axis_data_tlast(m_axis_fft_data_tlast),                    // output wire m_axis_fft_data_tlast
+.event_frame_started(fft_event_frame_started),                // output wire fft_event_frame_started
+.event_tlast_unexpected(fft_event_tlast_unexpected),          // output wire fft_event_tlast_unexpected
+.event_tlast_missing(fft_event_tlast_missing),                // output wire fft_event_tlast_missing
+.event_data_in_channel_halt(fft_event_data_in_channel_halt)  // output wire fft_event_data_in_channel_halt
 
 
      assign clk_245_76MHz = clk_245;
@@ -398,6 +410,27 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
 assign rd_fifo_clk = aclk;
 
 //assign clk_out_491_52MHz = clk_491_52MHz;
+
+xfft_0 xfft_0_inst (
+  .aclk(clk_245_76MHz),                                              // input wire aclk
+.aresetn(!cpu_reset),                                        // input wire aresetn
+.s_axis_config_tdata(s_axis_fft_config_tdata),                // input wire [23 : 0] s_axis_config_tdata
+.s_axis_config_tvalid(s_axis_fft_config_tvalid),              // input wire s_axis_config_tvalid
+.s_axis_config_tready(s_axis_fft_config_tready),              // output wire s_axis_config_tready
+.s_axis_data_tdata(s_axis_fft_data_tdata),                    // input wire [31 : 0] s_axis_data_tdata
+.s_axis_data_tvalid(s_axis_fft_data_tvalid),                  // input wire s_axis_data_tvalid
+.s_axis_data_tready(s_axis_fft_data_tready),                  // output wire s_axis_data_tready
+.s_axis_data_tlast(s_axis_fft_data_tlast),                    // input wire s_axis_data_tlast
+.m_axis_data_tdata(m_axis_fft_data_tdata),                    // output wire [31 : 0] m_axis_data_tdata
+.m_axis_data_tvalid(m_axis_fft_data_tvalid),                  // output wire m_axis_data_tvalid
+.m_axis_data_tlast(m_axis_fft_data_tlast),                    // output wire m_axis_data_tlast
+.event_frame_started(fft_event_frame_started),                // output wire event_frame_started
+.event_tlast_unexpected(fft_event_tlast_unexpected),          // output wire event_tlast_unexpected
+.event_tlast_missing(fft_event_tlast_missing),                // output wire event_tlast_missing
+.event_data_in_channel_halt(fft_event_data_in_channel_halt)  // output wire event_data_in_channel_halt
+);
+
+
 
 
 

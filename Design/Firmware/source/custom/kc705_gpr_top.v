@@ -1551,81 +1551,81 @@ end
 //  .axi_dma_tstvec(axi_dma_tstvec)                      // output wire [31 : 0] axi_dma_tstvec
 //);
 
-ila_axis_adc ila_axis_adc_inst(
-    .clk (ui_clk),
-    //.clk(sysclk_bufg),
-     .probe0(axis_adc_tdata),   //wire [ADC_AXI_DATA_WIDTH-1:0]
-     .probe1(axis_adc_tvalid),
-     .probe2(axis_adc_tready),
-     .probe3(axis_adc_tlast),    //wire axis_adc_tlast;
-     .probe4(axis_adc_tkeep),   //wire [ADC_AXI_DATA_WIDTH/8-1:0] axis_adc_tkeep;
-     .probe5(axis_adc_tid),     //wire [ADC_AXI_TID_WIDTH-1:0]    axis_adc_tid;
-     .probe6(axis_adc_tdest),   //wire [ADC_AXI_TDEST_WIDTH-1:0]  axis_adc_tdest;
-     .probe7(axis_adc_tuser),   //wire [ADC_AXI_TUSER_WIDTH-1:0]  axis_adc_tuser;
-     .probe8(axis_adc_tstrb),    //wire [ADC_AXI_DATA_WIDTH/8-1:0] axis_adc_tstrb;
-     .probe9(S00_ARB_REQ_SUPPRESS),   // input wire S00_ARB_REQ_SUPPRESS
-     .probe10(S00_DECODE_ERR),              // output wire S00_DECODE_ERR
-     .probe11(S00_FIFO_DATA_COUNT),    // output wire [31 : 0] S00_FIFO_DATA_COUNT
+//ila_axis_adc ila_axis_adc_inst(
+//    .clk (ui_clk),
+//    //.clk(sysclk_bufg),
+//     .probe0(axis_adc_tdata),   //wire [ADC_AXI_DATA_WIDTH-1:0]
+//     .probe1(axis_adc_tvalid),
+//     .probe2(axis_adc_tready),
+//     .probe3(axis_adc_tlast),    //wire axis_adc_tlast;
+//     .probe4(axis_adc_tkeep),   //wire [ADC_AXI_DATA_WIDTH/8-1:0] axis_adc_tkeep;
+//     .probe5(axis_adc_tid),     //wire [ADC_AXI_TID_WIDTH-1:0]    axis_adc_tid;
+//     .probe6(axis_adc_tdest),   //wire [ADC_AXI_TDEST_WIDTH-1:0]  axis_adc_tdest;
+//     .probe7(axis_adc_tuser),   //wire [ADC_AXI_TUSER_WIDTH-1:0]  axis_adc_tuser;
+//     .probe8(axis_adc_tstrb),    //wire [ADC_AXI_DATA_WIDTH/8-1:0] axis_adc_tstrb;
+//     .probe9(S00_ARB_REQ_SUPPRESS),   // input wire S00_ARB_REQ_SUPPRESS
+//     .probe10(S00_DECODE_ERR),              // output wire S00_DECODE_ERR
+//     .probe11(S00_FIFO_DATA_COUNT),    // output wire [31 : 0] S00_FIFO_DATA_COUNT
 
-     .probe12(s_axis_vfifo_tdata),      // wire [MIG_AXI_DATA_WIDTH-1 : 0]
-    .probe13(s_axis_vfifo_tkeep),       // wire [MIG_AXI_DATA_WIDTH/8-1 : 0]
-    .probe14(s_axis_vfifo_tstrb),       // wire [MIG_AXI_DATA_WIDTH/8-1 : 0]
-    .probe15(s_axis_vfifo_tvalid),
-    .probe16(s_axis_vfifo_tready),
-    .probe17(s_axis_vfifo_tlast),
-    .probe18(s_axis_vfifo_tid),
-    .probe19(s_axis_vfifo_tdest)
-);
+//     .probe12(s_axis_vfifo_tdata),      // wire [MIG_AXI_DATA_WIDTH-1 : 0]
+//    .probe13(s_axis_vfifo_tkeep),       // wire [MIG_AXI_DATA_WIDTH/8-1 : 0]
+//    .probe14(s_axis_vfifo_tstrb),       // wire [MIG_AXI_DATA_WIDTH/8-1 : 0]
+//    .probe15(s_axis_vfifo_tvalid),
+//    .probe16(s_axis_vfifo_tready),
+//    .probe17(s_axis_vfifo_tlast),
+//    .probe18(s_axis_vfifo_tid),
+//    .probe19(s_axis_vfifo_tdest)
+//);
 
-ila_axis_adc_pkt ila_axis_adc_pkt_inst(
-    .clk (gtx_clk_bufg),
-     .probe0(adc_pkt_axis_tdata),
-     .probe1(adc_pkt_axis_tvalid),
-     .probe2(adc_pkt_axis_tready),
-     .probe3(adc_pkt_axis_tlast),//wire                adc_pkt_axis_tlast;
-     .probe4(adc_pkt_axis_tuser),//wire                adc_pkt_axis_tuser;
-     .probe5(adc_pkt_axis_tstrb),//wire [0:0]          adc_pkt_axis_tstrb;
-     .probe6(adc_pkt_axis_tkeep),//wire [0:0]          adc_pkt_axis_tkeep;
-     .probe7(adc_pkt_axis_tid),//wire [0:0]          adc_pkt_axis_tid;
-     .probe8(adc_pkt_axis_tdest)//wire [0:0]          adc_pkt_axis_tdest;
-);
+//ila_axis_adc_pkt ila_axis_adc_pkt_inst(
+//    .clk (gtx_clk_bufg),
+//     .probe0(adc_pkt_axis_tdata),
+//     .probe1(adc_pkt_axis_tvalid),
+//     .probe2(adc_pkt_axis_tready),
+//     .probe3(adc_pkt_axis_tlast),//wire                adc_pkt_axis_tlast;
+//     .probe4(adc_pkt_axis_tuser),//wire                adc_pkt_axis_tuser;
+//     .probe5(adc_pkt_axis_tstrb),//wire [0:0]          adc_pkt_axis_tstrb;
+//     .probe6(adc_pkt_axis_tkeep),//wire [0:0]          adc_pkt_axis_tkeep;
+//     .probe7(adc_pkt_axis_tid),//wire [0:0]          adc_pkt_axis_tid;
+//     .probe8(adc_pkt_axis_tdest)//wire [0:0]          adc_pkt_axis_tdest;
+//);
 
-ila_axi_mm2s_ic ila_axi_mm2s_ic_inst(
-     .clk (ui_clk),
-    //.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
-     .probe0(M00_AXIS_TDATA),           // 64 bits
-     .probe1(M00_AXIS_TKEEP),
-     .probe2(M00_AXIS_TSTRB),
-     .probe3(M00_AXIS_TVALID),
-     .probe4(M00_AXIS_TREADY),
-     .probe5(M00_AXIS_TLAST),
-     .probe6(M00_AXIS_TID),
-     .probe7(M00_AXIS_TDEST),
-     .probe8(M00_FIFO_DATA_COUNT)
-);
+//ila_axi_mm2s_ic ila_axi_mm2s_ic_inst(
+//     .clk (ui_clk),
+//    //.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
+//     .probe0(M00_AXIS_TDATA),           // 64 bits
+//     .probe1(M00_AXIS_TKEEP),
+//     .probe2(M00_AXIS_TSTRB),
+//     .probe3(M00_AXIS_TVALID),
+//     .probe4(M00_AXIS_TREADY),
+//     .probe5(M00_AXIS_TLAST),
+//     .probe6(M00_AXIS_TID),
+//     .probe7(M00_AXIS_TDEST),
+//     .probe8(M00_FIFO_DATA_COUNT)
+//);
 
-ila_axis_vfifo   ila_axis_vfifo_inst(
-    .clk(ui_clk),
-    .probe0(vfifo_mm2s_channel_full),
-    .probe1(s_axis_vfifo_tdata),        // wire [MIG_AXI_DATA_WIDTH-1 : 0]
-    .probe2(s_axis_vfifo_tkeep),
-    .probe3(s_axis_vfifo_tstrb),
-    .probe4(s_axis_vfifo_tvalid),
-    .probe5(s_axis_vfifo_tready),
-    .probe6(s_axis_vfifo_tlast),
-    .probe7(s_axis_vfifo_tid),
-    .probe8(s_axis_vfifo_tdest),
-    .probe9(m_axis_vfifo_tdata),        // wire [MIG_AXI_DATA_WIDTH-1 : 0]
-    .probe10(m_axis_vfifo_tkeep),
-    .probe11(m_axis_vfifo_tstrb),
-    .probe12(m_axis_vfifo_tvalid),
-    .probe13(m_axis_vfifo_tready),
-    .probe14(m_axis_vfifo_tlast),
-    .probe15(m_axis_vfifo_tid),
-    .probe16(m_axis_vfifo_tdest),
-    .probe17(vfifo_s2mm_channel_full),    // output wire [1 : 0] vfifo_s2mm_channel_full
-    .probe18(vfifo_mm2s_channel_empty),  // output wire [1 : 0] vfifo_mm2s_channel_empty
-    .probe19(vfifo_idle)                // output wire [1 : 0]
-);
+//ila_axis_vfifo   ila_axis_vfifo_inst(
+//    .clk(ui_clk),
+//    .probe0(vfifo_mm2s_channel_full),
+//    .probe1(s_axis_vfifo_tdata),        // wire [MIG_AXI_DATA_WIDTH-1 : 0]
+//    .probe2(s_axis_vfifo_tkeep),
+//    .probe3(s_axis_vfifo_tstrb),
+//    .probe4(s_axis_vfifo_tvalid),
+//    .probe5(s_axis_vfifo_tready),
+//    .probe6(s_axis_vfifo_tlast),
+//    .probe7(s_axis_vfifo_tid),
+//    .probe8(s_axis_vfifo_tdest),
+//    .probe9(m_axis_vfifo_tdata),        // wire [MIG_AXI_DATA_WIDTH-1 : 0]
+//    .probe10(m_axis_vfifo_tkeep),
+//    .probe11(m_axis_vfifo_tstrb),
+//    .probe12(m_axis_vfifo_tvalid),
+//    .probe13(m_axis_vfifo_tready),
+//    .probe14(m_axis_vfifo_tlast),
+//    .probe15(m_axis_vfifo_tid),
+//    .probe16(m_axis_vfifo_tdest),
+//    .probe17(vfifo_s2mm_channel_full),    // output wire [1 : 0] vfifo_s2mm_channel_full
+//    .probe18(vfifo_mm2s_channel_empty),  // output wire [1 : 0] vfifo_mm2s_channel_empty
+//    .probe19(vfifo_idle)                // output wire [1 : 0]
+//);
 
 endmodule

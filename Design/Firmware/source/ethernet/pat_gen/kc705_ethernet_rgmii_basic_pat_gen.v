@@ -197,45 +197,45 @@ kc705_ethernet_rgmii_axi_packetizer #(
    .tready                    (adc_pkt_tready)
 );
 
-packetizer_ila packetizer_ila_inst (
-    .clk  (axi_tclk),
-    .probe0         (adc_axis_tdata_ila),
-    .probe1          (adc_axis_tvalid_ila),
-    .probe2           (adc_axis_tlast_ila),
-    .probe3           (adc_axis_tuser_ila),
-    .probe4          (adc_axis_tready_ila),
+//packetizer_ila packetizer_ila_inst (
+//    .clk  (axi_tclk),
+//    .probe0         (adc_axis_tdata_ila),
+//    .probe1          (adc_axis_tvalid_ila),
+//    .probe2           (adc_axis_tlast_ila),
+//    .probe3           (adc_axis_tuser_ila),
+//    .probe4          (adc_axis_tready_ila),
 
-   .probe5                     (adc_pkt_tdata_ila),
-   .probe6                    (adc_pkt_tvalid_ila),
-   .probe7                     (adc_pkt_tlast_ila),
-   .probe8                    (adc_pkt_tready_ila),
+//   .probe5                     (adc_pkt_tdata_ila),
+//   .probe6                    (adc_pkt_tvalid_ila),
+//   .probe7                     (adc_pkt_tlast_ila),
+//   .probe8                    (adc_pkt_tready_ila),
    
-    .probe9         (tx_axis_tdata_int),
-     .probe10       (tx_axis_tvalid_int),
-     .probe11        (tx_axis_tlast_int),
-     .probe12       (tx_axis_tready_int),
+//    .probe9         (tx_axis_tdata_int),
+//     .probe10       (tx_axis_tvalid_int),
+//     .probe11        (tx_axis_tlast_int),
+//     .probe12       (tx_axis_tready_int),
      
-       .probe13         (mux1_tdata),
-      .probe14       (mux1_tvalid),
-      .probe15        (mux1_tlast),
-      .probe16       (mux1_tready),
+//       .probe13         (mux1_tdata),
+//      .probe14       (mux1_tvalid),
+//      .probe15        (mux1_tlast),
+//      .probe16       (mux1_tready),
       
-     .probe17         (rx_axis_tdata),
-     .probe18       (rx_axis_tvalid),
-     .probe19        (rx_axis_tlast),
-     .probe20       (rx_axis_tready)
-);
+//     .probe17         (rx_axis_tdata),
+//     .probe18       (rx_axis_tvalid),
+//     .probe19        (rx_axis_tlast),
+//     .probe20       (rx_axis_tready)
+//);
 
-assign  adc_axis_tdata_ila = adc_axis_tdata;
-assign  adc_axis_tvalid_ila = adc_axis_tvalid;
-assign  adc_axis_tlast_ila = adc_axis_tlast;
-assign  adc_axis_tuser_ila =adc_axis_tuser;
-assign  adc_axis_tready_ila = adc_axis_tready;
+//assign  adc_axis_tdata_ila = adc_axis_tdata;
+//assign  adc_axis_tvalid_ila = adc_axis_tvalid;
+//assign  adc_axis_tlast_ila = adc_axis_tlast;
+//assign  adc_axis_tuser_ila =adc_axis_tuser;
+//assign  adc_axis_tready_ila = adc_axis_tready;
 
-assign  adc_pkt_tdata_ila = adc_pkt_tdata;
-assign  adc_pkt_tvalid_ila = adc_pkt_tvalid;
-assign  adc_pkt_tlast_ila = adc_pkt_tlast;
-assign  adc_pkt_tready_ila = adc_pkt_tready;
+//assign  adc_pkt_tdata_ila = adc_pkt_tdata;
+//assign  adc_pkt_tvalid_ila = adc_pkt_tvalid;
+//assign  adc_pkt_tlast_ila = adc_pkt_tlast;
+//assign  adc_pkt_tready_ila = adc_pkt_tready;
 
 // basic packet generator - this has parametisable
 // DA and SA fields but the LT and data will be auto-generated

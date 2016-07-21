@@ -323,47 +323,47 @@ config_reg_map_inst (
   .ethernet_ctrl_bus (ethernet_ctrl_bus)
 
 );
-generate if (SIMULATION == 0) begin
-ila_regmap ila_regmap_inst (
-.clk (s_axi_aclk),
-//.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
-.probe0             (fmc150_spi_ctrl_bus_in_ila),
-.probe1            (fmc150_spi_ctrl_bus_out_ila),
-//.probe2            (reg_map_wr_data),
-//.probe3            (reg_map_wr_keep),
-//.probe4           (reg_map_wr_valid),
-//.probe5           (reg_map_wr_ready),
-//.probe6             (reg_map_wr_err),
-.probe2             (cmd_axis_tdata_ila),
-.probe3            (cmd_axis_tvalid_ila),
-.probe4            (cmd_axis_tlast_ila),
-.probe5            (cmd_axis_tkeep_ila),
-.probe6           (cmd_axis_tready_ila),
-// Chirp Control registers
-.probe7 (ch_prf_int), // prf in sec
-.probe8 (ch_prf_frac),
+//generate if (SIMULATION == 0) begin
+//ila_regmap ila_regmap_inst (
+//.clk (s_axi_aclk),
+////.clk (sysclk_bufg),              // input wire M00_AXIS_ACLK
+//.probe0             (fmc150_spi_ctrl_bus_in_ila),
+//.probe1            (fmc150_spi_ctrl_bus_out_ila),
+////.probe2            (reg_map_wr_data),
+////.probe3            (reg_map_wr_keep),
+////.probe4           (reg_map_wr_valid),
+////.probe5           (reg_map_wr_ready),
+////.probe6             (reg_map_wr_err),
+//.probe2             (cmd_axis_tdata_ila),
+//.probe3            (cmd_axis_tvalid_ila),
+//.probe4            (cmd_axis_tlast_ila),
+//.probe5            (cmd_axis_tkeep_ila),
+//.probe6           (cmd_axis_tready_ila),
+//// Chirp Control registers
+//.probe7 (ch_prf_int), // prf in sec
+//.probe8 (ch_prf_frac),
 
-.probe9 (chirp_tuning_word_coeff),
-.probe10  (chirp_count_max),
-.probe11 (chirp_freq_offset),
+//.probe9 (chirp_tuning_word_coeff),
+//.probe10  (chirp_count_max),
+//.probe11 (chirp_freq_offset),
 
-.probe12                        (adc_sample_time),
-//  . Control Signals
-.probe13                         (ethernet_ctrl_bus),
-.probe14                         (fmc150_ctrl_bus)
-);
-end
-endgenerate
+//.probe12                        (adc_sample_time),
+////  . Control Signals
+//.probe13                         (ethernet_ctrl_bus),
+//.probe14                         (fmc150_ctrl_bus)
+//);
+//end
+//endgenerate
 
-  // Decoded Commands from RGMII RX fifo
-assign cmd_axis_tdata_ila =         ch_wr_cmd_axis_tdata;
-assign cmd_axis_tvalid_ila = ch_wr_cmd_axis_tvalid;
-assign cmd_axis_tlast_ila = ch_wr_cmd_axis_tlast;
-assign cmd_axis_tkeep_ila =       ch_wr_cmd_axis_tkeep;
-assign cmd_axis_tready_ila = ch_wr_cmd_axis_tready;
+//  // Decoded Commands from RGMII RX fifo
+//assign cmd_axis_tdata_ila =         ch_wr_cmd_axis_tdata;
+//assign cmd_axis_tvalid_ila = ch_wr_cmd_axis_tvalid;
+//assign cmd_axis_tlast_ila = ch_wr_cmd_axis_tlast;
+//assign cmd_axis_tkeep_ila =       ch_wr_cmd_axis_tkeep;
+//assign cmd_axis_tready_ila = ch_wr_cmd_axis_tready;
 
-assign fmc150_spi_ctrl_bus_in_ila = fmc150_spi_ctrl_bus_in;
-assign fmc150_spi_ctrl_bus_out_ila = fmc150_spi_ctrl_bus_out;
+//assign fmc150_spi_ctrl_bus_in_ila = fmc150_spi_ctrl_bus_in;
+//assign fmc150_spi_ctrl_bus_out_ila = fmc150_spi_ctrl_bus_out;
 
 //always @(posedge s_axi_aclk) begin
 //    fmc150_spi_ctrl_bus_out_r <= fmc150_spi_ctrl_bus_out;

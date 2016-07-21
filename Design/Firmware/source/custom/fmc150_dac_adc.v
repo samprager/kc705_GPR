@@ -151,6 +151,9 @@ module fmc150_dac_adc #
 //  reg [7:0] dds_route_ctrl_reg;
   wire [1:0] dds_route_ctrl_u;
   wire [1:0] dds_route_ctrl_l;
+  
+  reg [1:0] dds_route_ctrl_u_r;
+  reg [1:0] dds_route_ctrl_l_r;
 
   wire [63:0] adc_fifo_wr_tdata;
   wire       adc_fifo_wr_tvalid;
@@ -224,7 +227,7 @@ module fmc150_dac_adc #
         .chirp_enable  (chirp_enable),
         .adc_enable    (adc_enable),
 
-        .dac_loopback               (chirp_control_word[0]),
+//        .dac_loopback               (chirp_control_word[0]),
         .chirp_freq_offset          (chirp_freq_offset),
         .chirp_tuning_word_coeff    (chirp_tuning_word_coeff),
         .chirp_count_max            (chirp_count_max),
@@ -308,8 +311,6 @@ module fmc150_dac_adc #
 
 
 
-assign dds_route_ctrl_l = chirp_control_word[1:0];  
-assign dds_route_ctrl_u = chirp_control_word[5:4]; 
 
 assign data_out_lower  = (dds_route_ctrl_l == 2'b00) ? adc_data_iq : 32'bz,
     data_out_lower  = (dds_route_ctrl_l == 2'b01) ? dac_data_iq : 32'bz,
@@ -320,7 +321,16 @@ assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 32'bz,
           data_out_upper  = (dds_route_ctrl_u == 2'b01) ? dac_data_iq : 32'bz,
           data_out_upper  = (dds_route_ctrl_u == 2'b10) ? adc_counter : 32'bz,
           data_out_upper  = (dds_route_ctrl_u == 2'b11) ? glbl_counter : 32'bz;  
-          
+   
+//assign dds_route_ctrl_l = chirp_control_word[1:0];  
+//assign dds_route_ctrl_u = chirp_control_word[5:4];
+assign dds_route_ctrl_l = dds_route_ctrl_l_r; 
+assign dds_route_ctrl_u = dds_route_ctrl_u_r;
+    
+  always @(posedge clk_245_76MHz) begin
+     dds_route_ctrl_l_r <= chirp_control_word[1:0]; 
+     dds_route_ctrl_u_r <= chirp_control_word[5:4]; 
+  end       
                 
    always @(posedge clk_245_76MHz) begin
     if (clk_245_rst) begin
@@ -454,32 +464,32 @@ assign rd_fifo_clk = aclk;
 assign clk_out_245_76MHz = clk_245_76MHz;
 //assign clk_out_491_52MHz = clk_491_52MHz;
 
-ila_adc_wr_fifo ila_adc_wr_fifo_inst(
-    //.clk (ui_clk),
-     .clk(clk_245_76MHz),
-     .probe0(adc_fifo_wr_tdata),
-     .probe1(adc_fifo_wr_tdata_count),
-     .probe2(adc_fifo_wr_ack),
-     .probe3(adc_fifo_wr_en),
-     .probe4(adc_fifo_almost_full),
-     .probe5(adc_fifo_full)
-);
+//ila_adc_wr_fifo ila_adc_wr_fifo_inst(
+//    //.clk (ui_clk),
+//     .clk(clk_245_76MHz),
+//     .probe0(adc_fifo_wr_tdata),
+//     .probe1(adc_fifo_wr_tdata_count),
+//     .probe2(adc_fifo_wr_ack),
+//     .probe3(adc_fifo_wr_en),
+//     .probe4(adc_fifo_almost_full),
+//     .probe5(adc_fifo_full)
+//);
 
-ila_adc_rd_fifo ila_adc_rd_fifo_inst(
-    //.clk (ui_clk),
-     .clk(rd_fifo_clk),
-     .probe0(adc_fifo_data_out),
-     .probe1(adc_fifo_rd_data_count),
-     .probe2(adc_fifo_valid),
-     .probe3(adc_fifo_rd_en),
-     .probe4(adc_fifo_almost_empty),
-     .probe5(adc_fifo_empty),
+//ila_adc_rd_fifo ila_adc_rd_fifo_inst(
+//    //.clk (ui_clk),
+//     .clk(rd_fifo_clk),
+//     .probe0(adc_fifo_data_out),
+//     .probe1(adc_fifo_rd_data_count),
+//     .probe2(adc_fifo_valid),
+//     .probe3(adc_fifo_rd_en),
+//     .probe4(adc_fifo_almost_empty),
+//     .probe5(adc_fifo_empty),
 
-     .probe6                      (axis_adc_tdata),
-     .probe7                     (axis_adc_tvalid),
-     .probe8                      (axis_adc_tlast),
-     .probe9                     (axis_adc_tready)
-);
+//     .probe6                      (axis_adc_tdata),
+//     .probe7                     (axis_adc_tvalid),
+//     .probe8                      (axis_adc_tlast),
+//     .probe9                     (axis_adc_tready)
+//);
 
 
    endmodule

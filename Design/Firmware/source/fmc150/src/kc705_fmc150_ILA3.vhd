@@ -162,7 +162,7 @@ port (
   chirp_enable : in std_logic;
   adc_enable : in std_logic;
 
-  dac_loopback : in std_logic;
+--  dac_loopback : in std_logic;
   chirp_freq_offset : in std_logic_vector(31 downto 0);
   chirp_tuning_word_coeff : in std_logic_vector(31 downto 0);
   chirp_count_max : in std_logic_vector(31 downto 0);
@@ -698,7 +698,7 @@ signal  chirp_init_sig  :  std_logic;
 signal  chirp_enable_sig :  std_logic;
 signal  adc_enable_sig :  std_logic;
 
-signal dac_loopback_sig : std_logic;
+--signal dac_loopback_sig : std_logic;
 signal chirp_freq_offset_sig : std_logic_vector(31 downto 0);
 signal chirp_tuning_word_coeff_sig : std_logic_vector(31 downto 0);
 signal chirp_count_max_sig : std_logic_vector(31 downto 0);
@@ -1656,17 +1656,6 @@ end process generate_adc_counter_out;
 adc_test_pattern_mux: process (clk_245_76MHz)
 begin
   if rising_edge(clk_245_76MHz) then
---    if (gen_adc_test_pattern = '1') then
---      --adc_data_out_i_sig <= adc_test_pattern_i;
---      --adc_data_out_q_sig <= adc_test_pattern_q;
---      adc_data_out_i_sig <= adc_test_pattern_iq(31 downto 16);
---      adc_data_out_q_sig <= adc_test_pattern_iq(15 downto 0);
---      adc_data_out_valid_sig <= adc_test_pattern_valid;
---    if (dac_loopback_sig = '1') then
---        adc_data_out_i_sig <= dac_din_i;
---        adc_data_out_q_sig <= dac_din_q;
---        adc_data_out_valid_sig <= adc_dout_valid;   
---    else
         dac_data_out_i_sig <= dac_din_i;
         dac_data_out_q_sig <= dac_din_q;
         
@@ -2112,7 +2101,7 @@ chirp_active <= chirp_active_sig;
 chirp_init_sig <= chirp_init;
 chirp_enable_sig <= chirp_enable;
 
-dac_loopback_sig <= dac_loopback;
+--dac_loopback_sig <= dac_loopback;
 chirp_freq_offset_sig <= chirp_freq_offset;
 chirp_tuning_word_coeff_sig <= chirp_tuning_word_coeff;
 chirp_count_max_sig <= chirp_count_max;

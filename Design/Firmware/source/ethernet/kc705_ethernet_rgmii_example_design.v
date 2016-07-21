@@ -719,25 +719,26 @@ module kc705_ethernet_rgmii_example_design
     );
 
 
-decoder_ila decoder_ila_inst (
-    .clk  (rx_fifo_clock),
-    .probe0         (cmd_pkt_axis_tdata),
-    .probe1          (cmd_pkt_axis_tvalid),
-    .probe2           (cmd_pkt_axis_tlast),
-    .probe3           (cmd_pkt_axis_tready),
-    .probe4          (cmd_axis_tdata_ila),
-   .probe5                     (cmd_axis_tvalid_ila),
-   .probe6                    (cmd_axis_tlast_ila),
-   .probe7                     (cmd_axis_tready_ila),
+//decoder_ila decoder_ila_inst (
+//    .clk  (rx_fifo_clock),
+//    .probe0         (cmd_pkt_axis_tdata),
+//    .probe1          (cmd_pkt_axis_tvalid),
+//    .probe2           (cmd_pkt_axis_tlast),
+//    .probe3           (cmd_pkt_axis_tready),
+//    .probe4          (cmd_axis_tdata_ila),
+//   .probe5                     (cmd_axis_tvalid_ila),
+//   .probe6                    (cmd_axis_tlast_ila),
+//   .probe7                     (cmd_axis_tready_ila),
 
-     .probe8         (rx_axis_fifo_tdata),
-     .probe9       (rx_axis_fifo_tvalid),
-     .probe10        (rx_axis_fifo_tlast),
-     .probe11       (rx_axis_fifo_tready)
-);
+//     .probe8         (rx_axis_fifo_tdata),
+//     .probe9       (rx_axis_fifo_tvalid),
+//     .probe10        (rx_axis_fifo_tlast),
+//     .probe11       (rx_axis_fifo_tready)
+//);
 
- assign cmd_axis_tdata_ila   =cmd_axis_tdata;
- assign  cmd_axis_tvalid_ila =cmd_axis_tvalid;
- assign  cmd_axis_tlast_ila  =cmd_axis_tlast;
- assign  cmd_axis_tready_ila  =cmd_axis_tready;
+// assign cmd_axis_tdata_ila   =cmd_axis_tdata;
+// assign  cmd_axis_tvalid_ila =cmd_axis_tvalid;
+// assign  cmd_axis_tlast_ila  =cmd_axis_tlast;
+// assign  cmd_axis_tready_ila  =cmd_axis_tready;
+
 endmodule
