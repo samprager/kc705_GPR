@@ -7,7 +7,7 @@ byteoffset = 0;
 packetsize = 496;
 headersize = 16;
 
-has_counter = 0;
+has_counter = 1;
 if (strcmp(bitformat,'uint8')||strcmp(bitformat,'int8'))
     bytesperword = 1;
 elseif (strcmp(bitformat,'uint16')||strcmp(bitformat,'int16'))
@@ -70,10 +70,11 @@ if (has_counter)
 else
 % Manually find beginning of first 512 bit sub-packet
     subp_found = 0; 
-    ind = 9;
-    counter_offset = 0;
+    ind = 2;
+    counter_offset = 1;
 end
-
+ind = 2;
+counter_offset = 1;
 % get rid of partial sub-packets at beginning
 A_round = A(ind-counter_offset:end);
 % now get rid of partial sub-packets at end -- assume 512b sub-packets
