@@ -155,9 +155,9 @@ module fmc150_dac_adc #
   wire [63:0] adc_fifo_wr_tdata;
   wire       adc_fifo_wr_tvalid;
   wire       adc_fifo_wr_tlast;
-  reg        adc_fifo_wr_tlast_r;
-  reg        adc_fifo_wr_tlast_rr;
 
+  wire       adc_fifo_wr_first;
+  reg        adc_fifo_wr_first_r;
 
 
      wire [12:0]              adc_fifo_wr_tdata_count;
@@ -195,7 +195,7 @@ module fmc150_dac_adc #
         // --KC705 Resources - from fmc150 example design
         .adc_data_out_i (adc_data_i),
         .adc_data_out_q (adc_data_q),
-        .adc_counter_out (adc_counter),
+    //    .adc_counter_out (adc_counter),
         .adc_data_out_valid (adc_data_valid),
         
         .dac_data_out_i (dac_data_i),
@@ -306,24 +306,7 @@ module fmc150_dac_adc #
 
    );
 
-//   always @(posedge clk_245_76MHz) begin
-//    if (cpu_reset) begin
-//      adc_enable_r <= 1'b0;
-//      adc_enable_rr <= 1'b0;
-//    end else begin
-//      adc_enable_r <= adc_enable;
-//      adc_enable_rr <= adc_enable_r;
-//    end
-//   end
 
-//   always @(posedge clk_245_76MHz) begin
-//    if (cpu_reset)
-//      adc_fifo_wr_tlast_reg <= 1'b0;
-//    else if (adc_enable_r & !adc_enable)
-//      adc_fifo_wr_tlast_reg <= 1'b1;
-//    else
-//      adc_fifo_wr_tlast_reg <= 1'b0;
-//   end
 
 assign dds_route_ctrl_l = chirp_control_word[1:0];  
 assign dds_route_ctrl_u = chirp_control_word[5:4]; 
@@ -356,39 +339,35 @@ assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 32'bz,
     if (clk_245_rst) 
       dds_latency_counter <= 'b0;
     else if( chirp_init)
-      dds_latency_counter <= DDS_LATENCY-1;
+      dds_latency_counter <= DDS_LATENCY;
+   else if(adc_enable_r & !adc_enable)
+      dds_latency_counter <= DDS_LATENCY;     
     else if(|dds_latency_counter)
       dds_latency_counter <= dds_latency_counter-1;
   end
-
+   
    always @(posedge clk_245_76MHz) begin
-    if (clk_245_rst)
-      adc_fifo_wr_tlast_r <= 1'b0;
-    else if (adc_enable_r & !adc_enable)
-      adc_fifo_wr_tlast_r <= 1'b1;
-    else
-      adc_fifo_wr_tlast_r <= 1'b0;
+   if (cpu_reset) begin
+     adc_fifo_wr_first_r <= 1'b0;
+   end else begin
+     if (!(|dds_latency_counter)&(adc_enable_r)&(!adc_enable_rr))
+       adc_fifo_wr_first_r <= 1'b1;
+     else 
+       adc_fifo_wr_first_r <= 1'b0;
    end
+  end
+
    
-  always @(posedge clk_245_76MHz) begin
-    if (clk_245_rst)
-      adc_fifo_wr_tlast_rr <= 1'b0;
-    else if (!(|dds_latency_counter))
-      adc_fifo_wr_tlast_rr <= adc_fifo_wr_tlast_r;
-    else
-      adc_fifo_wr_tlast_rr <= adc_fifo_wr_tlast_rr;
+   always @(posedge clk_245_76MHz) begin
+    if (clk_245_rst) begin
+      adc_counter_reg <= 'b0;
+    end
+    else begin
+      if (adc_enable_rr & adc_data_valid)
+        adc_counter_reg <= adc_counter_reg+1;
+    end
    end
-   
-//   always @(posedge clk_245_76MHz) begin
-//    if (clk_245_rst) begin
-//      adc_counter_reg <= 'b0;
-//    end
-//    else begin
-//      if (adc_enable_rr & data_valid)
-//        adc_counter_reg <= adc_counter_reg+1;
-//    end
-//   end
-//assign adc_count = adc_counter_reg;
+assign adc_counter = adc_counter_reg;
    
    always @(posedge clk_245_76MHz) begin
     if (clk_245_rst) begin
@@ -457,13 +436,15 @@ assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 32'bz,
    
     assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
   // assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
-   assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
+  
+ //  assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
+ assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_counter,adc_counter} : {data_out_upper,data_out_lower};
 
 //   assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
 //   assign adc_fifo_wr_tvalid = data_out_upper_valid & data_out_lower_valid & adc_enable_rr;
    
-   
-   assign adc_fifo_wr_tlast = adc_fifo_wr_tlast_rr;
+   assign adc_fifo_wr_first = adc_fifo_wr_first_r;
+   assign adc_fifo_wr_tlast = (!(|dds_latency_counter))&(adc_enable_rr)&(!adc_enable_r);
 
    assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
 //   assign adc_fifo_wr_en = adc_enable_rr & data_out_upper_valid & data_out_lower_valid;

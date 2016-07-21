@@ -222,7 +222,7 @@ Chirp_Gen: process (clk)    -- 491.52 MHz clock
         if (chirp_done_r = '1') then
             chirp_active_r <= '0';
             chirp_done_r <= '0';
-        elsif (chirp_count >= chirp_count_max) then
+        elsif (chirp_count >= (chirp_count_max-DDS_LATENCY+1)) then
             chirp_count <= (others => '0');
             tuning_word(31 downto 0) <= freq_offset(31 downto 0);
             chirp_done_r <= '1';

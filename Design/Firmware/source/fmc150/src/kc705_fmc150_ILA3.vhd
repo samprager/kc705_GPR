@@ -145,7 +145,7 @@ port (
 -- ADC data re-mux'd to 245.76 MSPS in fabric, extended to 16-bit
   adc_data_out_i : out std_logic_vector(15 downto 0);
   adc_data_out_q : out std_logic_vector(15 downto 0);
-  adc_counter_out : out std_logic_vector(31 downto 0);
+--  adc_counter_out : out std_logic_vector(31 downto 0);
   adc_data_out_valid : out std_logic;
   
   dac_data_out_i : out std_logic_vector(15 downto 0);
@@ -1680,7 +1680,8 @@ end process adc_test_pattern_mux;
 adc_data_out_i <= adc_data_out_i_sig;
 adc_data_out_q <= adc_data_out_q_sig;
 adc_data_out_valid <= adc_data_out_valid_sig;
-adc_counter_out <= adc_counter_out_sig;
+
+--adc_counter_out <= adc_counter_out_sig;
 
 dac_data_out_i <= dac_data_out_i_sig;
 dac_data_out_q <= dac_data_out_q_sig;

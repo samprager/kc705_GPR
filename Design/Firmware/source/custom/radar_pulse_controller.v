@@ -21,6 +21,7 @@
 module radar_pulse_controller #(
   parameter CLK_FREQ = 245760000,    // Hz
   parameter CHIRP_PRP = 1000000, //Pule Repetition Period (usec)
+  parameter ADC_SAMPLE_COUNT_INIT = 32'h000000c8,
   parameter CHIRP_PRF_INT_COUNT_INIT = 32'h00000000,
   parameter CHIRP_PRF_FRAC_COUNT_INIT = 32'h927c0000
 )(
@@ -60,7 +61,7 @@ module radar_pulse_controller #(
 );
 localparam CHIRP_PRF_COUNT_FAST = 24576;    //100 u sec CLK_FREQ*CHIRP_PRP;
 localparam CHIRP_PRF_COUNT_SLOW = 10*CLK_FREQ;    //32'h927c0000 = 245760000  (10 sec)
-localparam ADC_LIMIT = 200;
+localparam ADC_LIMIT = ADC_SAMPLE_COUNT_INIT;
 localparam     IDLE        = 3'b000,
                ACTIVE      = 3'b001,
                CHIRP       = 3'b010,    // pulse chirp (and generate adc samples)
@@ -95,13 +96,13 @@ wire chirp_prf_speed_sel;
 
 reg[31:0] chirp_time_int_r = CHIRP_PRF_INT_COUNT_INIT;
 reg[31:0] chirp_time_frac_r = CHIRP_PRF_FRAC_COUNT_INIT;//CHIRP_PRF_COUNT_SLOW;
-reg[31:0] adc_sample_time_r = 32'hc8;
+reg[31:0] adc_sample_time_r = ADC_SAMPLE_COUNT_INIT;
 reg[31:0] chirp_time_int_rr = CHIRP_PRF_INT_COUNT_INIT;
 reg[31:0] chirp_time_frac_rr = CHIRP_PRF_FRAC_COUNT_INIT;//CHIRP_PRF_COUNT_SLOW;
-reg[31:0] adc_sample_time_rr = 32'hc8;
+reg[31:0] adc_sample_time_rr = ADC_SAMPLE_COUNT_INIT;
 reg[31:0] chirp_time_int_rrr = CHIRP_PRF_INT_COUNT_INIT;
 reg[31:0] chirp_time_frac_rrr = CHIRP_PRF_FRAC_COUNT_INIT;//CHIRP_PRF_COUNT_SLOW;
-reg[31:0] adc_sample_time_rrr = 32'hc8;
+reg[31:0] adc_sample_time_rrr = ADC_SAMPLE_COUNT_INIT;
 reg update_chirp_time_int = 1'b0;
 reg update_chirp_time_frac = 1'b0;
 reg update_adc_sample_time = 1'b0;
@@ -299,9 +300,9 @@ end
  // sync chirp time control inputs from reg map
 always @(posedge aclk) begin
     if(~aresetn) begin
-        adc_sample_time_r <= 32'hc8;
-        adc_sample_time_rr <= 332'hc8;
-        adc_sample_time_rrr <= 32'hc8;
+        adc_sample_time_r <= ADC_SAMPLE_COUNT_INIT;
+        adc_sample_time_rr <= ADC_SAMPLE_COUNT_INIT;
+        adc_sample_time_rrr <= ADC_SAMPLE_COUNT_INIT;
         update_adc_sample_time <= 1'b0;
     end else begin   
         adc_sample_time_r <= adc_sample_time;

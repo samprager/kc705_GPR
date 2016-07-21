@@ -1798,10 +1798,12 @@
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_i" type="array">
          <obj_property name="ElementShortName">adc_data_i[15:0]</obj_property>
          <obj_property name="ObjectShortName">adc_data_i[15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_q" type="array">
          <obj_property name="ElementShortName">adc_data_q[15:0]</obj_property>
          <obj_property name="ObjectShortName">adc_data_q[15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_iq" type="array">
          <obj_property name="ElementShortName">adc_data_iq[31:0]</obj_property>
@@ -1810,6 +1812,16 @@
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dac_data_iq" type="array">
          <obj_property name="ElementShortName">dac_data_iq[31:0]</obj_property>
          <obj_property name="ObjectShortName">dac_data_iq[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dac_data_i" type="array">
+         <obj_property name="ElementShortName">dac_data_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">dac_data_i[15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dac_data_q" type="array">
+         <obj_property name="ElementShortName">dac_data_q[15:0]</obj_property>
+         <obj_property name="ObjectShortName">dac_data_q[15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/data_valid" type="logic">
          <obj_property name="ElementShortName">data_valid</obj_property>
@@ -1823,21 +1835,17 @@
          <obj_property name="ElementShortName">adc_data_valid</obj_property>
          <obj_property name="ObjectShortName">adc_data_valid</obj_property>
       </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_i_reg" type="array">
-         <obj_property name="ElementShortName">adc_data_i_reg[15:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_data_i_reg[15:0]</obj_property>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/first_word" type="logic">
+         <obj_property name="ElementShortName">first_word</obj_property>
+         <obj_property name="ObjectShortName">first_word</obj_property>
       </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_q_reg" type="array">
-         <obj_property name="ElementShortName">adc_data_q_reg[15:0]</obj_property>
-         <obj_property name="ObjectShortName">adc_data_q_reg[15:0]</obj_property>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/last_word" type="logic">
+         <obj_property name="ElementShortName">last_word</obj_property>
+         <obj_property name="ObjectShortName">last_word</obj_property>
       </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_counter_reg" type="array">
          <obj_property name="ElementShortName">adc_counter_reg[31:0]</obj_property>
          <obj_property name="ObjectShortName">adc_counter_reg[31:0]</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_data_valid_reg" type="logic">
-         <obj_property name="ElementShortName">adc_data_valid_reg</obj_property>
-         <obj_property name="ObjectShortName">adc_data_valid_reg</obj_property>
       </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tdata" type="array">
          <obj_property name="ElementShortName">adc_fifo_wr_tdata[63:0]</obj_property>
@@ -1851,21 +1859,19 @@
          <obj_property name="ElementShortName">adc_fifo_wr_tlast</obj_property>
          <obj_property name="ObjectShortName">adc_fifo_wr_tlast</obj_property>
       </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tlast_r" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_wr_tlast_r</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_wr_tlast_r</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tlast_rr" type="logic">
-         <obj_property name="ElementShortName">adc_fifo_wr_tlast_rr</obj_property>
-         <obj_property name="ObjectShortName">adc_fifo_wr_tlast_rr</obj_property>
+      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_first" type="logic">
+         <obj_property name="ElementShortName">adc_fifo_wr_first</obj_property>
+         <obj_property name="ObjectShortName">adc_fifo_wr_first</obj_property>
       </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_out_i" type="array">
          <obj_property name="ElementShortName">dds_out_i[15:0]</obj_property>
          <obj_property name="ObjectShortName">dds_out_i[15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_out_q" type="array">
          <obj_property name="ElementShortName">dds_out_q[15:0]</obj_property>
          <obj_property name="ObjectShortName">dds_out_q[15:0]</obj_property>
+         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_out_valid" type="logic">
          <obj_property name="ElementShortName">dds_out_valid</obj_property>
@@ -1879,14 +1885,6 @@
          <obj_property name="ElementShortName">data_out_upper[31:0]</obj_property>
          <obj_property name="ObjectShortName">data_out_upper[31:0]</obj_property>
       </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/data_out_lower_valid" type="logic">
-         <obj_property name="ElementShortName">data_out_lower_valid</obj_property>
-         <obj_property name="ObjectShortName">data_out_lower_valid</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/data_out_upper_valid" type="logic">
-         <obj_property name="ElementShortName">data_out_upper_valid</obj_property>
-         <obj_property name="ObjectShortName">data_out_upper_valid</obj_property>
-      </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_latency_counter" type="array">
          <obj_property name="ElementShortName">dds_latency_counter[3:0]</obj_property>
          <obj_property name="ObjectShortName">dds_latency_counter[3:0]</obj_property>
@@ -1898,10 +1896,6 @@
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/glbl_counter" type="array">
          <obj_property name="ElementShortName">glbl_counter[31:0]</obj_property>
          <obj_property name="ObjectShortName">glbl_counter[31:0]</obj_property>
-      </wvobject>
-      <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/dds_route_ctrl" type="array">
-         <obj_property name="ElementShortName">dds_route_ctrl[7:0]</obj_property>
-         <obj_property name="ObjectShortName">dds_route_ctrl[7:0]</obj_property>
       </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/adc_fifo_wr_tdata_count" type="array">
          <obj_property name="ElementShortName">adc_fifo_wr_tdata_count[12:0]</obj_property>

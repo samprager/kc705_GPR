@@ -59,6 +59,7 @@ parameter ADC_CLK_FREQ                              = 245.7,
 parameter RX_WR_CMD_DWIDTH                         = 224,
 parameter RX_RD_CMD_DWIDTH                         = 32,
 
+parameter ADC_SAMPLE_COUNT_INIT = 32'h000000c6,
 parameter CHIRP_PRF_INT_COUNT_INIT = 32'h00000000,
 parameter CHIRP_PRF_FRAC_COUNT_INIT = 32'h927c0000,
 parameter CHIRP_CLK_FREQ = 245760000    // Hz
@@ -188,6 +189,7 @@ assign gpio_led[7] = fmc150_status_vector[0]; // ADC_calibration_good
 
 radar_pulse_controller #(
     .CLK_FREQ (CHIRP_CLK_FREQ),
+    .ADC_SAMPLE_COUNT_INIT(ADC_SAMPLE_COUNT_INIT),
     .CHIRP_PRF_INT_COUNT_INIT(CHIRP_PRF_INT_COUNT_INIT),
     .CHIRP_PRF_FRAC_COUNT_INIT(CHIRP_PRF_FRAC_COUNT_INIT)
 )
@@ -247,6 +249,7 @@ reg_map_cmd_gen reg_map_cmd_gen_inst (
 config_reg_map #(
   .RX_WR_CMD_DWIDTH (RX_WR_CMD_DWIDTH),
   .RX_RD_CMD_DWIDTH (RX_RD_CMD_DWIDTH),
+  .ADC_SAMPLE_COUNT_INIT(ADC_SAMPLE_COUNT_INIT),
   .CHIRP_PRF_INT_COUNT_INIT(CHIRP_PRF_INT_COUNT_INIT),
   .CHIRP_PRF_FRAC_COUNT_INIT(CHIRP_PRF_FRAC_COUNT_INIT),
   .CHIRP_CLK_FREQ (CHIRP_CLK_FREQ)

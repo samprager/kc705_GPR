@@ -60,6 +60,7 @@ parameter RX_RD_CMD_DWIDTH                         = 32,
 
 parameter  CHIRP_CLK_FREQ                           = 245760000,    // Hz
 
+parameter ADC_SAMPLE_COUNT_INIT = 32'h000000c8,
 parameter CHIRP_PRF_INT_COUNT_INIT = 32'h00000000,
 parameter CHIRP_PRF_FRAC_COUNT_INIT = 32'h927c0000,
 
@@ -113,7 +114,7 @@ parameter ADC_CLK_FREQ                              = 245.7
   output reg [31:0]                 ch_ctrl_word = 32'h00000020,
 
   // ADC Sample time after chirp data_tx_done -
-  output reg [31:0]                 adc_sample_time = 32'hc8,
+  output reg [31:0]                 adc_sample_time = ADC_SAMPLE_COUNT_INIT,
   // FMC150 Mode Control
   output [7:0] fmc150_ctrl_bus,
   // output reg ddc_duc_bypass                         = 1'b1, // dip_sw(3)
@@ -314,7 +315,7 @@ begin
       ch_counter_max      <= 32'h00000fff;
       ch_freq_offset       <= 32'h0600;
       ch_ctrl_word         <= 32'h20;
-      adc_sample_time      <= 32'hc8;
+      adc_sample_time      <= ADC_SAMPLE_COUNT_INIT;
 
   end else if(network_cmd_en) begin
     if (ch_wr_cmd_axis_tvalid & ch_wr_cmd_axis_tready_int) begin
