@@ -4,7 +4,7 @@
 %filename = '../C/Listener/outdata.bin'; bitformat = 'uint32';
 filename = '/Users/sam/outputs/en4_dataout.bin'; bitformat = 'uint32';
 byteoffset = 0;
-packetsize = 496;
+packetsize = 528;
 headersize = 16;
 
 has_counter = 1;
@@ -87,6 +87,25 @@ counter = A_round(1+counter_offset:2:end-shave_end-1+counter_offset);
 % ordering correction: reshape sub-packets to be sequential
 counter = reshape(flipud(reshape(counter(1:end),8*(8/(2*bytesperword)),[])),[],1);
 data = reshape(flipud(reshape(data(1:end),8*(8/(2*bytesperword)),[])),[],1);
+
+
+adcctr1 = data(1:4352:end);
+adcctr2 = data(4352:4352:end);
+adcctr = zeros(numel(adcctr1)+numel(adcctr2),1);
+adcctr(1:2:end) = adcctr1;
+adcctr(2:2:end) = adcctr2;
+
+glblctr1 = counter(1:4352:end);
+glblctr2 = counter(4352:4352:end);
+glblctr = zeros(numel(glblctr1)+numel(glblctr2),1);
+glblctr(1:2:end) = glblctr1;
+glblctr(2:2:end) = glblctr2;
+
+adcctr
+glblctr
+
+figure; plot(adcctr);
+figure; plot(glblctr);
 
 % Add sub-packets to data -- currently unused. Due to current byte ordering
 % inclusion of sub-packets causes jump discontinuities 

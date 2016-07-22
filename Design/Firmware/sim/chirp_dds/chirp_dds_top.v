@@ -130,6 +130,17 @@ module chirp_dds_top #
      reg                      adc_enable_r;
      reg                      adc_enable_rr;
 
+     wire [31:0] s_fft_axis_tdata;
+     wire s_fft_axis_tvalid;
+     wire s_fft_axis_tlast;
+     wire s_fft_axis_tready;
+
+     wire [31:0] m_fft_axis_tdata;
+     wire m_fft_axis_tvalid;
+     wire m_fft_axis_tlast;
+     wire m_fft_axis_tready;
+
+
 
      assign clk_245_76MHz = clk_245;
      // simulate adc outputs from fmc150 module with dds loopback
@@ -264,9 +275,9 @@ module chirp_dds_top #
     if (cpu_reset)
       dds_latency_counter <= 'b0;
     else if( chirp_init)
-      dds_latency_counter <= DDS_LATENCY+1;
+      dds_latency_counter <= DDS_LATENCY;
     else if(adc_enable_r & !adc_enable)
-        dds_latency_counter <= DDS_LATENCY-1;
+        dds_latency_counter <= DDS_LATENCY;
     else if(|dds_latency_counter)
       dds_latency_counter <= dds_latency_counter-1;
   end
@@ -373,9 +384,9 @@ module chirp_dds_top #
 //   assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
 //   assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
 
-//assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_counter[31:0],adc_counter} : {data_out_upper,data_out_lower};
+assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_counter[31:0],adc_counter} : {data_out_upper,data_out_lower};
 
-assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
+//assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
 
 //   assign adc_fifo_wr_tvalid = data_out_upper_valid & data_out_lower_valid & adc_enable_rr;
     assign adc_fifo_wr_tvalid = data_valid & adc_enable_rr;
@@ -394,6 +405,36 @@ assign rd_fifo_clk = aclk;
 
 //assign clk_out_491_52MHz = clk_491_52MHz;
 
+
+assign s_fft_axis_tdata = {dac_data_q,dac_data_i};
+assign s_fft_axis_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_en);
+assign s_fft_axis_tlast = adc_fifo_wr_tlast;
+
+assign m_fft_axis_tready = 1'b1;
+
+fft_dsp #(
+  .FFT_AXI_DATA_WIDTH (32)
+  )fft_dsp_inst(
+
+  .clk_245 (clk_245),
+  .clk_245_rst (clk_245_rst),
+
+  .aclk (aclk),
+  .aresetn (aresetn),
+
+  .cpu_reset(cpu_reset),
+
+ .s_axis_tdata(s_fft_axis_tdata),
+ .s_axis_tvalid (s_fft_axis_tvalid),
+ .s_axis_tlast(s_fft_axis_tlast),
+ .s_axis_tready(s_fft_axis_tready),
+
+.m_axis_tdata(m_fft_axis_tdata),
+.m_axis_tvalid(m_fft_axis_tvalid),
+.m_axis_tlast(m_fft_axis_tlast),
+.m_axis_tready(m_fft_axis_tready)
+
+);
 
 
 

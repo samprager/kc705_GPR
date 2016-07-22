@@ -1,6 +1,6 @@
 `timescale 1ps/1ps
 
-module chirp_dds_top #
+module fft_dsp #
   (
      parameter FFT_AXI_DATA_WIDTH = 32,
      parameter FFT_AXI_TID_WIDTH = 1,
@@ -30,25 +30,7 @@ input cpu_reset,       // : in    std_logic; -- CPU RST button, SW7 on KC705
   output [FFT_AXI_DATA_WIDTH-1:0]     m_axis_tdata,
   output m_axis_tvalid,
   output m_axis_tlast,
-  input m_axis_tready,
-
-// Control Module signals
-  output [3:0] fmc150_status_vector,
-  output chirp_ready,
-  output chirp_done,
-  output chirp_active,
-  input  chirp_init,
-  input  chirp_enable,
-  input  adc_enable,
-
-  input [31:0] chirp_control_word,
-  input [31:0] chirp_freq_offset,
-  input [31:0] chirp_tuning_word_coeff,
-  input [31:0] chirp_count_max,
-
-  input [7:0] fmc150_ctrl_bus,
-  input [67:0] fmc150_spi_ctrl_bus_in,
-  output [47:0] fmc150_spi_ctrl_bus_out
+  input m_axis_tready
 
 
    );
@@ -73,6 +55,17 @@ localparam DDS_LATENCY = 2;
  wire fft_event_tlast_missing;
  wire fft_event_data_in_channel_halt;
 
+ assign clk_245_76MHz = clk_245;
+
+ assign s_axis_fft_data_tdata = s_axis_tdata;
+ assign s_axis_fft_data_tvalid = s_axis_tvalid;
+ assign s_axis_fft_data_tlast = s_axis_tlast;
+ assign s_axis_tready = s_axis_fft_data_tready;
+
+ assign m_axis_tdata = m_axis_fft_data_tdata;
+ assign m_axis_tvalid = m_axis_fft_data_tvalid;
+ assign m_axis_tlast = m_axis_fft_data_tlast;
+
 
 xfft_0 xfft_0_inst (
   .aclk(clk_245_76MHz),                                              // input wire aclk
@@ -95,9 +88,6 @@ xfft_0 xfft_0_inst (
 
 assign s_axis_fft_config_tdata = {1'b0,6'b0,1'b1,1'b0,13'b0,1'b0,5'd13}; // {pad,scale_sh,fwd/inv,pad,cp_len,pad,nfft}
 assign s_axis_fft_config_tvalid = 1'b1;
-assign s_axis_fft_data_tdata = {dac_data_q,dac_data_i};
-assign s_axis_fft_data_tvalid = adc_data_valid_rr;
-assign s_axis_fft_data_tlast = adc_fifo_wr_tlast;
 
 
 
