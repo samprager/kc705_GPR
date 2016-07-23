@@ -250,8 +250,8 @@ else
     [If,Ifshift,Itshift] = getFreqShift(I(chirpmin:chirpmax),I2(chirpmin:chirpmax),Fs,chirpBW,chirpT);
     [Qf,Qfshift,Qtshift] = getFreqShift(Q(chirpmin:chirpmax),Q2(chirpmin:chirpmax),Fs,chirpBW,chirpT);
    
-    Qsdelay = Fs*Itshift;
-    Isdelay = Fs*Qtshift;
+    Isdelay = Fs*Itshift;
+    Qsdelay = Fs*Qtshift;
         
     fprintf('I ch. Freq Shift: %f Mhz\n',Ifshift/1e6);
     fprintf('Q ch. Freq Shift: %f Mhz\n',Qfshift/1e6);
@@ -260,15 +260,15 @@ else
     fprintf('I ch. sample delay: %f (%i samples)\n',Isdelay,round(Isdelay));
     fprintf('Q ch. sample delay: %f (%i samples)\n',Qsdelay,round(Qsdelay));
     
-    snum_i = 1000;
-    snum_q = 1000;
+    snum_i = 25;
+    snum_q = 25;
     IShift = [zeros(snum_i,1);I(chirpmin:chirpmax-snum_i)];
     QShift = [zeros(snum_q,1);Q(chirpmin:chirpmax-snum_q)];
     [If,Ifshift,Itshift] = getFreqShift(I2(chirpmin:chirpmax),IShift,Fs,chirpBW,chirpT);
     [Qf,Qfshift,Qtshift] = getFreqShift(Q2(chirpmin:chirpmax),QShift,Fs,chirpBW,chirpT);
    
-    Qsdelay = Fs*Itshift;
-    Isdelay = Fs*Qtshift;
+    Isdelay = Fs*Itshift;
+    Qsdelay = Fs*Qtshift;
         
     fprintf('I Shift ch. Freq Shift: %f Mhz\n',Ifshift/1e6);
     fprintf('Q Shift ch. Freq Shift: %f Mhz\n',Qfshift/1e6);
@@ -291,8 +291,8 @@ else
     [If,Ifshift,Itshift] = getFreqShift(I2zp,IShiftzp,Fs,chirpBW,chirpT);
     [Qf,Qfshift,Qtshift] = getFreqShift(Q2zp,QShiftzp,Fs,chirpBW,chirpT);
    
-    Qsdelay = Fs*Itshift;
-    Isdelay = Fs*Qtshift;
+    Isdelay = Fs*Itshift;
+    Qsdelay = Fs*Qtshift;
         
     fprintf('I zpad ch. Freq Shift: %f Mhz\n',Ifshift/1e6);
     fprintf('Q zpad ch. Freq Shift: %f Mhz\n',Qfshift/1e6);
@@ -322,19 +322,25 @@ else
 
 end
     
-fftlen = 8192; alpha = 1; beta = 1;
-xI = fft(Izp.*I2zp,fftlen);
+fftlen = 4096;
+%fftlen = 2*floor(((Fs/chirpBW)*nsamples)/2); % 8192; 
+alpha = 1; beta = 1;
+xI = fft((Izp+IShiftzp).*I2zp,fftlen);
 figure; subplot(4,1,1); plot(real(xI)); subplot(4,1,2); plot(imag(xI));
 subplot(4,1,3); plot(abs(xI)); subplot(4,1,4); plot(magest(xI,alpha,beta));
-xQ = fft(Qzp.*Q2zp,fftlen);
+xQ = fft((Qzp+QShiftzp).*Q2zp,fftlen);
 figure; subplot(4,1,1); plot(real(xQ)); subplot(4,1,2); plot(imag(xQ));
 subplot(4,1,3); plot(abs(xQ)); subplot(4,1,4); plot(magest(xQ,alpha,beta));
-xIQ = fft((Izp+1i*Qzp).*(I2zp+1i*Q2zp),fftlen);
-figure; subplot(4,1,1); plot(real(xIQ)); subplot(4,1,2); plot(imag(xIQ)); 
-subplot(4,1,3); plot(abs(xIQ));subplot(4,1,4); plot(magest(xIQ,alpha,beta));
     
-xIa = abs(xI);
-gradient(xIa);
+lenR = numel(xI)/2;
+dR = (3e8)/(2*Fs);
+tfactor = (chirpT/chirpBW)*linspace(0,Fs/2,numel(xI)/2);
+rngs = tfactor*(3e8/2);
+Irng = abs(xI(1:end/2));
+R = decimate(rngs,max(1,floor(numel(rngs)/nsamples)));
+Irvec = decimate(Irng,max(1,floor(numel(rngs)/nsamples)));
+figure;plot(R,Irvec);
+figure;plot(rngs,Irng);
 %     figure; hold on;
 %     plot(I);plot(Q,'r');
 %     title('I and Q Channels');legend('I','Q');axis tight; hold off;

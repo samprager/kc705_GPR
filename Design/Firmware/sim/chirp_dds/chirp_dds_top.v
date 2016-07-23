@@ -139,6 +139,9 @@ module chirp_dds_top #
      wire m_fft_axis_tvalid;
      wire m_fft_axis_tlast;
      wire m_fft_axis_tready;
+     
+     wire [31:0] mag_i_axis_tdata;
+     wire [31:0] mag_q_axis_tdata;
 
 
      assign clk_245_76MHz = clk_245;
@@ -425,34 +428,60 @@ mixer_mult_gen mixer_q (
 );
 
 
-fft_dsp #(
-  .FFT_LEN(8192),
-  .FFT_CHANNELS(2),
-  .FFT_AXI_DATA_WIDTH (64)
-  )
-  fft_dsp_inst(
-
-  .aclk (clk_245),
-  .aresetn (!clk_245_rst),
-
- .s_axis_tdata({32'b0,s_fft_axis_tdata[63:32],32'b0,s_fft_axis_tdata[31:0]}),
- .s_axis_tvalid (s_fft_axis_tvalid),
- .s_axis_tlast(s_fft_axis_tlast),
- .s_axis_tready(s_fft_axis_tready),
-
-.m_axis_tdata(m_fft_axis_tdata),
-.m_axis_tvalid(m_fft_axis_tvalid),
-.m_axis_tlast(m_fft_axis_tlast),
-.m_axis_tready(m_fft_axis_tready),
-
-   .chirp_ready                         (chirp_ready),
-   .chirp_done                          (chirp_done),
-   .chirp_active                        (chirp_active),
-   .chirp_init                          (chirp_init),
-   .chirp_enable                        (chirp_enable),
-   .adc_enable                          (adc_enable)
-
+c_mag_estimate#(
+    .DATA_LEN(32),
+    .ALPHA(0.9),
+    .BETA(0.4)
+)
+ abs_i (
+    .clk(clk_245),
+    .dataI(m_fft_axis_tdata[31:0]),
+    .dataQ(m_fft_axis_tdata[63:32]),
+    .dataMag(mag_i_axis_tdata)
 );
+
+c_mag_estimate#(
+    .DATA_LEN(32),
+    .ALPHA(0.9),
+    .BETA(0.4)
+)
+ abs_q (
+    .clk(clk_245),
+    .dataI(m_fft_axis_tdata[95:64]),
+    .dataQ(m_fft_axis_tdata[127:96]),
+    .dataMag(mag_q_axis_tdata)
+);
+
+assign m_fft_axis_tdata = {2{s_fft_axis_tdata[63:0]}};
+
+//fft_dsp #(
+//  .FFT_LEN(8192),
+//  .FFT_CHANNELS(2),
+//  .FFT_AXI_DATA_WIDTH (64)
+//  )
+//  fft_dsp_inst(
+
+//  .aclk (clk_245),
+//  .aresetn (!clk_245_rst),
+
+// .s_axis_tdata({32'b0,s_fft_axis_tdata[63:32],32'b0,s_fft_axis_tdata[31:0]}),
+// .s_axis_tvalid (s_fft_axis_tvalid),
+// .s_axis_tlast(s_fft_axis_tlast),
+// .s_axis_tready(s_fft_axis_tready),
+
+//.m_axis_tdata(m_fft_axis_tdata),
+//.m_axis_tvalid(m_fft_axis_tvalid),
+//.m_axis_tlast(m_fft_axis_tlast),
+//.m_axis_tready(m_fft_axis_tready),
+
+//   .chirp_ready                         (chirp_ready),
+//   .chirp_done                          (chirp_done),
+//   .chirp_active                        (chirp_active),
+//   .chirp_init                          (chirp_init),
+//   .chirp_enable                        (chirp_enable),
+//   .adc_enable                          (adc_enable)
+
+//);
 
 //assign chirp_ready_sig = chirp_ready;
 //assign chirp_done_sig = chirp_done;
