@@ -407,22 +407,19 @@ assign rd_fifo_clk = aclk;
 
 
 assign s_fft_axis_tdata = {dac_data_q,dac_data_i};
-assign s_fft_axis_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_en);
+assign s_fft_axis_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_first);
 assign s_fft_axis_tlast = adc_fifo_wr_tlast;
 
 assign m_fft_axis_tready = 1'b1;
 
 fft_dsp #(
+ // .FFT_LEN(8192),
   .FFT_AXI_DATA_WIDTH (32)
-  )fft_dsp_inst(
+  )
+  fft_dsp_inst(
 
-  .clk_245 (clk_245),
-  .clk_245_rst (clk_245_rst),
-
-  .aclk (aclk),
-  .aresetn (aresetn),
-
-  .cpu_reset(cpu_reset),
+  .aclk (clk_245),
+  .aresetn (!clk_245_rst),
 
  .s_axis_tdata(s_fft_axis_tdata),
  .s_axis_tvalid (s_fft_axis_tvalid),
@@ -432,9 +429,23 @@ fft_dsp #(
 .m_axis_tdata(m_fft_axis_tdata),
 .m_axis_tvalid(m_fft_axis_tvalid),
 .m_axis_tlast(m_fft_axis_tlast),
-.m_axis_tready(m_fft_axis_tready)
+.m_axis_tready(m_fft_axis_tready),
+
+   .chirp_ready                         (chirp_ready),
+   .chirp_done                          (chirp_done),
+   .chirp_active                        (chirp_active),
+   .chirp_init                          (chirp_init),
+   .chirp_enable                        (chirp_enable),
+   .adc_enable                          (adc_enable)
 
 );
+
+//assign chirp_ready_sig = chirp_ready;
+//assign chirp_done_sig = chirp_done;
+//assign chirp_active_sig = chirp_active;
+//assign chirp_init_sig = chirp_init;
+//assign chirp_enable_sig = chirp_enable;
+//assign adc_enable_sig = adc_enable;
 
 
 
