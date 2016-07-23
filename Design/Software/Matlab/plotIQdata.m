@@ -104,8 +104,8 @@ glblctr(2:2:end) = glblctr2;
 adcctr
 glblctr
 
-figure; plot(adcctr); title('Decoded ADC Counter');
-figure; plot(glblctr); title('Decoded Global Counter');
+% figure; plot(adcctr); title('Decoded ADC Counter');
+% figure; plot(glblctr); title('Decoded Global Counter');
 
 % Add sub-packets to data -- currently unused. Due to current byte ordering
 % inclusion of sub-packets causes jump discontinuities 
@@ -210,32 +210,32 @@ if (has_counter)
     plot(Q); title('Decoded Q');
     scatter(counter_jumps,Q(counter_jumps)); axis tight; hold off;
 else    
-    figure; 
-    % Plot decoded data
-    subplot (4,1,1); plot(I(chirpmin:chirpmax)); 
-    axis tight; title('Decoded I'); 
-    subplot(4,1,2); plot(I2(chirpmin:chirpmax)); 
-    axis tight; title('Decoded I2');    
-    subplot (4,1,3); plot(Q(chirpmin:chirpmax)); 
-    axis tight; title('Decoded Q'); 
-    subplot(4,1,4); plot(Q2(chirpmin:chirpmax)); 
-    axis tight; title('Decoded Q2');
-
-    figure; 
-    subplot(2,1,1); hold on;
-    plot(I(chirpmin:chirpmax));plot(I2(chirpmin:chirpmax),'r');
-    title('I and I2 Channels');legend('I','I2');axis tight; hold off;
-    subplot(2,1,2); hold on;
-    plot(Q(chirpmin:chirpmax));plot(Q2(chirpmin:chirpmax),'r');
-    title('Q and Q2 Channels');legend('Q','Q2');axis tight; hold off;
-    
-    figure; 
-    subplot(2,1,1); hold on;
-    plot(I);plot(I2,'r');
-    title('I and I2 Channels');legend('I','I2');axis tight; hold off;
-    subplot(2,1,2); hold on;
-    plot(Q);plot(Q2,'r');
-    title('Q and Q2 Channels');legend('Q','Q2');axis tight; hold off;
+%     figure; 
+%     % Plot decoded data
+%     subplot (4,1,1); plot(I(chirpmin:chirpmax)); 
+%     axis tight; title('Decoded I'); 
+%     subplot(4,1,2); plot(I2(chirpmin:chirpmax)); 
+%     axis tight; title('Decoded I2');    
+%     subplot (4,1,3); plot(Q(chirpmin:chirpmax)); 
+%     axis tight; title('Decoded Q'); 
+%     subplot(4,1,4); plot(Q2(chirpmin:chirpmax)); 
+%     axis tight; title('Decoded Q2');
+% 
+%     figure; 
+%     subplot(2,1,1); hold on;
+%     plot(I(chirpmin:chirpmax));plot(I2(chirpmin:chirpmax),'r');
+%     title('I and I2 Channels');legend('I','I2');axis tight; hold off;
+%     subplot(2,1,2); hold on;
+%     plot(Q(chirpmin:chirpmax));plot(Q2(chirpmin:chirpmax),'r');
+%     title('Q and Q2 Channels');legend('Q','Q2');axis tight; hold off;
+%     
+%     figure; 
+%     subplot(2,1,1); hold on;
+%     plot(I);plot(I2,'r');
+%     title('I and I2 Channels');legend('I','I2');axis tight; hold off;
+%     subplot(2,1,2); hold on;
+%     plot(Q);plot(Q2,'r');
+%     title('Q and Q2 Channels');legend('Q','Q2');axis tight; hold off;
     
     % Plot a PSD with 90% Occupied BW of IQ data
     x2 = I2(chirpmin:chirpmax)+1i*Q2(chirpmin:chirpmax);
@@ -260,12 +260,12 @@ else
     fprintf('I ch. sample delay: %f (%i samples)\n',Isdelay,round(Isdelay));
     fprintf('Q ch. sample delay: %f (%i samples)\n',Qsdelay,round(Qsdelay));
     
-    snum_i = 10;
-    snum_q = 0;
-    I2Shift = [zeros(snum_i,1);I2(chirpmin:chirpmax-snum_i)];
-    Q2Shift = [zeros(snum_q,1);Q2(chirpmin:chirpmax-snum_q)];
-    [If,Ifshift,Itshift] = getFreqShift(I(chirpmin:chirpmax),I2Shift,Fs,chirpBW,chirpT);
-    [Qf,Qfshift,Qtshift] = getFreqShift(Q(chirpmin:chirpmax),Q2Shift,Fs,chirpBW,chirpT);
+    snum_i = 1000;
+    snum_q = 1000;
+    IShift = [zeros(snum_i,1);I(chirpmin:chirpmax-snum_i)];
+    QShift = [zeros(snum_q,1);Q(chirpmin:chirpmax-snum_q)];
+    [If,Ifshift,Itshift] = getFreqShift(I2(chirpmin:chirpmax),IShift,Fs,chirpBW,chirpT);
+    [Qf,Qfshift,Qtshift] = getFreqShift(Q2(chirpmin:chirpmax),QShift,Fs,chirpBW,chirpT);
    
     Qsdelay = Fs*Itshift;
     Isdelay = Fs*Qtshift;
@@ -282,13 +282,14 @@ else
     znum = ceil(Fs*nsamples/chirpBW)-(chirpmax-chirpmin+1);
     Izp = [I(chirpmin:chirpmax);zeros(znum,1)];
     I2zp = [I2(chirpmin:chirpmax);zeros(znum,1)];
-    I2Shiftzp = [I2Shift;zeros(znum,1)];
+    IShiftzp = [IShift;zeros(znum,1)];
     Qzp = [Q(chirpmin:chirpmax);zeros(znum,1)];
     Q2zp = [Q2(chirpmin:chirpmax);zeros(znum,1)];
-    Q2Shiftzp = [Q2Shift;zeros(znum,1)];
+    QShiftzp = [QShift;zeros(znum,1)];
     
-    [If,Ifshift,Itshift] = getFreqShift(Izp,I2Shiftzp,Fs,chirpBW,chirpT);
-    [Qf,Qfshift,Qtshift] = getFreqShift(Qzp,Q2Shiftzp,Fs,chirpBW,chirpT);
+    [If,Ifshift,Itshift] = getFreqShift(I2zp+1i*Q2zp,IShiftzp+1i*QShiftzp,Fs,chirpBW,chirpT);
+    [If,Ifshift,Itshift] = getFreqShift(I2zp,IShiftzp,Fs,chirpBW,chirpT);
+    [Qf,Qfshift,Qtshift] = getFreqShift(Q2zp,QShiftzp,Fs,chirpBW,chirpT);
    
     Qsdelay = Fs*Itshift;
     Isdelay = Fs*Qtshift;
@@ -310,27 +311,30 @@ else
 
     figure; 
     subplot(2,1,1); hold on;
-    plot(I(chirpmin:chirpmax-iSampledelay));
-    plot(I2Shift(1+iSampledelay:end),'r');
-    title('Delay Shifted I and I2 Channels');legend('I','I2');axis tight; hold off;
+    plot(I2(chirpmin:chirpmax-iSampledelay));
+    plot(IShift(1+iSampledelay:end),'r');
+    title('Delay Shifted I and I2 Channels');legend('I2','I');axis tight; hold off;
     subplot(2,1,2); hold on;
-    plot(Q(chirpmin:chirpmax-qSampledelay)); 
-    plot(Q2Shift(1+qSampledelay:end),'r');
-    title('Delay Shifted Q and Q2 Channels');legend('Q','Q2');axis tight; hold off;
+    plot(Q2(chirpmin:chirpmax-qSampledelay)); 
+    plot(QShift(1+qSampledelay:end),'r');
+    title('Delay Shifted Q and Q2 Channels');legend('Q2','Q');axis tight; hold off;
     
 
 end
     
-fftlen = 256;
-xI = fft(I2(chirpmin:chirpmax),fftlen);
-figure; subplot(2,1,1); plot(real(xI)); subplot(2,1,2); plot(imag(xI));
-xQ = fft(Q2(chirpmin:chirpmax),fftlen);
-figure; subplot(2,1,1); plot(real(xQ)); subplot(2,1,2); plot(imag(xQ));
-xIQ = fft(I2(chirpmin:chirpmax)+1i*Q2(chirpmin:chirpmax),fftlen);
-figure; subplot(2,1,1); plot(real(xIQ)); subplot(2,1,2); plot(imag(xIQ));
-
-figure; subplot(3,1,1);plot(abs(xI));subplot(3,1,2);plot(abs(xQ));subplot(3,1,3);plot(abs(xIQ));
+fftlen = 8192; alpha = 1; beta = 1;
+xI = fft(Izp.*I2zp,fftlen);
+figure; subplot(4,1,1); plot(real(xI)); subplot(4,1,2); plot(imag(xI));
+subplot(4,1,3); plot(abs(xI)); subplot(4,1,4); plot(magest(xI,alpha,beta));
+xQ = fft(Qzp.*Q2zp,fftlen);
+figure; subplot(4,1,1); plot(real(xQ)); subplot(4,1,2); plot(imag(xQ));
+subplot(4,1,3); plot(abs(xQ)); subplot(4,1,4); plot(magest(xQ,alpha,beta));
+xIQ = fft((Izp+1i*Qzp).*(I2zp+1i*Q2zp),fftlen);
+figure; subplot(4,1,1); plot(real(xIQ)); subplot(4,1,2); plot(imag(xIQ)); 
+subplot(4,1,3); plot(abs(xIQ));subplot(4,1,4); plot(magest(xIQ,alpha,beta));
     
+xIa = abs(xI);
+gradient(xIa);
 %     figure; hold on;
 %     plot(I);plot(Q,'r');
 %     title('I and Q Channels');legend('I','Q');axis tight; hold off;
