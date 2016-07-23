@@ -7,7 +7,7 @@ byteoffset = 0;
 packetsize = 528;
 headersize = 16;
 
-has_counter = 1;
+has_counter = 0;
 if (strcmp(bitformat,'uint8')||strcmp(bitformat,'int8'))
     bytesperword = 1;
 elseif (strcmp(bitformat,'uint16')||strcmp(bitformat,'int16'))
@@ -104,8 +104,8 @@ glblctr(2:2:end) = glblctr2;
 adcctr
 glblctr
 
-figure; plot(adcctr);
-figure; plot(glblctr);
+figure; plot(adcctr); title('Decoded ADC Counter');
+figure; plot(glblctr); title('Decoded Global Counter');
 
 % Add sub-packets to data -- currently unused. Due to current byte ordering
 % inclusion of sub-packets causes jump discontinuities 
@@ -214,13 +214,10 @@ else
     % Plot decoded data
     subplot (4,1,1); plot(I(chirpmin:chirpmax)); 
     axis tight; title('Decoded I'); 
-
     subplot(4,1,2); plot(I2(chirpmin:chirpmax)); 
-    axis tight; title('Decoded I2');
-    
+    axis tight; title('Decoded I2');    
     subplot (4,1,3); plot(Q(chirpmin:chirpmax)); 
     axis tight; title('Decoded Q'); 
-
     subplot(4,1,4); plot(Q2(chirpmin:chirpmax)); 
     axis tight; title('Decoded Q2');
 
@@ -320,8 +317,19 @@ else
     plot(Q(chirpmin:chirpmax-qSampledelay)); 
     plot(Q2Shift(1+qSampledelay:end),'r');
     title('Delay Shifted Q and Q2 Channels');legend('Q','Q2');axis tight; hold off;
+    
 
 end
+    
+fftlen = 256;
+xI = fft(I2(chirpmin:chirpmax),fftlen);
+figure; subplot(2,1,1); plot(real(xI)); subplot(2,1,2); plot(imag(xI));
+xQ = fft(Q2(chirpmin:chirpmax),fftlen);
+figure; subplot(2,1,1); plot(real(xQ)); subplot(2,1,2); plot(imag(xQ));
+xIQ = fft(I2(chirpmin:chirpmax)+1i*Q2(chirpmin:chirpmax),fftlen);
+figure; subplot(2,1,1); plot(real(xIQ)); subplot(2,1,2); plot(imag(xIQ));
+
+figure; subplot(3,1,1);plot(abs(xI));subplot(3,1,2);plot(abs(xQ));subplot(3,1,3);plot(abs(xIQ));
     
 %     figure; hold on;
 %     plot(I);plot(Q,'r');
