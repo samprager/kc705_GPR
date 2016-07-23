@@ -152,9 +152,8 @@ always @(posedge aclk) begin
  if (!aresetn)
     s_axis_fft_config_tdata_r <= 'b0;
 else if(gen_state == CONFIG & s_axis_fft_config_tready) begin
-    if (NEED_SCALING == 1) begin
-        s_axis_fft_config_tdata_r[8+SCH_SIZE-:SCH_SIZE] <= scale_sch;
-    end    
+    //s_axis_fft_config_tdata_r[8+SCH_SIZE-:SCH_SIZE] <= scale_sch;
+    s_axis_fft_config_tdata_r[9:9] <= fwd_inv;
     s_axis_fft_config_tdata_r[8:8] <= fwd_inv;
     s_axis_fft_config_tdata_r[4:0] <= nfft;
     end
