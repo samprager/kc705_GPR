@@ -140,6 +140,17 @@ module chirp_dds_top #
      wire m_fft_axis_tlast;
      wire m_fft_axis_tready;
 
+     wire [31:0] mixer_out_i;
+     wire [31:0] mixer_out_q;
+
+     wire [31:0] mag_i_axis_tdata;
+     wire [31:0] mag_q_axis_tdata;
+
+     wire [63:0] sq_mag_i_axis_tdata;
+     wire [63:0] sq_mag_q_axis_tdata;
+     wire       sq_mag_i_axis_tdata_overflow;
+     wire       sq_mag_q_axis_tdata_overflow;
+
 
      assign clk_245_76MHz = clk_245;
      // simulate adc outputs from fmc150 module with dds loopback
@@ -406,24 +417,79 @@ assign rd_fifo_clk = aclk;
 
 
 //assign s_fft_axis_tdata = {dac_data_q,dac_data_i,adc_data_q,adc_data_i};
+assign s_fft_axis_tdata = {mixer_out_q,mixer_out_i};
 assign s_fft_axis_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_first);
 assign s_fft_axis_tlast = adc_fifo_wr_tlast;
 
 assign m_fft_axis_tready = 1'b1;
 
 mixer_mult_gen mixer_i (
-  .CLK(clk_245),  // input wire CLK
-  .A(dac_data_i),      // input wire [15 : 0] A
-  .B(adc_data_i),      // input wire [15 : 0] B
-  .P(s_fft_axis_tdata[31:0])      // output wire [31 : 0] P
+ .CLK(clk_245),  // input wire CLK
+ .A(dac_data_i),      // input wire [15 : 0] A
+ .B(adc_data_i),      // input wire [15 : 0] B
+ //.P(s_fft_axis_tdata[31:0])      // output wire [31 : 0] P
+  .P(mixer_out_i)       // output wire [31 : 0] P
 );
 mixer_mult_gen mixer_q (
-  .CLK(clk_245),  // input wire CLK
-  .A(dac_data_q),      // input wire [15 : 0] A
-  .B(adc_data_q),      // input wire [15 : 0] B
-  .P(s_fft_axis_tdata[63:32])      // output wire [31 : 0] P
+ .CLK(clk_245),  // input wire CLK
+ .A(dac_data_q),      // input wire [15 : 0] A
+ .B(adc_data_q),      // input wire [15 : 0] B
+ //.P(s_fft_axis_tdata[63:32])      // output wire [31 : 0] P
+ .P(mixer_out_q)    // output wire [31 : 0] P
 );
 
+sq_mag_estimate#(
+    .DATA_LEN(32),
+    .DIV_OR_OVERFLOW(0),  // (1): Divide output by 2, (0): use overflow bit
+    .REGISTER_OUTPUT(1)
+)
+ sq_mag_i (
+    .clk(clk_245),
+    .dataI(m_fft_axis_tdata[31:0]),
+    .dataQ(m_fft_axis_tdata[63:32]),
+    .dataMagSq(sq_mag_i_axis_tdata),
+    .overflow(sq_mag_i_axis_tdata_overflow)
+);
+
+sq_mag_estimate#(
+    .DATA_LEN(32),
+    .DIV_OR_OVERFLOW(0),     // (1): Divide output by 2, (0): use overflow bit
+    .REGISTER_OUTPUT(1)
+)
+ sq_mag_q (
+   .clk(clk_245),
+   .dataI(m_fft_axis_tdata[95:64]),
+   .dataQ(m_fft_axis_tdata[127:96]),
+   .dataMagSq(sq_mag_q_axis_tdata),
+   .overflow(sq_mag_q_axis_tdata_overflow)
+);
+
+
+//c_mag_estimate#(
+//    .DATA_LEN(32),
+//    .ALPHA(0.9),
+//    .BETA(0.4)
+//)
+// abs_i (
+//    .clk(clk_245),
+//    .dataI(m_fft_axis_tdata[31:0]),
+//    .dataQ(m_fft_axis_tdata[63:32]),
+//    .dataMag(mag_i_axis_tdata)
+//);
+
+//c_mag_estimate#(
+//    .DATA_LEN(32),
+//    .ALPHA(0.9),
+//    .BETA(0.4)
+//)
+// abs_q (
+//    .clk(clk_245),
+//    .dataI(m_fft_axis_tdata[95:64]),
+//    .dataQ(m_fft_axis_tdata[127:96]),
+//    .dataMag(mag_q_axis_tdata)
+//);
+
+//assign m_fft_axis_tdata = {32'h80000000,32'h80000000,32'hefffffff,32'hefffffff};
 
 fft_dsp #(
   .FFT_LEN(8192),
