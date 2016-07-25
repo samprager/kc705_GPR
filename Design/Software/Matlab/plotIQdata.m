@@ -101,9 +101,6 @@ glblctr = zeros(numel(glblctr1)+numel(glblctr2),1);
 glblctr(1:2:end) = glblctr1;
 glblctr(2:2:end) = glblctr2;
 
-adcctr
-glblctr
-
 % figure; plot(adcctr); title('Decoded ADC Counter');
 % figure; plot(glblctr); title('Decoded Global Counter');
 
@@ -260,12 +257,14 @@ else
     fprintf('I ch. sample delay: %f (%i samples)\n',Isdelay,round(Isdelay));
     fprintf('Q ch. sample delay: %f (%i samples)\n',Qsdelay,round(Qsdelay));
     
+    
     snum_i = 25;
     snum_q = 25;
+    fftlen = ceil(Fs*nsamples/chirpBW);
     IShift = [zeros(snum_i,1);I(chirpmin:chirpmax-snum_i)];
     QShift = [zeros(snum_q,1);Q(chirpmin:chirpmax-snum_q)];
-    [If,Ifshift,Itshift] = getFreqShift(I2(chirpmin:chirpmax),IShift,Fs,chirpBW,chirpT);
-    [Qf,Qfshift,Qtshift] = getFreqShift(Q2(chirpmin:chirpmax),QShift,Fs,chirpBW,chirpT);
+    [If,Ifshift,Itshift] = getFreqShift(I2(chirpmin:chirpmax),IShift,Fs,chirpBW,chirpT,fftlen);
+    [Qf,Qfshift,Qtshift] = getFreqShift(Q2(chirpmin:chirpmax),QShift,Fs,chirpBW,chirpT,fftlen);
    
     Isdelay = Fs*Itshift;
     Qsdelay = Fs*Qtshift;
@@ -277,38 +276,13 @@ else
     fprintf('I Shift ch. sample delay: %f (%i samples)\n',Isdelay,round(Isdelay));
     fprintf('Q Shift ch. sample delay: %f (%i samples)\n',Qsdelay,round(Qsdelay));
     
-    
-    %znum = 64000;
-    znum = ceil(Fs*nsamples/chirpBW)-(chirpmax-chirpmin+1);
-    Izp = [I(chirpmin:chirpmax);zeros(znum,1)];
-    I2zp = [I2(chirpmin:chirpmax);zeros(znum,1)];
-    IShiftzp = [IShift;zeros(znum,1)];
-    Qzp = [Q(chirpmin:chirpmax);zeros(znum,1)];
-    Q2zp = [Q2(chirpmin:chirpmax);zeros(znum,1)];
-    QShiftzp = [QShift;zeros(znum,1)];
-    
-    [If,Ifshift,Itshift] = getFreqShift(I2zp+1i*Q2zp,IShiftzp+1i*QShiftzp,Fs,chirpBW,chirpT);
-    [If,Ifshift,Itshift] = getFreqShift(I2zp,IShiftzp,Fs,chirpBW,chirpT);
-    [Qf,Qfshift,Qtshift] = getFreqShift(Q2zp,QShiftzp,Fs,chirpBW,chirpT);
    
-    Isdelay = Fs*Itshift;
-    Qsdelay = Fs*Qtshift;
-        
-    fprintf('I zpad ch. Freq Shift: %f Mhz\n',Ifshift/1e6);
-    fprintf('Q zpad ch. Freq Shift: %f Mhz\n',Qfshift/1e6);
-    fprintf('I zpad ch. time Shift: %f usec\n',Itshift*1e6);
-    fprintf('Q zpad ch. time Shift: %f usec\n',Qtshift*1e6);
-    fprintf('I zpad ch. sample delay: %f (%i samples)\n',Isdelay,round(Isdelay));
-    fprintf('Q zpad ch. sample delay: %f (%i samples)\n',Qsdelay,round(Qsdelay));
+    
     
     iSampledelay = round(Fs*Itshift)-1;
     qSampledelay = round(Fs*Qtshift)-1;
      
     fvec = linspace(0,Fs/2e6,numel(If));
-%     figure;
-%     subplot(2,1,1); plot(fvec,abs(If)); title('I channel freq. shift');
-%     subplot(2,1,2); plot(fvec,abs(Qf)); title('Q channel freq. shift');
-
     figure; 
     subplot(2,1,1); hold on;
     plot(I2(chirpmin:chirpmax-iSampledelay));
@@ -325,10 +299,10 @@ end
 fftlen = 4096;
 %fftlen = 2*floor(((Fs/chirpBW)*nsamples)/2); % 8192; 
 alpha = 1; beta = 1;
-xI = fft((Izp+IShiftzp).*I2zp,fftlen);
+xI = fft((I(chirpmin:chirpmax)+IShift).*I2(chirpmin:chirpmax),fftlen);
 figure; subplot(4,1,1); plot(real(xI)); subplot(4,1,2); plot(imag(xI));
 subplot(4,1,3); plot(abs(xI)); subplot(4,1,4); plot(magest(xI,alpha,beta));
-xQ = fft((Qzp+QShiftzp).*Q2zp,fftlen);
+xQ = fft((Q(chirpmin:chirpmax)+QShift).*Q2(chirpmin:chirpmax),fftlen);
 figure; subplot(4,1,1); plot(real(xQ)); subplot(4,1,2); plot(imag(xQ));
 subplot(4,1,3); plot(abs(xQ)); subplot(4,1,4); plot(magest(xQ,alpha,beta));
     
