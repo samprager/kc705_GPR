@@ -173,7 +173,7 @@ wire                                rx_axis_tuser;
       use_wr_packet = 1'b1;
       repeat(2048) @(posedge gtx_tclk_i);
       use_wr_packet = 1'b0;
-      repeat(16000) @(posedge gtx_tclk_i);
+      repeat(32000) @(posedge gtx_tclk_i);
       // tx_axis_tready_reg = 1'b0;
       // repeat(32) @(posedge gtx_tclk_i);
       // tx_axis_tready_reg = 1'b0;
