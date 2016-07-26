@@ -130,16 +130,26 @@ module chirp_dds_top #
      reg                      adc_enable_r;
      reg                      adc_enable_rr;
 
-     wire [63:0] s_fft_axis_tdata;
-     wire s_fft_axis_tvalid;
-     wire s_fft_axis_tlast;
-     wire s_fft_axis_tready;
+     wire [63:0] s_fft_i_axis_tdata;
+     wire s_fft_i_axis_tvalid;
+     wire s_fft_i_axis_tlast;
+     wire s_fft_i_axis_tready;
+     
+     wire [63:0] s_fft_q_axis_tdata;
+     wire s_fft_q_axis_tvalid;
+     wire s_fft_q_axis_tlast;
+     wire s_fft_q_axis_tready;
 
-     wire [127:0] m_fft_axis_tdata;
-     wire m_fft_axis_tvalid;
-     wire m_fft_axis_tlast;
-     wire m_fft_axis_tready;
+     wire [63:0] m_fft_i_axis_tdata;
+     wire m_fft_i_axis_tvalid;
+     wire m_fft_i_axis_tlast;
+     wire m_fft_i_axis_tready;
 
+     wire [63:0] m_fft_q_axis_tdata;
+     wire m_fft_q_axis_tvalid;
+     wire m_fft_q_axis_tlast;
+     wire m_fft_q_axis_tready;
+     
      wire [31:0] mixer_out_i;
      wire [31:0] mixer_out_q;
 
@@ -417,11 +427,16 @@ assign rd_fifo_clk = aclk;
 
 
 //assign s_fft_axis_tdata = {dac_data_q,dac_data_i,adc_data_q,adc_data_i};
-assign s_fft_axis_tdata = {mixer_out_q,mixer_out_i};
-assign s_fft_axis_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_first);
-assign s_fft_axis_tlast = adc_fifo_wr_tlast;
+assign s_fft_i_axis_tdata = {32'b0,mixer_out_i};
+assign s_fft_i_axis_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_first);
+assign s_fft_i_axis_tlast = adc_fifo_wr_tlast;
 
-assign m_fft_axis_tready = 1'b1;
+assign s_fft_q_axis_tdata = {32'b0,mixer_out_q};
+assign s_fft_q_axis_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_first);
+assign s_fft_q_axis_tlast = adc_fifo_wr_tlast;
+
+assign m_fft_i_axis_tready = 1'b1;
+assign m_fft_q_axis_tready = 1'b1;
 
 mixer_mult_gen mixer_i (
  .CLK(clk_245),  // input wire CLK
@@ -445,8 +460,8 @@ sq_mag_estimate#(
 )
  sq_mag_i (
     .clk(clk_245),
-    .dataI(m_fft_axis_tdata[31:0]),
-    .dataQ(m_fft_axis_tdata[63:32]),
+    .dataI(m_fft_i_axis_tdata[31:0]),
+    .dataQ(m_fft_i_axis_tdata[63:32]),
     .dataMagSq(sq_mag_i_axis_tdata),
     .overflow(sq_mag_i_axis_tdata_overflow)
 );
@@ -458,8 +473,8 @@ sq_mag_estimate#(
 )
  sq_mag_q (
    .clk(clk_245),
-   .dataI(m_fft_axis_tdata[95:64]),
-   .dataQ(m_fft_axis_tdata[127:96]),
+   .dataI(m_fft_q_axis_tdata[31:0]),
+   .dataQ(m_fft_q_axis_tdata[63:32]),
    .dataMagSq(sq_mag_q_axis_tdata),
    .overflow(sq_mag_q_axis_tdata_overflow)
 );
@@ -493,23 +508,52 @@ sq_mag_estimate#(
 
 fft_dsp #(
   .FFT_LEN(8192),
-  .FFT_CHANNELS(2),
+  .FFT_CHANNELS(1),
   .FFT_AXI_DATA_WIDTH (64)
   )
-  fft_dsp_inst(
+  fft_dsp_i(
 
   .aclk (clk_245),
   .aresetn (!clk_245_rst),
 
- .s_axis_tdata({32'b0,s_fft_axis_tdata[63:32],32'b0,s_fft_axis_tdata[31:0]}),
- .s_axis_tvalid (s_fft_axis_tvalid),
- .s_axis_tlast(s_fft_axis_tlast),
- .s_axis_tready(s_fft_axis_tready),
+ .s_axis_tdata(s_fft_i_axis_tdata),
+ .s_axis_tvalid (s_fft_i_axis_tvalid),
+ .s_axis_tlast(s_fft_i_axis_tlast),
+ .s_axis_tready(s_fft_i_axis_tready),
 
-.m_axis_tdata(m_fft_axis_tdata),
-.m_axis_tvalid(m_fft_axis_tvalid),
-.m_axis_tlast(m_fft_axis_tlast),
-.m_axis_tready(m_fft_axis_tready),
+.m_axis_tdata(m_fft_i_axis_tdata),
+.m_axis_tvalid(m_fft_i_axis_tvalid),
+.m_axis_tlast(m_fft_i_axis_tlast),
+.m_axis_tready(m_fft_i_axis_tready),
+
+   .chirp_ready                         (chirp_ready),
+   .chirp_done                          (chirp_done),
+   .chirp_active                        (chirp_active),
+   .chirp_init                          (chirp_init),
+   .chirp_enable                        (chirp_enable),
+   .adc_enable                          (adc_enable)
+
+);
+
+fft_dsp #(
+  .FFT_LEN(8192),
+  .FFT_CHANNELS(1),
+  .FFT_AXI_DATA_WIDTH (64)
+  )
+  fft_dsp_q(
+
+  .aclk (clk_245),
+  .aresetn (!clk_245_rst),
+
+ .s_axis_tdata(s_fft_q_axis_tdata),
+ .s_axis_tvalid (s_fft_q_axis_tvalid),
+ .s_axis_tlast(s_fft_q_axis_tlast),
+ .s_axis_tready(s_fft_q_axis_tready),
+
+.m_axis_tdata(m_fft_q_axis_tdata),
+.m_axis_tvalid(m_fft_q_axis_tvalid),
+.m_axis_tlast(m_fft_q_axis_tlast),
+.m_axis_tready(m_fft_q_axis_tready),
 
    .chirp_ready                         (chirp_ready),
    .chirp_done                          (chirp_done),
