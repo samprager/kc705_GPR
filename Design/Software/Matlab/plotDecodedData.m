@@ -2,12 +2,12 @@
 %filenameIQ = '../outputs/single_chirpIQ.bin';
 %filenameC = '../outputs/adc_chirpC.bin';
 %filenameIQ = '../outputs/adc_chirpIQ.bin';
-filenameC = '/Users/sam/outputs/en4_dataoutC.bin';
-filenameIQ = '/Users/sam/outputs/en4_dataoutIQ.bin';
+filenameC = '/Users/sam/outputs/en4_dataout_61C.bin';
+filenameIQ = '/Users/sam/outputs/en4_dataout_61IQ.bin';
 
 has_counter = 0;
 Fs = 245.76e6;
-chirpBW = 15.360000e6;
+chirpBW = 4*15.360000e6;
 chirpT = 16.667e-6;
 nsamples = Fs*chirpT;
 
@@ -101,30 +101,42 @@ if (has_counter == 1)
     title('I and Q Channels');legend('I','Q');axis tight; hold off;
 
 else
-    chirpmin = 3; chirpmax = 4351;
-    shift_i = 20; shift_q =20;
+    
+    shift_i = 0; shift_q =0;
     scale_i = 1; scale_q = 1;
-    add_waves = 1;
+    add_waves = 0;
     shift_i2 = 0; shift_q2 = 0;
     data_iq2 = dec2hex(counter);
     I2 = double(typecast(uint16(hex2dec(data_iq2(:,1:4))),'int16')); 
     Q2 = double(typecast(uint16(hex2dec(data_iq2(:,5:end))),'int16'));
-    
-    adcctr1 = data(1:4352:end);
-    adcctr2 = data(4352:4352:end);
+   
+    partial_offset = 1;
+    for i=2:numel(I)
+        if ((data(i)==data(i-1)+1)&& (counter(i)~=counter(i-1)+1))
+            partial_offset = i+1;
+            break;
+        elseif((counter(i)==counter(i-1)+1)&& (data(i)~=data(i-1)+1))   
+            partial_offset = i+1;
+            break;
+        end
+    end
+    adcctr1 = data(partial_offset:4352:end);
+    adcctr2 = data(partial_offset+4351:4352:end);
     adcctr = zeros(numel(adcctr1)+numel(adcctr2),1);
     adcctr(1:2:end) = adcctr1;
     adcctr(2:2:end) = adcctr2;
 
-    glblctr1 = counter(1:4352:end);
-    glblctr2 = counter(4352:4352:end);
+    glblctr1 = counter(partial_offset:4352:end);
+    glblctr2 = counter(partial_offset+4351:4352:end);
     glblctr = zeros(numel(glblctr1)+numel(glblctr2),1);
     glblctr(1:2:end) = glblctr1;
     glblctr(2:2:end) = glblctr2;
     
     win = getBlackmanHarris(chirpmax-chirpmin+1);
     %win = getHamming(chirpmax-chirpmin+1);
-    win = 1;
+    %win = 1;
+    
+    chirpmin = partial_offset+1; chirpmax = partial_offset+4350;
     
     Ishift = add_waves*I(chirpmin:chirpmax)+scale_i*[zeros(shift_i,1);I(chirpmin:chirpmax-shift_i)];
     Qshift = add_waves*Q(chirpmin:chirpmax)+scale_q*[zeros(shift_q,1);Q(chirpmin:chirpmax-shift_q)];
@@ -180,8 +192,8 @@ else
 
 %figure; obw(x,Fs); title(['x = I+jQ: ',get(get(gca,'title'),'string')]);
 %figure; plot(20*log10(abs(fftshift(fft(x))))); title('fft of I+i*Q');
-    fftlen = 8192*4;    
-    thresholdDB = 80;%50;
+    fftlen = 8192*2;    
+    thresholdDB = 30;
 %     [I_mixfft,Ifshift,Itshift] = getFreqShift(I2shift,Ishift,Fs,chirpBW,chirpT,fftlen);
 %     [Q_mixfft,Qfshift,Qtshift] = getFreqShift(Q2shift,Qshift,Fs,chirpBW,chirpT,fftlen);
     [I_mixfft,Ifshift,Itshift,ind] = getFreqShiftPeaks(I2shift,Ishift,Fs,chirpBW,chirpT,fftlen,thresholdDB);
