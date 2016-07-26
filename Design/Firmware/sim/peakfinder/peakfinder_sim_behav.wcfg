@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="peakfinder_sim_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="peakfinder_sim" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="43" />
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/axi_tresetn_i">
+      <obj_property name="ElementShortName">axi_tresetn_i</obj_property>
+      <obj_property name="ObjectShortName">axi_tresetn_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/axi_tclk_i">
+      <obj_property name="ElementShortName">axi_tclk_i</obj_property>
+      <obj_property name="ObjectShortName">axi_tclk_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/gtx_tresetn_i">
+      <obj_property name="ElementShortName">gtx_tresetn_i</obj_property>
+      <obj_property name="ObjectShortName">gtx_tresetn_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/gtx_tclk_i">
+      <obj_property name="ElementShortName">gtx_tclk_i</obj_property>
+      <obj_property name="ObjectShortName">gtx_tclk_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/fmc_tresetn_i">
+      <obj_property name="ElementShortName">fmc_tresetn_i</obj_property>
+      <obj_property name="ObjectShortName">fmc_tresetn_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/fmc_tclk_i">
+      <obj_property name="ElementShortName">fmc_tclk_i</obj_property>
+      <obj_property name="ObjectShortName">fmc_tclk_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/counter">
+      <obj_property name="ElementShortName">counter[7:0]</obj_property>
+      <obj_property name="ObjectShortName">counter[7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/axi_tclk">
+      <obj_property name="ElementShortName">axi_tclk</obj_property>
+      <obj_property name="ObjectShortName">axi_tclk</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/axi_tresetn">
+      <obj_property name="ElementShortName">axi_tresetn</obj_property>
+      <obj_property name="ObjectShortName">axi_tresetn</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/gtx_tclk">
+      <obj_property name="ElementShortName">gtx_tclk</obj_property>
+      <obj_property name="ObjectShortName">gtx_tclk</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/gtx_tresetn">
+      <obj_property name="ElementShortName">gtx_tresetn</obj_property>
+      <obj_property name="ObjectShortName">gtx_tresetn</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/fmc_tclk">
+      <obj_property name="ElementShortName">fmc_tclk</obj_property>
+      <obj_property name="ObjectShortName">fmc_tclk</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/fmc_tresetn">
+      <obj_property name="ElementShortName">fmc_tresetn</obj_property>
+      <obj_property name="ObjectShortName">fmc_tresetn</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/m_fft_i_axis_tdata">
+      <obj_property name="ElementShortName">m_fft_i_axis_tdata[63:0]</obj_property>
+      <obj_property name="ObjectShortName">m_fft_i_axis_tdata[63:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/m_fft_i_axis_tvalid">
+      <obj_property name="ElementShortName">m_fft_i_axis_tvalid</obj_property>
+      <obj_property name="ObjectShortName">m_fft_i_axis_tvalid</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/m_fft_i_axis_tlast">
+      <obj_property name="ElementShortName">m_fft_i_axis_tlast</obj_property>
+      <obj_property name="ObjectShortName">m_fft_i_axis_tlast</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/m_fft_i_axis_tready">
+      <obj_property name="ElementShortName">m_fft_i_axis_tready</obj_property>
+      <obj_property name="ObjectShortName">m_fft_i_axis_tready</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/m_fft_i_axis_tvalid_r">
+      <obj_property name="ElementShortName">m_fft_i_axis_tvalid_r</obj_property>
+      <obj_property name="ObjectShortName">m_fft_i_axis_tvalid_r</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/m_fft_i_axis_tlast_r">
+      <obj_property name="ElementShortName">m_fft_i_axis_tlast_r</obj_property>
+      <obj_property name="ObjectShortName">m_fft_i_axis_tlast_r</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/m_fft_q_axis_tdata">
+      <obj_property name="ElementShortName">m_fft_q_axis_tdata[63:0]</obj_property>
+      <obj_property name="ObjectShortName">m_fft_q_axis_tdata[63:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/m_fft_q_axis_tvalid">
+      <obj_property name="ElementShortName">m_fft_q_axis_tvalid</obj_property>
+      <obj_property name="ObjectShortName">m_fft_q_axis_tvalid</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/m_fft_q_axis_tlast">
+      <obj_property name="ElementShortName">m_fft_q_axis_tlast</obj_property>
+      <obj_property name="ObjectShortName">m_fft_q_axis_tlast</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/m_fft_q_axis_tready">
+      <obj_property name="ElementShortName">m_fft_q_axis_tready</obj_property>
+      <obj_property name="ObjectShortName">m_fft_q_axis_tready</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/m_fft_q_axis_tvalid_r">
+      <obj_property name="ElementShortName">m_fft_q_axis_tvalid_r</obj_property>
+      <obj_property name="ObjectShortName">m_fft_q_axis_tvalid_r</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/m_fft_q_axis_tlast_r">
+      <obj_property name="ElementShortName">m_fft_q_axis_tlast_r</obj_property>
+      <obj_property name="ObjectShortName">m_fft_q_axis_tlast_r</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/sq_mag_i_axis_tdata">
+      <obj_property name="ElementShortName">sq_mag_i_axis_tdata[63:0]</obj_property>
+      <obj_property name="ObjectShortName">sq_mag_i_axis_tdata[63:0]</obj_property>
+      <obj_property name="WaveformStyle">STYLE_ANALOG</obj_property>
+      <obj_property name="CellHeight">100</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/sq_mag_i_axis_tvalid">
+      <obj_property name="ElementShortName">sq_mag_i_axis_tvalid</obj_property>
+      <obj_property name="ObjectShortName">sq_mag_i_axis_tvalid</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/sq_mag_i_axis_tlast">
+      <obj_property name="ElementShortName">sq_mag_i_axis_tlast</obj_property>
+      <obj_property name="ObjectShortName">sq_mag_i_axis_tlast</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/sq_mag_q_axis_tdata">
+      <obj_property name="ElementShortName">sq_mag_q_axis_tdata[63:0]</obj_property>
+      <obj_property name="ObjectShortName">sq_mag_q_axis_tdata[63:0]</obj_property>
+      <obj_property name="WaveformStyle">STYLE_ANALOG</obj_property>
+      <obj_property name="CellHeight">100</obj_property>
+      <obj_property name="AnalogYRangeType">ANALOG_YRANGETYPE_FIXED</obj_property>
+      <obj_property name="AnalogYRangeMin">5894</obj_property>
+      <obj_property name="AnalogYRRangeMax">10543</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/sq_mag_q_axis_tvalid">
+      <obj_property name="ElementShortName">sq_mag_q_axis_tvalid</obj_property>
+      <obj_property name="ObjectShortName">sq_mag_q_axis_tvalid</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/sq_mag_q_axis_tlast">
+      <obj_property name="ElementShortName">sq_mag_q_axis_tlast</obj_property>
+      <obj_property name="ObjectShortName">sq_mag_q_axis_tlast</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/sq_mag_i_axis_tdata_overflow">
+      <obj_property name="ElementShortName">sq_mag_i_axis_tdata_overflow</obj_property>
+      <obj_property name="ObjectShortName">sq_mag_i_axis_tdata_overflow</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/sq_mag_q_axis_tdata_overflow">
+      <obj_property name="ElementShortName">sq_mag_q_axis_tdata_overflow</obj_property>
+      <obj_property name="ObjectShortName">sq_mag_q_axis_tdata_overflow</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/peak_index_i">
+      <obj_property name="ElementShortName">peak_index_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">peak_index_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/peak_tdata_i">
+      <obj_property name="ElementShortName">peak_tdata_i[63:0]</obj_property>
+      <obj_property name="ObjectShortName">peak_tdata_i[63:0]</obj_property>
+      <obj_property name="WaveformStyle">STYLE_ANALOG</obj_property>
+      <obj_property name="CellHeight">100</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/peak_tvalid_i">
+      <obj_property name="ElementShortName">peak_tvalid_i</obj_property>
+      <obj_property name="ObjectShortName">peak_tvalid_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/peak_index_q">
+      <obj_property name="ElementShortName">peak_index_q[31:0]</obj_property>
+      <obj_property name="ObjectShortName">peak_index_q[31:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/peak_tdata_q">
+      <obj_property name="ElementShortName">peak_tdata_q[63:0]</obj_property>
+      <obj_property name="ObjectShortName">peak_tdata_q[63:0]</obj_property>
+      <obj_property name="WaveformStyle">STYLE_ANALOG</obj_property>
+      <obj_property name="CellHeight">100</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/peak_tvalid_q">
+      <obj_property name="ElementShortName">peak_tvalid_q</obj_property>
+      <obj_property name="ObjectShortName">peak_tvalid_q</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/AXI_TCLK_PERIOD">
+      <obj_property name="ElementShortName">AXI_TCLK_PERIOD[31:0]</obj_property>
+      <obj_property name="ObjectShortName">AXI_TCLK_PERIOD[31:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/GTX_TCLK_PERIOD">
+      <obj_property name="ElementShortName">GTX_TCLK_PERIOD[31:0]</obj_property>
+      <obj_property name="ObjectShortName">GTX_TCLK_PERIOD[31:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/FMC_TCLK_PERIOD">
+      <obj_property name="ElementShortName">FMC_TCLK_PERIOD[31:0]</obj_property>
+      <obj_property name="ObjectShortName">FMC_TCLK_PERIOD[31:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/RESET_PERIOD">
+      <obj_property name="ElementShortName">RESET_PERIOD[31:0]</obj_property>
+      <obj_property name="ObjectShortName">RESET_PERIOD[31:0]</obj_property>
+   </wvobject>
+</wave_config>

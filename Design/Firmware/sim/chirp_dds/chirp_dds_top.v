@@ -134,7 +134,7 @@ module chirp_dds_top #
      wire s_fft_i_axis_tvalid;
      wire s_fft_i_axis_tlast;
      wire s_fft_i_axis_tready;
-     
+
      wire [63:0] s_fft_q_axis_tdata;
      wire s_fft_q_axis_tvalid;
      wire s_fft_q_axis_tlast;
@@ -149,7 +149,7 @@ module chirp_dds_top #
      wire m_fft_q_axis_tvalid;
      wire m_fft_q_axis_tlast;
      wire m_fft_q_axis_tready;
-     
+
      wire [31:0] mixer_out_i;
      wire [31:0] mixer_out_q;
 
@@ -157,7 +157,11 @@ module chirp_dds_top #
      wire [31:0] mag_q_axis_tdata;
 
      wire [63:0] sq_mag_i_axis_tdata;
+     wire        sq_mag_i_axis_tvalid;
+     wire        sq_mag_i_axis_tlast;
      wire [63:0] sq_mag_q_axis_tdata;
+     wire        sq_mag_q_axis_tvalid;
+     wire        sq_mag_q_axis_tlast;
      wire       sq_mag_i_axis_tdata_overflow;
      wire       sq_mag_q_axis_tdata_overflow;
 
@@ -461,8 +465,14 @@ sq_mag_estimate#(
  sq_mag_i (
     .clk(clk_245),
     .dataI(m_fft_i_axis_tdata[31:0]),
+    .dataI_tvalid(m_fft_i_axis_tvalid),
+    .dataI_tlast(m_fft_i_axis_tlast),
     .dataQ(m_fft_i_axis_tdata[63:32]),
+    .dataQ_tvalid(m_fft_i_axis_tvalid),
+    .dataQ_tlast(m_fft_i_axis_tlast),
     .dataMagSq(sq_mag_i_axis_tdata),
+    .dataMag_tvalid(sq_mag_i_axis_tvalid),
+    .dataMag_tlast(sq_mag_i_axis_tlast),
     .overflow(sq_mag_i_axis_tdata_overflow)
 );
 
@@ -474,8 +484,14 @@ sq_mag_estimate#(
  sq_mag_q (
    .clk(clk_245),
    .dataI(m_fft_q_axis_tdata[31:0]),
+   .dataI_tvalid(m_fft_q_axis_tvalid),
+   .dataI_tlast(m_fft_q_axis_tlast),
    .dataQ(m_fft_q_axis_tdata[63:32]),
+   .dataQ_tvalid(m_fft_q_axis_tvalid),
+   .dataQ_tlast(m_fft_q_axis_tlast),
    .dataMagSq(sq_mag_q_axis_tdata),
+   .dataMag_tvalid(sq_mag_q_axis_tvalid),
+   .dataMag_tlast(sq_mag_q_axis_tlast),
    .overflow(sq_mag_q_axis_tdata_overflow)
 );
 

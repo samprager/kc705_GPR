@@ -2,12 +2,12 @@
 %filenameIQ = '../outputs/single_chirpIQ.bin';
 %filenameC = '../outputs/adc_chirpC.bin';
 %filenameIQ = '../outputs/adc_chirpIQ.bin';
-filenameC = '/Users/sam/outputs/en4_dataout_61C.bin';
-filenameIQ = '/Users/sam/outputs/en4_dataout_61IQ.bin';
+filenameC = '/Users/sam/outputs/en4_dataout_45C.bin';
+filenameIQ = '/Users/sam/outputs/en4_dataout_45IQ.bin';
 
 has_counter = 0;
 Fs = 245.76e6;
-chirpBW = 4*15.360000e6;
+chirpBW = 3*15.360000e6;
 chirpT = 16.667e-6;
 nsamples = Fs*chirpT;
 
@@ -132,9 +132,9 @@ else
     glblctr(1:2:end) = glblctr1;
     glblctr(2:2:end) = glblctr2;
     
-    win = getBlackmanHarris(chirpmax-chirpmin+1);
+    %win = getBlackmanHarris(chirpmax-chirpmin+1);
     %win = getHamming(chirpmax-chirpmin+1);
-    %win = 1;
+    win = 1;
     
     chirpmin = partial_offset+1; chirpmax = partial_offset+4350;
     
@@ -192,7 +192,7 @@ else
 
 %figure; obw(x,Fs); title(['x = I+jQ: ',get(get(gca,'title'),'string')]);
 %figure; plot(20*log10(abs(fftshift(fft(x))))); title('fft of I+i*Q');
-    fftlen = 8192*2;    
+    fftlen = 8192*4;    
     thresholdDB = 30;
 %     [I_mixfft,Ifshift,Itshift] = getFreqShift(I2shift,Ishift,Fs,chirpBW,chirpT,fftlen);
 %     [Q_mixfft,Qfshift,Qtshift] = getFreqShift(Q2shift,Qshift,Fs,chirpBW,chirpT,fftlen);

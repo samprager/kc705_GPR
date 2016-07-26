@@ -5,7 +5,7 @@
 //
 // Create Date: 07/23/2016 03:43:49 AM
 // Design Name:
-// Module Name: c_mag_estimate
+// Module Name: sq_mag_estimate
 // Project Name:
 // Target Devices:
 // Tool Versions:
@@ -23,12 +23,22 @@
 module sq_mag_estimate #(
     parameter DATA_LEN = 32,
     parameter DIV_OR_OVERFLOW = 0,      // (1): Divide output by 2, (0): use overflow bit
-    parameter REGISTER_OUTPUT = 1
+    parameter REGISTER_OUTPUT = 1,
+    parameter MULT_LATENCY = 6,
+    parameter TUSER_LEN = 32
     )(
     input clk,
     input [DATA_LEN-1:0] dataI,
+    input dataI_tvalid,
+    input dataI_tlast,
     input [DATA_LEN-1:0] dataQ,
+    input dataQ_tvalid,
+    input dataQ_tlast,
+    input [TUSER_LEN-1:0] data_tuser,
     output[2*DATA_LEN-1:0] dataMagSq,
+    output dataMag_tvalid,
+    output dataMag_tlast,
+    output [TUSER_LEN-1:0] dataMag_tuser,
     output overflow
     );
 
@@ -36,6 +46,13 @@ module sq_mag_estimate #(
     wire [2*DATA_LEN:0] dataMagSq_ext;
     wire [2*DATA_LEN-1:0] dataI_sq;
     wire [2*DATA_LEN-1:0] dataQ_sq;
+    reg[MULT_LATENCY+REGISTER_OUTPUT-1:0] i_tvalid_shift;
+    reg [MULT_LATENCY+REGISTER_OUTPUT-1:0] i_tlast_shift;
+    reg[MULT_LATENCY+REGISTER_OUTPUT-1:0] q_tvalid_shift;
+    reg [MULT_LATENCY+REGISTER_OUTPUT-1:0] q_tlast_shift;
+    reg [TUSER_LEN-1:0] tuser_shift [MULT_LATENCY+REGISTER_OUTPUT-1:0];
+
+    integer i;
 
   mult_gen_32b sq_i (
     .CLK(clk),  // input wire CLK
@@ -49,6 +66,25 @@ module sq_mag_estimate #(
     .B(dataQ),      // input wire [31 : 0] B
     .P(dataQ_sq)      // output wire [63 : 0] P
   );
+
+  always @(posedge clk) begin
+    i_tvalid_shift[0] <= dataI_tvalid;
+    i_tlast_shift[0] <= dataI_tlast;
+    q_tvalid_shift[0] <= dataQ_tvalid;
+    q_tlast_shift[0] <= dataQ_tlast;
+    tuser_shift[0] <= data_tuser;
+    for(i=1;i<MULT_LATENCY+REGISTER_OUTPUT;i=i+1) begin
+      i_tvalid_shift[i] <= i_tvalid_shift[i-1];
+      i_tlast_shift[i] <= i_tlast_shift[i-1];
+      q_tvalid_shift[i] <= q_tvalid_shift[i-1];
+      q_tlast_shift[i] <= q_tlast_shift[i-1];
+      tuser_shift[i] <= tuser_shift[i-1];
+    end
+  end
+
+  assign dataMag_tvalid = i_tvalid_shift[MULT_LATENCY+REGISTER_OUTPUT-1] & q_tvalid_shift[MULT_LATENCY+REGISTER_OUTPUT-1];
+  assign dataMag_tlast = i_tlast_shift[MULT_LATENCY+REGISTER_OUTPUT-1] & q_tlast_shift[MULT_LATENCY+REGISTER_OUTPUT-1];
+  assign dataMag_tuser = tuser_shift[MULT_LATENCY+REGISTER_OUTPUT-1];
 
 generate if(REGISTER_OUTPUT == 1) begin
   always @(posedge clk) begin
