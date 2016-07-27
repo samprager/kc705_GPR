@@ -57,6 +57,9 @@ module chirp_dds_top #
 
    localparam DDS_LATENCY = 2;
    localparam FCUTOFF_IND = FFT_LEN/2;
+   localparam ADC_DELAY = 100;
+   
+   integer i;
 
   wire rd_fifo_clk;
   wire clk_245_76MHz;
@@ -86,6 +89,9 @@ module chirp_dds_top #
   reg [31:0] adc_counter_reg;
   reg adc_data_valid_r;
   reg adc_data_valid_rr;
+  
+  reg [31:0] adc_data_i_delay [ADC_DELAY-1:0];
+  reg [31:0] adc_data_q_delay [ADC_DELAY-1:0];
 
   wire [63:0] adc_fifo_wr_tdata;
   wire       adc_fifo_wr_tvalid;
@@ -224,14 +230,32 @@ module chirp_dds_top #
 
      assign clk_245_76MHz = clk_245;
      // simulate adc outputs from fmc150 module with dds loopback
-     always @(posedge clk_245_76MHz) begin
-        adc_data_i_r <= dac_data_i_rr;
-        adc_data_q_r <= dac_data_q_rr;
-        adc_data_valid_r <= dds_out_valid;
-        adc_data_i_rr <= adc_data_i_r;
-        adc_data_q_rr <= adc_data_q_r;
-        adc_data_valid_rr <= adc_data_valid_r;
+//     always @(posedge clk_245_76MHz) begin
+//        adc_data_i_r <= dac_data_i_rr;
+//        adc_data_q_r <= dac_data_q_rr;
+//        adc_data_valid_r <= dds_out_valid;
+//        adc_data_i_rr <= adc_data_i_r;
+//        adc_data_q_rr <= adc_data_q_r;
+//        adc_data_valid_rr <= adc_data_valid_r;
+//     end
+ always @(posedge clk_245_76MHz) begin
+     if (clk_245_rst) begin
+         adc_data_valid_rr <= 1'b0;
+         for (i=0:i<ADC_DELAY;i=i+1) begin
+             adc_data_i_delay[i] <= 'b0
+             adc_data_q_delay[i] <= 'b0;
+         end
+     end else begin    
+        adc_data_valid_rr <= 1'b1;
+        adc_data_i_delay[0] <= dac_data_i_rr;
+        adc_data_q_delay[0] <= dac_data_q_rr;
+        for (i=1:i<ADC_DELAY;i=i+1) begin
+            adc_data_i_delay[i] <= adc_data_i_delay[i-1];
+            adc_data_q_delay[i] <= adc_data_q_delay[i-1];
+        end
      end
+   end  
+     
 
      // simulate number of register stages in fmc150 module for dac (2)
      always @(posedge clk_245_76MHz) begin
@@ -263,16 +287,18 @@ module chirp_dds_top #
 
      assign adc_data_iq = {adc_data_i,adc_data_q};
      assign dac_data_iq = {dac_data_i,dac_data_q};
+     assign adc_data_valid = adc_data_valid_rr;
      assign data_valid = adc_data_valid_rr;
-
-     assign adc_data_i = adc_data_i_rr;
-     assign adc_data_q = adc_data_q_rr;
+//     assign adc_data_i = adc_data_i_rr;
+//     assign adc_data_q = adc_data_q_rr;
+     assign adc_data_i = adc_data_i_delay[ADC_DELAY-1];
+     assign adc_data_q = adc_data_q_delay[ADC_DELAY-1];
+     
      assign dac_data_i = dac_data_i_rr;
      assign dac_data_q = dac_data_q_rr;
 
 
      assign adc_counter = adc_counter_reg;
-     assign adc_data_valid = adc_data_valid_rr;
      assign fmc150_spi_ctrl_bus_out = 'b0;
      assign fmc150_status_vector = 4'b1111;
 
