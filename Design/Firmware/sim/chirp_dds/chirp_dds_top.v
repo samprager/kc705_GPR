@@ -248,17 +248,18 @@ module chirp_dds_top #
 always @(posedge clk_245_76MHz) begin 
      if (clk_245_rst) begin
          adc_data_i_delay[0] <= 'b0;
-         adc_data_i_delay[0] <= 'b0;
+         adc_data_q_delay[0] <= 'b0;
      end else begin
-        adc_data_i_delay[0] <= dac_data_i_rr;
-        adc_data_q_delay[0] <= dac_data_q_rr; 
+        // Divide adc sample magnitudes by 2
+        adc_data_i_delay[0] <= {dac_data_i_rr[15],dac_data_i_rr[15:1]};
+        adc_data_q_delay[0] <= {dac_data_q_rr[15],dac_data_q_rr[15:1]}; 
     end
 end        
  always @(posedge clk_245_76MHz) begin 
     for (i=1;i<ADC_DELAY;i=i+1) begin
         if (clk_245_rst) begin
             adc_data_i_delay[i] <= 'b0;
-            adc_data_i_delay[i] <= 'b0;
+            adc_data_q_delay[i] <= 'b0;
         end else begin    
             adc_data_i_delay[i] <= adc_data_i_delay[i-1];
             adc_data_q_delay[i] <= adc_data_q_delay[i-1];
