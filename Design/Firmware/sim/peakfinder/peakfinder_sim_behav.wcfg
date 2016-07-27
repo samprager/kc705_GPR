@@ -10,7 +10,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="4" />
+   <WVObjectSize size="26" />
    <wvobject type="group" fp_name="group590">
       <obj_property name="label">sim_tb_sigs</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -335,5 +335,177 @@
    <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/peak_result_q">
       <obj_property name="ElementShortName">peak_result_q[31:0]</obj_property>
       <obj_property name="ObjectShortName">peak_result_q[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="group" fp_name="group1693">
+      <obj_property name="label">lpf_i_sigs</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/freq_lpf_i/clk">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/freq_lpf_i/aresetn">
+         <obj_property name="ElementShortName">aresetn</obj_property>
+         <obj_property name="ObjectShortName">aresetn</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/tdata">
+         <obj_property name="ElementShortName">tdata[63:0]</obj_property>
+         <obj_property name="ObjectShortName">tdata[63:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/freq_lpf_i/tvalid">
+         <obj_property name="ElementShortName">tvalid</obj_property>
+         <obj_property name="ObjectShortName">tvalid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/freq_lpf_i/tlast">
+         <obj_property name="ElementShortName">tlast</obj_property>
+         <obj_property name="ObjectShortName">tlast</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/tuser">
+         <obj_property name="ElementShortName">tuser[31:0]</obj_property>
+         <obj_property name="ObjectShortName">tuser[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/index">
+         <obj_property name="ElementShortName">index[31:0]</obj_property>
+         <obj_property name="ObjectShortName">index[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/cutoff">
+         <obj_property name="ElementShortName">cutoff[63:0]</obj_property>
+         <obj_property name="ObjectShortName">cutoff[63:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/lpf_tdata">
+         <obj_property name="ElementShortName">lpf_tdata[63:0]</obj_property>
+         <obj_property name="ObjectShortName">lpf_tdata[63:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/freq_lpf_i/lpf_tvalid">
+         <obj_property name="ElementShortName">lpf_tvalid</obj_property>
+         <obj_property name="ObjectShortName">lpf_tvalid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/freq_lpf_i/lpf_tlast">
+         <obj_property name="ElementShortName">lpf_tlast</obj_property>
+         <obj_property name="ObjectShortName">lpf_tlast</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/lpf_tuser">
+         <obj_property name="ElementShortName">lpf_tuser[31:0]</obj_property>
+         <obj_property name="ObjectShortName">lpf_tuser[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/lpf_index">
+         <obj_property name="ElementShortName">lpf_index[31:0]</obj_property>
+         <obj_property name="ObjectShortName">lpf_index[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/cutoff_index">
+         <obj_property name="ElementShortName">cutoff_index[31:0]</obj_property>
+         <obj_property name="ObjectShortName">cutoff_index[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/DATA_LEN">
+         <obj_property name="ElementShortName">DATA_LEN[31:0]</obj_property>
+         <obj_property name="ObjectShortName">DATA_LEN[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="other" fp_name="/peakfinder_sim/freq_lpf_i/FCLOCK">
+         <obj_property name="ElementShortName">FCLOCK</obj_property>
+         <obj_property name="ObjectShortName">FCLOCK</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/FFT_LEN">
+         <obj_property name="ElementShortName">FFT_LEN[31:0]</obj_property>
+         <obj_property name="ObjectShortName">FFT_LEN[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/CHIRP_BW">
+         <obj_property name="ElementShortName">CHIRP_BW[31:0]</obj_property>
+         <obj_property name="ObjectShortName">CHIRP_BW[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/TUSER_LEN">
+         <obj_property name="ElementShortName">TUSER_LEN[31:0]</obj_property>
+         <obj_property name="ObjectShortName">TUSER_LEN[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/INDEX_LEN">
+         <obj_property name="ElementShortName">INDEX_LEN[31:0]</obj_property>
+         <obj_property name="ObjectShortName">INDEX_LEN[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/freq_lpf_i/INIT_CUTOFF">
+         <obj_property name="ElementShortName">INIT_CUTOFF[31:0]</obj_property>
+         <obj_property name="ObjectShortName">INIT_CUTOFF[31:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/config_pkt_tdata">
+      <obj_property name="ElementShortName">config_pkt_tdata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">config_pkt_tdata[7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/config_pkt_tvalid">
+      <obj_property name="ElementShortName">config_pkt_tvalid</obj_property>
+      <obj_property name="ObjectShortName">config_pkt_tvalid</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/config_pkt_tready">
+      <obj_property name="ElementShortName">config_pkt_tready</obj_property>
+      <obj_property name="ObjectShortName">config_pkt_tready</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/config_pkt_tlast">
+      <obj_property name="ElementShortName">config_pkt_tlast</obj_property>
+      <obj_property name="ObjectShortName">config_pkt_tlast</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/pk_axis_tdata">
+      <obj_property name="ElementShortName">pk_axis_tdata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">pk_axis_tdata[7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/pk_axis_tvalid">
+      <obj_property name="ElementShortName">pk_axis_tvalid</obj_property>
+      <obj_property name="ObjectShortName">pk_axis_tvalid</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/pk_axis_tlast">
+      <obj_property name="ElementShortName">pk_axis_tlast</obj_property>
+      <obj_property name="ObjectShortName">pk_axis_tlast</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/pk_axis_tready">
+      <obj_property name="ElementShortName">pk_axis_tready</obj_property>
+      <obj_property name="ObjectShortName">pk_axis_tready</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/pk_axis_tuser">
+      <obj_property name="ElementShortName">pk_axis_tuser</obj_property>
+      <obj_property name="ObjectShortName">pk_axis_tuser</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/dw_axis_tdata">
+      <obj_property name="ElementShortName">dw_axis_tdata[0:255]</obj_property>
+      <obj_property name="ObjectShortName">dw_axis_tdata[0:255]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/dw_axis_tdata_orig">
+      <obj_property name="ElementShortName">dw_axis_tdata_orig[255:0]</obj_property>
+      <obj_property name="ObjectShortName">dw_axis_tdata_orig[255:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/dw_axis_tvalid">
+      <obj_property name="ElementShortName">dw_axis_tvalid</obj_property>
+      <obj_property name="ObjectShortName">dw_axis_tvalid</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/dw_axis_tlast">
+      <obj_property name="ElementShortName">dw_axis_tlast</obj_property>
+      <obj_property name="ObjectShortName">dw_axis_tlast</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/dw_axis_tready">
+      <obj_property name="ElementShortName">dw_axis_tready</obj_property>
+      <obj_property name="ObjectShortName">dw_axis_tready</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/dw_axis_tvalid_r">
+      <obj_property name="ElementShortName">dw_axis_tvalid_r</obj_property>
+      <obj_property name="ObjectShortName">dw_axis_tvalid_r</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/lpf_tdata_q">
+      <obj_property name="ElementShortName">lpf_tdata_q[63:0]</obj_property>
+      <obj_property name="ObjectShortName">lpf_tdata_q[63:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/lpf_tvalid_q">
+      <obj_property name="ElementShortName">lpf_tvalid_q</obj_property>
+      <obj_property name="ObjectShortName">lpf_tvalid_q</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/lpf_tlast_q">
+      <obj_property name="ElementShortName">lpf_tlast_q</obj_property>
+      <obj_property name="ObjectShortName">lpf_tlast_q</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/lpf_tuser_q">
+      <obj_property name="ElementShortName">lpf_tuser_q[31:0]</obj_property>
+      <obj_property name="ObjectShortName">lpf_tuser_q[31:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/new_peak_i">
+      <obj_property name="ElementShortName">new_peak_i</obj_property>
+      <obj_property name="ObjectShortName">new_peak_i</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/new_peak_q">
+      <obj_property name="ElementShortName">new_peak_q</obj_property>
+      <obj_property name="ObjectShortName">new_peak_q</obj_property>
    </wvobject>
 </wave_config>

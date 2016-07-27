@@ -40,6 +40,7 @@ module peakfinder_sim(
         reg [7:0] counter;
         reg [7:0] index;
         reg [7:0] test_data;
+        reg [7:0] test_offset;
 
            wire                   axi_tclk;
         wire                   axi_tresetn;
@@ -92,9 +93,56 @@ module peakfinder_sim(
         wire peak_tlast_q;
         wire [31:0] peak_tuser_q;
         wire [31:0]num_peaks_q;
-        
+
         reg [31:0] peak_result_i;
         reg [31:0] peak_result_q;
+        reg [63:0] peak_val_i;
+        reg [31:0] peak_num_i;
+        reg [63:0] peak_val_q;
+        reg [31:0] peak_num_q;
+        reg new_peak_i;
+        reg new_peak_q;
+
+        wire [63:0] lpf_tdata_i;
+        wire lpf_tvalid_i;
+        wire lpf_tlast_i;
+        wire [31:0] lpf_tuser_i;
+        wire [31:0] lpf_index_i;
+
+        wire [63:0] lpf_tdata_q;
+        wire lpf_tvalid_q;
+        wire lpf_tlast_q;
+        wire [31:0] lpf_tuser_q;
+        wire [31:0] lpf_index_q;
+
+        wire [7:0] config_pkt_tdata;
+        wire config_pkt_tvalid;
+        wire config_pkt_tready;
+        wire config_pkt_tlast;
+
+        wire [7:0] pk_axis_tdata;
+        wire pk_axis_tvalid;
+        wire pk_axis_tlast;
+        wire pk_axis_tready;
+        wire pk_axis_tuser;
+
+        wire [7:0] dwout_axis_tdata;
+        wire dwout_axis_tvalid;
+        wire dwout_axis_tlast;
+        wire dwout_axis_tready;
+
+        //wire [255:0] dw_axis_tdata;
+        wire [255:0] dw_axis_tdata;
+        wire dw_axis_tvalid;
+        wire dw_axis_tlast;
+        wire dw_axis_tready;
+
+        reg dw_axis_tvalid_r;
+        reg dw_axis_tlast_r;
+
+
+
+
 
      initial begin
           axi_tresetn_i = 1'b0;
@@ -169,15 +217,29 @@ module peakfinder_sim(
                   index <= 'b0;
                   test_data <= 'b0;
                   peak_result_i <= 'b0;
+                  peak_val_i <= 'b0;
+                  peak_num_i <= 'b0;
                   peak_result_q <= 'b0;
+                  peak_val_q <= 'b0;
+                  peak_num_q <= 'b0;
+                  new_peak_i <= 1'b0;
+                  new_peak_q <= 1'b0;
+                  dw_axis_tvalid_r <= 1'b0;
+                  dw_axis_tlast_r <= 1'b0;
+
+                  test_offset <= 'b0;
+
               end else begin
                   counter <= counter + 1'b1;
                   index <= counter;
                   if(counter <= 8'hcf)
-                    test_data <= counter;
+                    test_data <= counter+test_offset;
                   else
                     test_data <= test_data - 1'b1;
-                    
+
+                  if(counter == 8'hff)
+                    test_offset <= test_offset + 1'b1;
+
                   if (counter <= 8'hf0) begin
                     m_fft_i_axis_tvalid_r <= 1'b1;
                     m_fft_q_axis_tvalid_r<= 1'b1;
@@ -194,16 +256,38 @@ module peakfinder_sim(
                     m_fft_i_axis_tlast_r <= 1'b0;
                     m_fft_q_axis_tlast_r <= 1'b0;
                   end
-                  
-                  if (peak_tlast_i & peak_tvalid_i)
+
+                  if (peak_tlast_i & peak_tvalid_i) begin
                     peak_result_i <= peak_index_i;
-                    
-                  if (peak_tlast_q & peak_tvalid_q)
+                    peak_val_i <= peak_tdata_i;
+                    peak_num_i <= num_peaks_i;
+                    new_peak_i <= 1'b1;
+                  end else if (dw_axis_tvalid_r)begin
+                    new_peak_i <= 1'b0;
+                  end
+
+                  if (peak_tlast_q & peak_tvalid_q) begin
                     peak_result_q <= peak_index_q;
-                    
+                    peak_val_q <= peak_tdata_q;
+                    peak_num_q <= num_peaks_q;
+                    new_peak_q <= 1'b1;
+                  end else if (dw_axis_tvalid_r)begin
+                    new_peak_q <= 1'b0;
+                  end
+
+                  if(new_peak_i & new_peak_q & !dw_axis_tvalid_r)begin
+                    dw_axis_tvalid_r <= 1'b1;
+                    dw_axis_tlast_r <= 1'b1;
+                  end
+                  else if (dw_axis_tready)begin
+                    dw_axis_tvalid_r <= 1'b0;
+                    dw_axis_tlast_r <= 1'b0;
+                  end
+
+
               end
-              
-              
+
+
             end
 
 assign m_fft_i_axis_tdata = {28'b0,test_data[7:4],28'b0,test_data[3:0]};
@@ -265,16 +349,60 @@ assign m_fft_q_axis_tlast = m_fft_q_axis_tlast_r;
        .overflow(sq_mag_q_axis_tdata_overflow)
     );
 
+    freq_domain_lpf #(
+        .DATA_LEN(64)
+    ) freq_lpf_i(
+         .clk(fmc_tclk),
+         .aresetn(fmc_tresetn_i),
+         .tdata(sq_mag_i_axis_tdata),
+         .tvalid(sq_mag_i_axis_tvalid),
+         .tlast(sq_mag_i_axis_tlast),
+         .tuser(sq_mag_i_axis_tuser),
+         .index(sq_mag_i_index),
+         .cutoff(32'he2),
+         .lpf_index(lpf_index_i),
+         .lpf_tdata(lpf_tdata_i),
+         .lpf_tvalid(lpf_tvalid_i),
+         .lpf_tlast(lpf_tlast_i),
+         .lpf_tuser(lpf_tuser_i)
+       );
+
+
+     freq_domain_lpf #(
+         .DATA_LEN(64)
+     ) freq_lpf_q(
+          .clk(fmc_tclk),
+          .aresetn(fmc_tresetn_i),
+          .tdata(sq_mag_q_axis_tdata),
+          .tvalid(sq_mag_q_axis_tvalid),
+          .tlast(sq_mag_q_axis_tlast),
+          .tuser(sq_mag_q_axis_tuser),
+          .index(sq_mag_q_index),
+          .cutoff(32'he2),
+          .lpf_index(lpf_index_q),
+          .lpf_tdata(lpf_tdata_q),
+          .lpf_tvalid(lpf_tvalid_q),
+          .lpf_tlast(lpf_tlast_q),
+          .lpf_tuser(lpf_tuser_q)
+        );
+
+
+
     peak_finder #(
       .DATA_LEN(64)
     ) peak_finder_i(
       .clk(fmc_tclk),
       .aresetn(fmc_tresetn_i),
-      .tdata(sq_mag_i_axis_tdata),
-      .tvalid(sq_mag_i_axis_tvalid),
-      .tlast(sq_mag_i_axis_tlast),
-      .tuser(sq_mag_i_axis_tuser),
-      .index(sq_mag_i_index),
+//      .tdata(sq_mag_i_axis_tdata),
+//      .tvalid(sq_mag_i_axis_tvalid),
+//      .tlast(sq_mag_i_axis_tlast),
+//      .tuser(sq_mag_i_axis_tuser),
+//      .index(sq_mag_i_index),
+      .tdata(lpf_tdata_i),
+      .tvalid(lpf_tvalid_i),
+      .tlast(lpf_tlast_i),
+      .tuser(lpf_tuser_i),
+      .index(lpf_index_i),
       .threshold({64'hff}),
       .peak_index(peak_index_i),
       .peak_tdata(peak_tdata_i),
@@ -288,11 +416,11 @@ assign m_fft_q_axis_tlast = m_fft_q_axis_tlast_r;
     ) peak_finder_q(
       .clk(fmc_tclk),
       .aresetn(fmc_tresetn_i),
-      .tdata(sq_mag_q_axis_tdata),
-      .tvalid(sq_mag_q_axis_tvalid),
-      .tlast(sq_mag_q_axis_tlast),
-      .tuser(sq_mag_q_axis_tuser),
-      .index(sq_mag_q_index),
+      .tdata(lpf_tdata_q),
+      .tvalid(lpf_tvalid_q),
+      .tlast(lpf_tlast_q),
+      .tuser(lpf_tuser_q),
+      .index(lpf_index_q),
       .threshold({64'hff}),
       .peak_index(peak_index_q),
       .peak_tdata(peak_tdata_q),
@@ -300,6 +428,68 @@ assign m_fft_q_axis_tlast = m_fft_q_axis_tlast_r;
       .peak_tlast(peak_tlast_q),
       .peak_tuser(peak_tuser_q),
       .num_peaks(num_peaks_q)
+    );
+
+    assign dw_axis_tdata = {peak_num_i,peak_num_q,peak_val_i,peak_val_q,peak_result_i,peak_result_q};
+    assign dw_axis_tvalid = dw_axis_tvalid_r;
+    assign dw_axis_tlast = dw_axis_tlast_r;
+    peak_axis_dwidth_converter peak_axis_dwidth_converter_inst (
+      .aclk(fmc_tclk),                    // input wire aclk
+      .aresetn(fmc_tresetn_i),              // input wire aresetn
+      .s_axis_tvalid(dw_axis_tvalid),  // input wire s_axis_tvalid
+      .s_axis_tready(dw_axis_tready),  // output wire s_axis_tready
+      .s_axis_tdata(dw_axis_tdata),    // input wire [255 : 0] s_axis_tdata
+      .s_axis_tlast(dw_axis_tlast),    // input wire s_axis_tlast
+      .m_axis_tvalid(dwout_axis_tvalid),  // output wire m_axis_tvalid
+      .m_axis_tready(dwout_axis_tready),  // input wire m_axis_tready
+      .m_axis_tdata(dwout_axis_tdata),    // output wire [7 : 0] m_axis_tdata
+      .m_axis_tlast(dwout_axis_tlast)    // output wire m_axis_tlast
+    );
+
+    peak_axis_clock_converter peak_axis_clock_converter_inst (
+      .s_axis_aresetn(fmc_tresetn_i),  // input wire s_axis_aresetn
+      .m_axis_aresetn(gtx_tresetn_i),  // input wire m_axis_aresetn
+      .s_axis_aclk(fmc_tclk),        // input wire s_axis_aclk
+      .s_axis_tvalid(dwout_axis_tvalid),    // input wire s_axis_tvalid
+      .s_axis_tready(dwout_axis_tready),    // output wire s_axis_tready
+      .s_axis_tdata(dwout_axis_tdata),      // input wire [7 : 0] s_axis_tdata
+      .s_axis_tlast(dwout_axis_tlast),      // input wire s_axis_tlast
+      .m_axis_aclk(gtx_tclk),        // input wire m_axis_aclk
+      .m_axis_tvalid(pk_axis_tvalid),    // output wire m_axis_tvalid
+      .m_axis_tready(pk_axis_tready),    // input wire m_axis_tready
+      .m_axis_tdata(pk_axis_tdata),      // output wire [7 : 0] m_axis_tdata
+      .m_axis_tlast(pk_axis_tlast)      // output wire m_axis_tlast
+    );
+
+    assign pk_axis_tuser = 'b0;
+    assign config_pkt_tready = 1'b1;
+    kc705_ethernet_rgmii_axi_packetizer #(
+       .DEST_ADDR                 (48'hda0102030405),
+       .SRC_ADDR                  (48'h5a0102030405),
+       .MAX_SIZE                  (32'd52),
+       .MIN_SIZE                  (32'd52),
+       .ENABLE_VLAN               (0),
+       .VLAN_ID                   (12'd2),
+       .VLAN_PRIORITY             (3'd2)
+    ) config_packetizer_inst (
+      //  .axi_tclk                  (axi_tclk),
+      //  .axi_tresetn               (axi_tresetn),
+       .axi_tclk                  (gtx_tclk),
+       .axi_tresetn               (gtx_tresetn_i),
+       .enable_adc_pkt            (1'b1),
+       .speed                     (2'b10),
+
+        // data from ADC Data fifo
+        .adc_axis_tdata           (pk_axis_tdata),
+        .adc_axis_tvalid          (pk_axis_tvalid),
+        .adc_axis_tlast           (pk_axis_tlast),
+        .adc_axis_tuser           (pk_axis_tuser),
+        .adc_axis_tready          (pk_axis_tready),
+
+       .tdata                     (config_pkt_tdata),
+       .tvalid                    (config_pkt_tvalid),
+       .tlast                     (config_pkt_tlast),
+       .tready                    (config_pkt_tready)
     );
 
 endmodule
