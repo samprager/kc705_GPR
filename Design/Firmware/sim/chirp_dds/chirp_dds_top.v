@@ -239,22 +239,32 @@ module chirp_dds_top #
 //        adc_data_valid_rr <= adc_data_valid_r;
 //     end
  always @(posedge clk_245_76MHz) begin
+    if (clk_245_rst) 
+        adc_data_valid_rr <= 1'b0;   
+    else     
+       adc_data_valid_rr <= 1'b1;
+ end      
+  
+always @(posedge clk_245_76MHz) begin 
      if (clk_245_rst) begin
-         adc_data_valid_rr <= 1'b0;
-         for (i=0:i<ADC_DELAY;i=i+1) begin
-             adc_data_i_delay[i] <= 'b0
-             adc_data_q_delay[i] <= 'b0;
-         end
-     end else begin    
-        adc_data_valid_rr <= 1'b1;
+         adc_data_i_delay[0] <= 'b0;
+         adc_data_i_delay[0] <= 'b0;
+     end else begin
         adc_data_i_delay[0] <= dac_data_i_rr;
-        adc_data_q_delay[0] <= dac_data_q_rr;
-        for (i=1:i<ADC_DELAY;i=i+1) begin
+        adc_data_q_delay[0] <= dac_data_q_rr; 
+    end
+end        
+ always @(posedge clk_245_76MHz) begin 
+    for (i=1;i<ADC_DELAY;i=i+1) begin
+        if (clk_245_rst) begin
+            adc_data_i_delay[i] <= 'b0;
+            adc_data_i_delay[i] <= 'b0;
+        end else begin    
             adc_data_i_delay[i] <= adc_data_i_delay[i-1];
             adc_data_q_delay[i] <= adc_data_q_delay[i-1];
-        end
-     end
-   end  
+        end    
+    end
+end  
      
 
      // simulate number of register stages in fmc150 module for dac (2)
