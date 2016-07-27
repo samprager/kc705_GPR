@@ -23,7 +23,7 @@
 module peakfinder_sim(
 
     );
-       localparam AXI_TCLK_PERIOD          = 10000;         // 100 MHz
+    localparam AXI_TCLK_PERIOD          = 10000;         // 100 MHz
     localparam GTX_TCLK_PERIOD          = 8000;         // 125 MHz
     localparam FMC_TCLK_PERIOD          = 4069;         // 245.76 MHz
     localparam RESET_PERIOD = 320000; //in pSec

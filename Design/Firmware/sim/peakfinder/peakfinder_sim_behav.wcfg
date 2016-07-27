@@ -10,7 +10,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="26" />
+   <WVObjectSize size="29" />
    <wvobject type="group" fp_name="group590">
       <obj_property name="label">sim_tb_sigs</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -461,12 +461,8 @@
       <obj_property name="ObjectShortName">pk_axis_tuser</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/dw_axis_tdata">
-      <obj_property name="ElementShortName">dw_axis_tdata[0:255]</obj_property>
-      <obj_property name="ObjectShortName">dw_axis_tdata[0:255]</obj_property>
-   </wvobject>
-   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/dw_axis_tdata_orig">
-      <obj_property name="ElementShortName">dw_axis_tdata_orig[255:0]</obj_property>
-      <obj_property name="ObjectShortName">dw_axis_tdata_orig[255:0]</obj_property>
+      <obj_property name="ElementShortName">dw_axis_tdata[255:0]</obj_property>
+      <obj_property name="ObjectShortName">dw_axis_tdata[255:0]</obj_property>
    </wvobject>
    <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/dw_axis_tvalid">
       <obj_property name="ElementShortName">dw_axis_tvalid</obj_property>
@@ -507,5 +503,21 @@
    <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/new_peak_q">
       <obj_property name="ElementShortName">new_peak_q</obj_property>
       <obj_property name="ObjectShortName">new_peak_q</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/dwout_axis_tdata">
+      <obj_property name="ElementShortName">dwout_axis_tdata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">dwout_axis_tdata[7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/dwout_axis_tlast">
+      <obj_property name="ElementShortName">dwout_axis_tlast</obj_property>
+      <obj_property name="ObjectShortName">dwout_axis_tlast</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/dwout_axis_tready">
+      <obj_property name="ElementShortName">dwout_axis_tready</obj_property>
+      <obj_property name="ObjectShortName">dwout_axis_tready</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/dwout_axis_tvalid">
+      <obj_property name="ElementShortName">dwout_axis_tvalid</obj_property>
+      <obj_property name="ObjectShortName">dwout_axis_tvalid</obj_property>
    </wvobject>
 </wave_config>

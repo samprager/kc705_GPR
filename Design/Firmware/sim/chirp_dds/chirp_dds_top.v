@@ -7,7 +7,9 @@ module chirp_dds_top #
      parameter ADC_AXI_TDEST_WIDTH = 1,
      parameter ADC_AXI_TUSER_WIDTH = 1,
      parameter ADC_AXI_STREAM_ID = 1'b0,
-     parameter ADC_AXI_STREAM_DEST = 1'b0
+     parameter ADC_AXI_STREAM_DEST = 1'b0,
+
+     parameter FFT_LEN = 8192
 
    )
   (
@@ -54,6 +56,7 @@ module chirp_dds_top #
    );
 
    localparam DDS_LATENCY = 2;
+   localparam FCUTOFF_IND = FFT_LEN/2;
 
   wire rd_fifo_clk;
   wire clk_245_76MHz;
@@ -144,11 +147,13 @@ module chirp_dds_top #
      wire m_fft_i_axis_tvalid;
      wire m_fft_i_axis_tlast;
      wire m_fft_i_axis_tready;
+     wire [31:0] m_fft_i_axis_index;
 
      wire [63:0] m_fft_q_axis_tdata;
      wire m_fft_q_axis_tvalid;
      wire m_fft_q_axis_tlast;
      wire m_fft_q_axis_tready;
+     wire [31:0] m_fft_q_axis_index;
 
      wire [31:0] mixer_out_i;
      wire [31:0] mixer_out_q;
@@ -164,6 +169,57 @@ module chirp_dds_top #
      wire        sq_mag_q_axis_tlast;
      wire       sq_mag_i_axis_tdata_overflow;
      wire       sq_mag_q_axis_tdata_overflow;
+     wire [31:0] sq_mag_i_axis_tuser;
+     wire [31:0] sq_mag_q_axis_tuser;
+     wire [31:0] sq_mag_i_axis_index;
+     wire [31:0] sq_mag_q_axis_index;
+
+     wire [31:0] peak_index_i;
+     wire [63:0] peak_tdata_i;
+     wire peak_tvalid_i;
+     wire peak_tlast_i;
+     wire [31:0] peak_tuser_i;
+     wire [31:0] num_peaks_i;
+
+     wire [31:0] peak_index_q;
+     wire [63:0] peak_tdata_q;
+     wire peak_tvalid_q;
+     wire peak_tlast_q;
+     wire [31:0] peak_tuser_q;
+     wire [31:0] num_peaks_q;
+
+     reg [31:0] peak_result_i;
+     reg [31:0] peak_result_q;
+     reg [63:0] peak_val_i;
+     reg [31:0] peak_num_i;
+     reg [63:0] peak_val_q;
+     reg [31:0] peak_num_q;
+     reg new_peak_i;
+     reg new_peak_q;
+
+     wire [63:0] lpf_tdata_i;
+     wire lpf_tvalid_i;
+     wire lpf_tlast_i;
+     wire [31:0] lpf_tuser_i;
+     wire [31:0] lpf_index_i;
+
+     wire [63:0] lpf_tdata_q;
+     wire lpf_tvalid_q;
+     wire lpf_tlast_q;
+     wire [31:0] lpf_tuser_q;
+     wire [31:0] lpf_index_q;
+
+     wire [31:0] lpf_cuttof_ind;
+     wire [63:0] peak_threshold_i;
+     wire [63:0] peak_threshold_q;
+
+     wire [255:0] dw_axis_tdata;
+     wire dw_axis_tvalid;
+     wire dw_axis_tlast;
+     wire dw_axis_tready;
+
+     reg dw_axis_tvalid_r;
+     reg dw_axis_tlast_r;
 
 
      assign clk_245_76MHz = clk_245;
@@ -470,9 +526,13 @@ sq_mag_estimate#(
     .dataQ(m_fft_i_axis_tdata[63:32]),
     .dataQ_tvalid(m_fft_i_axis_tvalid),
     .dataQ_tlast(m_fft_i_axis_tlast),
+    .data_index(m_fft_i_axis_index),
+    .data_tuser(chirp_tuning_word_coeff),
     .dataMagSq(sq_mag_i_axis_tdata),
     .dataMag_tvalid(sq_mag_i_axis_tvalid),
     .dataMag_tlast(sq_mag_i_axis_tlast),
+    .dataMag_tuser(sq_mag_i_axis_tuser),
+    .dataMag_index(sq_mag_i_index),
     .overflow(sq_mag_i_axis_tdata_overflow)
 );
 
@@ -489,13 +549,140 @@ sq_mag_estimate#(
    .dataQ(m_fft_q_axis_tdata[63:32]),
    .dataQ_tvalid(m_fft_q_axis_tvalid),
    .dataQ_tlast(m_fft_q_axis_tlast),
+   .data_index(m_fft_q_axis_index),
+   .data_tuser(chirp_tuning_word_coeff),
    .dataMagSq(sq_mag_q_axis_tdata),
    .dataMag_tvalid(sq_mag_q_axis_tvalid),
    .dataMag_tlast(sq_mag_q_axis_tlast),
+   .dataMag_tuser(sq_mag_q_axis_tuser),
+   .dataMag_index(sq_mag_q_index),
    .overflow(sq_mag_q_axis_tdata_overflow)
 );
 
+assign lpf_cuttof_ind = FCUTOFF_IND;
+freq_domain_lpf #(
+    .DATA_LEN(64)
+) freq_lpf_i(
+     .clk(clk_245),
+     .aresetn(!clk_245_rst),
+     .tdata(sq_mag_i_axis_tdata),
+     .tvalid(sq_mag_i_axis_tvalid),
+     .tlast(sq_mag_i_axis_tlast),
+     .tuser(sq_mag_i_axis_tuser),
+     .index(sq_mag_i_index),
+     .cutoff(lpf_cuttof_ind),
+     .lpf_index(lpf_index_i),
+     .lpf_tdata(lpf_tdata_i),
+     .lpf_tvalid(lpf_tvalid_i),
+     .lpf_tlast(lpf_tlast_i),
+     .lpf_tuser(lpf_tuser_i)
+   );
 
+
+ freq_domain_lpf #(
+     .DATA_LEN(64)
+ ) freq_lpf_q(
+      .clk(clk_245),
+      .aresetn(!clk_245_rst),
+      .tdata(sq_mag_q_axis_tdata),
+      .tvalid(sq_mag_q_axis_tvalid),
+      .tlast(sq_mag_q_axis_tlast),
+      .tuser(sq_mag_q_axis_tuser),
+      .index(sq_mag_q_index),
+      .cutoff(lpf_cuttof_ind),
+      .lpf_index(lpf_index_q),
+      .lpf_tdata(lpf_tdata_q),
+      .lpf_tvalid(lpf_tvalid_q),
+      .lpf_tlast(lpf_tlast_q),
+      .lpf_tuser(lpf_tuser_q)
+    );
+
+
+assign peak_threshold_i = {4'b0001,60'b0};
+assign peak_threshold_q = {4'b0001,60'b0};
+peak_finder #(
+  .DATA_LEN(64)
+) peak_finder_i(
+  .clk(clk_245),
+  .aresetn(!clk_245_rst),
+//      .tdata(sq_mag_i_axis_tdata),
+//      .tvalid(sq_mag_i_axis_tvalid),
+//      .tlast(sq_mag_i_axis_tlast),
+//      .tuser(sq_mag_i_axis_tuser),
+//      .index(sq_mag_i_index),
+  .tdata(lpf_tdata_i),
+  .tvalid(lpf_tvalid_i),
+  .tlast(lpf_tlast_i),
+  .tuser(lpf_tuser_i),
+  .index(lpf_index_i),
+  .threshold(peak_threshold_i),
+  .peak_index(peak_index_i),
+  .peak_tdata(peak_tdata_i),
+  .peak_tvalid(peak_tvalid_i),
+  .peak_tlast(peak_tlast_i),
+  .peak_tuser(peak_tuser_i),
+  .num_peaks(num_peaks_i)
+);
+peak_finder #(
+  .DATA_LEN(64)
+) peak_finder_q(
+  .clk(clk_245),
+  .aresetn(!clk_245_rst),
+  .tdata(lpf_tdata_q),
+  .tvalid(lpf_tvalid_q),
+  .tlast(lpf_tlast_q),
+  .tuser(lpf_tuser_q),
+  .index(lpf_index_q),
+  .threshold(peak_threshold_q),
+  .peak_index(peak_index_q),
+  .peak_tdata(peak_tdata_q),
+  .peak_tvalid(peak_tvalid_q),
+  .peak_tlast(peak_tlast_q),
+  .peak_tuser(peak_tuser_q),
+  .num_peaks(num_peaks_q)
+);
+always @(posedge clk_245) begin
+  if (clk_245_rst) begin
+    new_peak_i <= 1'b0;
+  end else if (peak_tlast_i & peak_tvalid_i) begin
+    peak_result_i <= peak_index_i;
+    peak_val_i <= peak_tdata_i;
+    peak_num_i <= num_peaks_i;
+    new_peak_i <= 1'b1;
+  end else if (dw_axis_tvalid_r)begin
+    new_peak_i <= 1'b0;
+  end
+end
+
+always @(posedge clk_245) begin
+  if (clk_245_rst) begin
+    new_peak_q <= 1'b0;
+  end else if (peak_tlast_q & peak_tvalid_q) begin
+    peak_result_q <= peak_index_q;
+    peak_val_q <= peak_tdata_q;
+    peak_num_q <= num_peaks_q;
+    new_peak_q <= 1'b1;
+  end else if (dw_axis_tvalid_r)begin
+    new_peak_q <= 1'b0;
+  end
+end
+
+always @(posedge clk_245) begin
+  if (clk_245_rst) begin
+    dw_axis_tvalid_r <= 1'b0;
+    dw_axis_tlast_r <= 1'b0;
+  end else if(new_peak_i & new_peak_q & !dw_axis_tvalid_r)begin
+    dw_axis_tvalid_r <= 1'b1;
+    dw_axis_tlast_r <= 1'b1;
+  end else if (dw_axis_tready)begin
+    dw_axis_tvalid_r <= 1'b0;
+    dw_axis_tlast_r <= 1'b0;
+  end
+end
+
+assign dw_axis_tdata = {peak_num_i,peak_num_q,peak_val_i,peak_val_q,peak_result_i,peak_result_q};
+assign dw_axis_tvalid = dw_axis_tvalid_r;
+assign dw_axis_tlast = dw_axis_tlast_r;
 //c_mag_estimate#(
 //    .DATA_LEN(32),
 //    .ALPHA(0.9),
@@ -523,7 +710,7 @@ sq_mag_estimate#(
 //assign m_fft_axis_tdata = {32'h80000000,32'h80000000,32'hefffffff,32'hefffffff};
 
 fft_dsp #(
-  .FFT_LEN(8192),
+  .FFT_LEN(FFT_LEN),
   .FFT_CHANNELS(1),
   .FFT_AXI_DATA_WIDTH (64)
   )
@@ -541,6 +728,8 @@ fft_dsp #(
 .m_axis_tvalid(m_fft_i_axis_tvalid),
 .m_axis_tlast(m_fft_i_axis_tlast),
 .m_axis_tready(m_fft_i_axis_tready),
+
+.m_axis_index(m_fft_i_axis_index),
 
    .chirp_ready                         (chirp_ready),
    .chirp_done                          (chirp_done),
@@ -570,6 +759,8 @@ fft_dsp #(
 .m_axis_tvalid(m_fft_q_axis_tvalid),
 .m_axis_tlast(m_fft_q_axis_tlast),
 .m_axis_tready(m_fft_q_axis_tready),
+
+.m_axis_index(m_fft_q_axis_index),
 
    .chirp_ready                         (chirp_ready),
    .chirp_done                          (chirp_done),
