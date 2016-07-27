@@ -31,7 +31,7 @@ module fft_dsp #
   output m_axis_tlast,
   input m_axis_tready,
 
-  output[FFT_INDEX_LEN-1:0] m_axis_index,
+  output[FFT_INDEX_LEN-1:0] m_index,
 
   input chirp_ready,
   input chirp_done,
@@ -110,7 +110,7 @@ wire m_axis_fft_status_tready;
 
  reg [31:0] fft_len_counter;
  reg [7:0] config_wait_counter;
- reg [FFT_INDEX_LEN-1:0] m_axis_index_r;
+ reg [FFT_INDEX_LEN-1:0] m_index_r;
 
  wire fwd_inv;
  wire [SCH_SIZE-1:0] scale_sch;
@@ -248,13 +248,13 @@ end
 always @(posedge aclk)
 begin
    if (!aresetn) begin
-      m_axis_index_r <= 'b0;
+      m_index_r <= 'b0;
    end
    else if (gen_state == IDLE) begin
-      m_axis_index_r <= 'b0;
+      m_index_r <= 'b0;
    end
    else if ((gen_state == RD_DATA) & m_axis_tvalid & m_axis_tready) begin
-    m_axis_index_r <= m_axis_index_r + 1'b1;
+    m_index_r <= m_index_r + 1'b1;
   end
 end
 
@@ -263,7 +263,7 @@ end
  assign m_axis_tlast = m_axis_fft_data_tlast;
  assign m_axis_fft_data_tready = m_axis_tready;
 
- assign m_axis_index = m_axis_index_r;
+ assign m_index = m_index_r;
 
  assign m_axis_fft_status_tready = 1'b1;
 

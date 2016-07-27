@@ -147,13 +147,13 @@ module chirp_dds_top #
      wire m_fft_i_axis_tvalid;
      wire m_fft_i_axis_tlast;
      wire m_fft_i_axis_tready;
-     wire [31:0] m_fft_i_axis_index;
+     wire [31:0] m_fft_i_index;
 
      wire [63:0] m_fft_q_axis_tdata;
      wire m_fft_q_axis_tvalid;
      wire m_fft_q_axis_tlast;
      wire m_fft_q_axis_tready;
-     wire [31:0] m_fft_q_axis_index;
+     wire [31:0] m_fft_q_index;
 
      wire [31:0] mixer_out_i;
      wire [31:0] mixer_out_q;
@@ -526,7 +526,7 @@ sq_mag_estimate#(
     .dataQ(m_fft_i_axis_tdata[63:32]),
     .dataQ_tvalid(m_fft_i_axis_tvalid),
     .dataQ_tlast(m_fft_i_axis_tlast),
-    .data_index(m_fft_i_axis_index),
+    .data_index(m_fft_i_index),
     .data_tuser(chirp_tuning_word_coeff),
     .dataMagSq(sq_mag_i_axis_tdata),
     .dataMag_tvalid(sq_mag_i_axis_tvalid),
@@ -549,7 +549,7 @@ sq_mag_estimate#(
    .dataQ(m_fft_q_axis_tdata[63:32]),
    .dataQ_tvalid(m_fft_q_axis_tvalid),
    .dataQ_tlast(m_fft_q_axis_tlast),
-   .data_index(m_fft_q_axis_index),
+   .data_index(m_fft_q_index),
    .data_tuser(chirp_tuning_word_coeff),
    .dataMagSq(sq_mag_q_axis_tdata),
    .dataMag_tvalid(sq_mag_q_axis_tvalid),
@@ -729,7 +729,7 @@ fft_dsp #(
 .m_axis_tlast(m_fft_i_axis_tlast),
 .m_axis_tready(m_fft_i_axis_tready),
 
-.m_axis_index(m_fft_i_axis_index),
+.m_index(m_fft_i_index),
 
    .chirp_ready                         (chirp_ready),
    .chirp_done                          (chirp_done),
@@ -760,7 +760,7 @@ fft_dsp #(
 .m_axis_tlast(m_fft_q_axis_tlast),
 .m_axis_tready(m_fft_q_axis_tready),
 
-.m_axis_index(m_fft_q_axis_index),
+.m_index(m_fft_q_index),
 
    .chirp_ready                         (chirp_ready),
    .chirp_done                          (chirp_done),
