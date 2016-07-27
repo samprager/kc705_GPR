@@ -171,8 +171,8 @@ module chirp_dds_top #
      wire       sq_mag_q_axis_tdata_overflow;
      wire [31:0] sq_mag_i_axis_tuser;
      wire [31:0] sq_mag_q_axis_tuser;
-     wire [31:0] sq_mag_i_axis_index;
-     wire [31:0] sq_mag_q_axis_index;
+     wire [31:0] sq_mag_i_index;
+     wire [31:0] sq_mag_q_index;
 
      wire [31:0] peak_index_i;
      wire [63:0] peak_tdata_i;

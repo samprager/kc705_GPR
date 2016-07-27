@@ -437,10 +437,20 @@
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/sq_mag_i_axis_tdata" type="array">
          <obj_property name="ElementShortName">sq_mag_i_axis_tdata[63:0]</obj_property>
          <obj_property name="ObjectShortName">sq_mag_i_axis_tdata[63:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+         <obj_property name="WaveformStyle">STYLE_ANALOG</obj_property>
+         <obj_property name="CellHeight">100</obj_property>
+         <obj_property name="AnalogYRangeMin">-1.4119e+15</obj_property>
+         <obj_property name="AnalogYRRangeMax">6.47489e+15</obj_property>
       </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/sq_mag_q_axis_tdata" type="array">
          <obj_property name="ElementShortName">sq_mag_q_axis_tdata[63:0]</obj_property>
          <obj_property name="ObjectShortName">sq_mag_q_axis_tdata[63:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+         <obj_property name="WaveformStyle">STYLE_ANALOG</obj_property>
+         <obj_property name="CellHeight">100</obj_property>
+         <obj_property name="AnalogYRangeMin">-2.70099e+15</obj_property>
+         <obj_property name="AnalogYRRangeMax">1.00415e+16</obj_property>
       </wvobject>
       <wvobject db_ref_id="1" fp_name="/sim_tb_cmd_decoder/u_cmd_decoder_top/chirp_dds_top_inst/sq_mag_i_axis_tdata_overflow" type="logic">
          <obj_property name="ElementShortName">sq_mag_i_axis_tdata_overflow</obj_property>
