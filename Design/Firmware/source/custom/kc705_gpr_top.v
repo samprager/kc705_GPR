@@ -1103,12 +1103,10 @@ peak_axis_dwidth_converter peak_axis_dwidth_converter_inst (
   .s_axis_tready(axis_pk_tready),  // output wire s_axis_tready
   .s_axis_tdata(axis_pk_tdata),    // input wire [511 : 0] s_axis_tdata
   .s_axis_tlast(axis_pk_tlast),    // input wire s_axis_tlast
-  .s_axis_tuser(axis_pk_tuser),    // input wire s_axis_tlast
   .m_axis_tvalid(dwout_axis_tvalid),  // output wire m_axis_tvalid
   .m_axis_tready(dwout_axis_tready),  // input wire m_axis_tready
   .m_axis_tdata(dwout_axis_tdata),    // output wire [7 : 0] m_axis_tdata
-  .m_axis_tlast(dwout_axis_tlast),    // output wire m_axis_tlast
-  .m_axis_tuser(dwout_axis_tuser)    // output wire m_axis_tuser
+  .m_axis_tlast(dwout_axis_tlast)    // output wire m_axis_tlast
 );
  peak_axis_clock_converter peak_axis_clock_converter_inst (
      .s_axis_aresetn(!clk_245_rst),  // input wire s_axis_aresetn
@@ -1118,14 +1116,13 @@ peak_axis_dwidth_converter peak_axis_dwidth_converter_inst (
      .s_axis_tready(dwout_axis_tready),    // output wire s_axis_tready
      .s_axis_tdata(dwout_axis_tdata),      // input wire [7 : 0] s_axis_tdata
      .s_axis_tlast(dwout_axis_tlast),      // input wire s_axis_tlast
-     .s_axis_tuser(dwout_axis_tuser),    // input wire s_axis_tuser
      .m_axis_aclk(gtx_clk_bufg),        // input wire m_axis_aclk
      .m_axis_tvalid(pk_axis_tvalid),    // output wire m_axis_tvalid
      .m_axis_tready(pk_axis_tready),    // input wire m_axis_tready
      .m_axis_tdata(pk_axis_tdata),      // output wire [511 : 0] m_axis_tdata
-     .m_axis_tlast(pk_axis_tlast),      // output wire m_axis_tlast
-     .m_axis_tuser(pk_axis_tuser)
+     .m_axis_tlast(pk_axis_tlast)      // output wire m_axis_tlast
    );
+   assign pk_axis_tuser = 1'b0;
 
 axi_vfifo_ctrl_0 u_axi_vfifo_ctrl_0(
     .aclk(ui_clk),                                          // input wire aclk
