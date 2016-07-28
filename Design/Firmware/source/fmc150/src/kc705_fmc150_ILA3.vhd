@@ -269,48 +269,31 @@ constant CHB_IDELAY : integer := 10; -- Initial number of delay taps on ADC data
 ----------------------------------------------------------------------------------------------------
 -- Component declaration
 ----------------------------------------------------------------------------------------------------
-COMPONENT ila
-  PORT (
-    clk     : IN STD_LOGIC;
-    probe0  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    probe1  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    probe2  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    probe3  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    probe4  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe5  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe6  : IN STD_LOGIC_VECTOR(13 DOWNTO 0);
-    --probe7  : IN STD_LOGIC_VECTOR(13 DOWNTO 0)
-    probe7  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    probe8  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    probe9  : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-    probe10  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe11  : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-    probe12  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe13  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe14  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe15  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe16  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-    probe17  : IN STD_LOGIC_VECTOR(0 DOWNTO 0)
- );
-END COMPONENT;
+--COMPONENT ila
+--  PORT (
+--    clk     : IN STD_LOGIC;
+--    probe0  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+--    probe1  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+--    probe2  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+--    probe3  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+--    probe4  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe5  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe6  : IN STD_LOGIC_VECTOR(13 DOWNTO 0);
+--    --probe7  : IN STD_LOGIC_VECTOR(13 DOWNTO 0)
+--    probe7  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+--    probe8  : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+--    probe9  : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+--    probe10  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe11  : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+--    probe12  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe13  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe14  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe15  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe16  : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+--    probe17  : IN STD_LOGIC_VECTOR(0 DOWNTO 0)
+-- );
+--END COMPONENT;
 
---component icon_v1_06_a_0 is
---port (
---  control0 : inout std_logic_vector(35 downto 0)
-----  control1 : inout std_logic_vector(35 downto 0);
-----  control2 : inout std_logic_vector(35 downto 0);
-----  control3 : inout std_logic_vector(35 downto 0)
---);
---end component icon_v1_06_a_0;
-
---component vio is
---port (
---  clk       : in    std_logic := 'X';
---  sync_in   : in    std_logic_vector(47 downto 0);
---  control   : inout std_logic_vector(35 downto 0);
---  sync_out  : out   std_logic_vector(67 downto 0)
---);
---end component vio;
 
 
 --COMPONENT vio
@@ -334,23 +317,7 @@ END COMPONENT;
 --  );
 --END COMPONENT;
 
---
---component ila_dac is
---port (
---  clk     : in    std_logic := 'X';
---  trig0   : in    std_logic_vector(31 downto 0);
---  control : inout std_logic_vector(35 downto 0)
---);
---end component ila_dac;
---
---component ila_baseband_out is
---port (
---  clk     : in    std_logic := 'X';
---  trig0   : in    std_logic_vector(31 downto 0);
---  trig1   : in    std_logic_vector(0 downto 0);
---  control : inout std_logic_vector(35 downto 0)
---);
---end component ila_baseband_out;
+
 component mmcm_adac is
 port (
     -- Clock in ports
@@ -495,16 +462,6 @@ port (
 );
 end component duc_ddc;
 
---component ila_adc_cali
---  port (
---    control : inout std_logic_vector(35 downto 0);
---    clk : in std_logic;
---    data : in std_logic_vector(23 downto 0);
---    trig0 : in std_logic_vector(13 downto 0);
---    trig1 : in std_logic_vector(0 to 0);
---    trig2 : in std_logic_vector(0 to 0);
---    trig3 : in std_logic_vector(0 to 0));
---end component;
 
 component ADC_auto_calibration is
   generic (
@@ -2208,32 +2165,32 @@ end process register_control_signals;
 --  control => ila_dac_control
 --);
 
-ila_dac_baseband_ADC : ila
-  PORT MAP (
-    clk     => clk_245_76MHz,
-    probe0  => dac_din_i,                            -- 16-bit
-    probe1  => dac_din_q,                            -- 16-bit
-    probe2  => baseband_out_i_sig_dly1,              -- 16-bit
-    probe3  => baseband_out_q_sig_dly1,              -- 16-bit
-    probe4  => baseband_out_valid_sig_dly1_1,--(0 => baseband_out_valid_sig_dly1),   -- 1-bit
-    probe5  => adc_chb_re_mux_polarity_1,--(0 => adc_chb_re_mux_polarity),       -- 1-bit
-    probe6  => adc_dout_i_245_76_MSPS,               -- 14-bit
-   -- probe7  => "00000000000000"               -- 14-bit
-    --probe7  => "0000000000000000"               -- 16-bit
-    --probe7 => adc_data_out_ila_sig(31 downto 16),                       -- 16 bit i channel
-    --probe8 => adc_data_out_ila_sig(15 downto 0),                       -- 16 bit q channel
-    probe7 => adc_data_out_ila_sig(63 downto 48),                       -- 16 bit dac i channel
-    probe8 => adc_data_out_ila_sig(47 downto 32),                       -- 16 bit dac q channel
-    probe9 => adc_data_out_ila_sig(31 downto 0),
-    probe10 => adc_data_out_valid_ila_sig,
-    probe11 => fmc150_status_vector_ila_sig(3 downto 0),
-    probe12 => chirp_ready_ila_sig,
-    probe13 => chirp_done_ila_sig,
-    probe14 => chirp_active_ila_sig,
-    probe15 => chirp_init_ila_sig,
-    probe16 => chirp_enable_ila_sig,
-    probe17 => adc_enable_ila_sig
-   );
+--ila_dac_baseband_ADC : ila
+--  PORT MAP (
+--    clk     => clk_245_76MHz,
+--    probe0  => dac_din_i,                            -- 16-bit
+--    probe1  => dac_din_q,                            -- 16-bit
+--    probe2  => baseband_out_i_sig_dly1,              -- 16-bit
+--    probe3  => baseband_out_q_sig_dly1,              -- 16-bit
+--    probe4  => baseband_out_valid_sig_dly1_1,--(0 => baseband_out_valid_sig_dly1),   -- 1-bit
+--    probe5  => adc_chb_re_mux_polarity_1,--(0 => adc_chb_re_mux_polarity),       -- 1-bit
+--    probe6  => adc_dout_i_245_76_MSPS,               -- 14-bit
+--   -- probe7  => "00000000000000"               -- 14-bit
+--    --probe7  => "0000000000000000"               -- 16-bit
+--    --probe7 => adc_data_out_ila_sig(31 downto 16),                       -- 16 bit i channel
+--    --probe8 => adc_data_out_ila_sig(15 downto 0),                       -- 16 bit q channel
+--    probe7 => adc_data_out_ila_sig(63 downto 48),                       -- 16 bit dac i channel
+--    probe8 => adc_data_out_ila_sig(47 downto 32),                       -- 16 bit dac q channel
+--    probe9 => adc_data_out_ila_sig(31 downto 0),
+--    probe10 => adc_data_out_valid_ila_sig,
+--    probe11 => fmc150_status_vector_ila_sig(3 downto 0),
+--    probe12 => chirp_ready_ila_sig,
+--    probe13 => chirp_done_ila_sig,
+--    probe14 => chirp_active_ila_sig,
+--    probe15 => chirp_init_ila_sig,
+--    probe16 => chirp_enable_ila_sig,
+--    probe17 => adc_enable_ila_sig
+--   );
     baseband_out_valid_sig_dly1_1(0) <= baseband_out_valid_sig_dly1;
     adc_chb_re_mux_polarity_1(0) <= adc_chb_re_mux_polarity;
 

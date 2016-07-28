@@ -9,7 +9,8 @@ module dsp_range_detector #
      parameter PK_AXI_STREAM_ID = 1'b0,
      parameter PK_AXI_STREAM_DEST = 1'b0,
 
-     parameter FFT_LEN = 8192
+     parameter FFT_LEN = 8192,
+     parameter SIMULATION = 0
 
    )
   (
@@ -472,7 +473,8 @@ peak_finder #(
 fft_dsp #(
   .FFT_LEN(FFT_LEN),
   .FFT_CHANNELS(1),
-  .FFT_AXI_DATA_WIDTH (64)
+  .FFT_AXI_DATA_WIDTH (64),
+  .SIMULATION(SIMULATION)
   )
   fft_dsp_i(
 
@@ -503,7 +505,8 @@ fft_dsp #(
 fft_dsp #(
   .FFT_LEN(FFT_LEN),
   .FFT_CHANNELS(1),
-  .FFT_AXI_DATA_WIDTH (64)
+  .FFT_AXI_DATA_WIDTH (64),
+  .SIMULATION(SIMULATION)
   )
   fft_dsp_q(
 

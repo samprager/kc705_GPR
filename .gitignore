@@ -133,3 +133,9 @@ IP Output Products (only need .xci and .coe and .prj files)
 !*/*/ip/*/*.coe
 !*/*/ip/*/*.xci
 !*/*/ip/*/*.prj
+
+#########
+Generated Bitstreams and debug nets
+#########
+*/*/implement/project_1/project_1.runs/impl*/*.bit
+*/*/implement/project_1/project_1.runs/impl*/*.ltx

@@ -10,7 +10,8 @@ module fft_dsp #
      parameter FFT_AXI_TUSER_WIDTH = 1,
      parameter FFT_AXI_STREAM_ID = 1'b0,
      parameter FFT_AXI_STREAM_DEST = 1'b0,
-     parameter FFT_INDEX_LEN = 32
+     parameter FFT_INDEX_LEN = 32,
+     parameter SIMULATION = 0
 
    )
   (
@@ -44,7 +45,7 @@ module fft_dsp #
    );
 localparam NEED_SCALING = 0;
 
-localparam CONFIG_LATENCY = 16;
+localparam CONFIG_LATENCY = 4;
 localparam LOG_2_FFT_LEN = clogb2(FFT_LEN);
 localparam SCH_SIZE_DIV = ceildiv(LOG_2_FFT_LEN,2);
 localparam SCH_SIZE = 2*SCH_SIZE_DIV;
@@ -292,6 +293,32 @@ xfft_0 xfft_0_inst (
  .event_data_in_channel_halt(fft_event_data_in_channel_halt),    // output wire event_data_in_channel_halt
  .event_data_out_channel_halt(fft_event_data_out_channel_halt)  // output wire event_data_out_channel_halt
 );
-
+//generate if (SIMULATION == 0) begin
+//ila_fft ila_fft_inst(
+//.clk(aclk),          // input wire clk
+//.probe0(s_axis_fft_config_tdata),    // input wire [15 : 0] probe0
+//.probe1(s_axis_fft_config_tvalid),    // input wire [0 : 0] probe1
+//.probe2(s_axis_fft_config_tready),    // input wire [0 : 0] probe2
+//.probe3(s_axis_fft_data_tdata),    // input wire [63 : 0] probe3
+//.probe4(s_axis_fft_data_tvalid),    // input wire [0 : 0] probe4
+//.probe5(s_axis_fft_data_tready),    // input wire [0 : 0] probe5
+//.probe6(s_axis_fft_data_tlast),    // input wire [0 : 0] probe6
+//.probe7(m_axis_fft_data_tdata),    // input wire [63 : 0] probe7
+//.probe8(m_axis_fft_data_tvalid),    // input wire [0 : 0] probe8
+//.probe9(m_axis_fft_data_tready),    // input wire [0 : 0] probe9
+//.probe10(m_axis_fft_data_tlast),  // input wire [0 : 0] probe10
+//.probe11(m_axis_fft_data_tuser),  // input wire [7 : 0] probe11
+//.probe12(fft_event_frame_started),  // input wire [0 : 0] probe12
+//.probe13(fft_event_tlast_unexpected),  // input wire [0 : 0] probe13
+//.probe14(fft_event_tlast_missing),  // input wire [0 : 0] probe14
+//.probe15(fft_event_status_channel_halt),  // input wire [0 : 0] probe15
+//.probe16(fft_event_data_in_channel_halt),  // input wire [0 : 0] probe16
+//.probe17(fft_event_data_out_channel_halt),  // input wire [0 : 0] probe17
+//.probe18(m_axis_fft_status_tdata),  // input wire [7 : 0] probe18
+//.probe19(m_axis_fft_status_tvalid),  // input wire [0 : 0] probe19
+//.probe20(m_axis_fft_status_tready)  // input wire [0 : 0] probe20
+//);
+//end
+//endgenerate
 
 endmodule

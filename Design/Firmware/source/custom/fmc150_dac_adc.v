@@ -16,7 +16,8 @@ module fmc150_dac_adc #
      parameter PK_AXI_STREAM_ID = 1'b0,
      parameter PK_AXI_STREAM_DEST = 1'b0,
 
-     parameter FFT_LEN = 8192
+     parameter SIMULATION = 0,
+     parameter FFT_LEN = 32768//8192
 
    )
   (
@@ -528,7 +529,8 @@ dsp_range_detector #
      .PK_AXI_TUSER_WIDTH(PK_AXI_TUSER_WIDTH),
      .PK_AXI_STREAM_ID (PK_AXI_STREAM_ID),
      .PK_AXI_STREAM_DEST (PK_AXI_STREAM_DEST),
-     .FFT_LEN(FFT_LEN)
+     .FFT_LEN(FFT_LEN),
+     .SIMULATION(SIMULATION)
 
   )dsp_range_detector_inst(
 

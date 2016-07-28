@@ -9,7 +9,8 @@ module chirp_dds_top #
      parameter ADC_AXI_STREAM_ID = 1'b0,
      parameter ADC_AXI_STREAM_DEST = 1'b0,
 
-     parameter FFT_LEN = 8192
+     parameter FFT_LEN = 32768,
+     parameter SIMULATION = 0
 
    )
   (
@@ -220,7 +221,7 @@ module chirp_dds_top #
       wire [63:0] peak_threshold_i;
       wire [63:0] peak_threshold_q;
 
-     wire [255:0] dw_axis_tdata;
+     wire [511:0] dw_axis_tdata;
      wire dw_axis_tvalid;
      wire dw_axis_tlast;
      wire dw_axis_tready;
@@ -536,7 +537,7 @@ assign data_iq_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_first);
 assign data_iq_tlast = (dds_latency_counter==1)&(adc_enable_rr)&(!adc_enable_r);
 assign data_iq_first = adc_fifo_wr_first_r;
 assign data_counter_id = {glbl_counter[31:0],adc_counter};
-assign dw_axis_tready = 1'b1;
+assign dw_axis_tready = glbl_counter[4] | glbl_counter[1]; //1'b1;
 assign lpf_cutoff_ind = FCUTOFF_IND;
 assign threshold_ctrl_i = {4'hf,4'h1};
 assign threshold_ctrl_q = {4'hf,4'h1};
@@ -545,13 +546,14 @@ assign threshold_ctrl_q = {4'hf,4'h1};
 
 dsp_range_detector #
   (
-     .PK_AXI_DATA_WIDTH(256),
+     .PK_AXI_DATA_WIDTH(512),
      .PK_AXI_TID_WIDTH (1),
      .PK_AXI_TDEST_WIDTH(1),
      .PK_AXI_TUSER_WIDTH(1),
      .PK_AXI_STREAM_ID (1'b0),
      .PK_AXI_STREAM_DEST (1'b0),
-     .FFT_LEN(FFT_LEN)
+     .FFT_LEN(FFT_LEN),
+     .SIMULATION(SIMULATION)
 
   )dsp_range_detector_inst(
 

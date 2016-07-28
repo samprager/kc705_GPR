@@ -259,10 +259,10 @@ function integer clogb2 (input integer size);
 // Virtual Fifo Read Channel (axi-4 mm to axis) prog full thresholds
 // Depends on 1m2s axis-interconnect FIFO depth and channel weight (AR) for each master channel
 // Must ensure that space available in fifo is >= 2*AR*vfifo burst size
-  localparam FIFO_M00_DEPTH = 256;                     //data words
+  localparam FIFO_M00_DEPTH = 16;//256;                     //data words
   localparam FIFO_M01_DEPTH = 1024;                     //data words
-  localparam FIFO_M00_WIDTH = 64;                        // bytes
-  localparam FIFO_M01_WIDTH = 64;                        // bytes
+  localparam FIFO_M00_WIDTH = 64;                        // bytes - determined by width of interconnect switch
+  localparam FIFO_M01_WIDTH = 64;                        // bytes - determined by width of interconnect switch
   localparam VFIFO_CH0_AR_WEIGHT = 4;
   localparam VFIFO_CH1_AR_WEIGHT = 8;
   localparam VFIFO_BURST_SIZE = 1024;                   // bytes
