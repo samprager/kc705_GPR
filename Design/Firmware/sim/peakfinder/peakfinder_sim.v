@@ -28,6 +28,9 @@ module peakfinder_sim(
     localparam FMC_TCLK_PERIOD          = 4069;         // 245.76 MHz
     localparam RESET_PERIOD = 320000; //in pSec
 
+    localparam THRESH_CTRL =  8'h08;
+    
+    
         reg axi_tresetn_i;
         reg axi_tclk_i;
 
@@ -139,8 +142,18 @@ module peakfinder_sim(
 
         reg dw_axis_tvalid_r;
         reg dw_axis_tlast_r;
-
-
+        
+        wire [63:0] peak_threshold_i;
+        wire [63:0] peak_threshold_q;
+        reg [63:0] peak_threshold_i_r;
+        reg [63:0] peak_threshold_q_r;
+        reg [63:0] new_peak_threshold_i_r;
+        reg [63:0] new_peak_threshold_q_r;
+        reg update_threshold;
+        wire[7:0] threshold_ctrl_i;
+        wire[7:0] threshold_ctrl_q;
+        reg[7:0] threshold_ctrl_i_r;
+        reg[7:0] threshold_ctrl_q_r;
 
 
 
@@ -228,6 +241,10 @@ module peakfinder_sim(
                   dw_axis_tlast_r <= 1'b0;
 
                   test_offset <= 'b0;
+                  
+                  threshold_ctrl_i_r <= 8'h01;
+                  threshold_ctrl_q_r <= 8'h0a;
+                  update_threshold <= 0;
 
               end else begin
                   counter <= counter + 1'b1;
@@ -284,7 +301,20 @@ module peakfinder_sim(
                     dw_axis_tlast_r <= 1'b0;
                   end
 
-
+                  if(counter == 8'h0)begin
+                    new_peak_threshold_i_r <= 'b0;
+                    new_peak_threshold_q_r <= 'b0;
+                    update_threshold <= 1'b1;
+                  end else if (update_threshold) begin
+                    new_peak_threshold_i_r[4*threshold_ctrl_i[7:4]+3-:4] <=threshold_ctrl_i[3:0];
+                    new_peak_threshold_q_r[4*threshold_ctrl_q[7:4]+3-:4] <=threshold_ctrl_q[3:0];
+                    threshold_ctrl_i_r[7:4] <=  threshold_ctrl_i_r[7:4] + 1;
+                    threshold_ctrl_q_r[7:4] <=  threshold_ctrl_q_r[7:4] + 1;
+                    update_threshold <= 1'b0;
+                 end else begin
+                    peak_threshold_i_r <= new_peak_threshold_i_r;
+                    peak_threshold_q_r <= new_peak_threshold_q_r;
+                  end  
               end
 
 
@@ -301,6 +331,19 @@ assign m_fft_q_axis_tvalid = m_fft_q_axis_tvalid_r;
 assign m_fft_i_axis_tlast = m_fft_i_axis_tlast_r;
 assign m_fft_q_axis_tlast = m_fft_q_axis_tlast_r;
 
+
+        
+//assign threshold_ctrl_i = {4'hf,4'h1};
+//assign threshold_ctrl_q = {4'hf,4'h1};
+assign threshold_ctrl_i = threshold_ctrl_i_r;
+assign threshold_ctrl_q = threshold_ctrl_q_r;
+
+//assign peak_threshold_i = {{(60-4*threshold_ctrl_i[7:4]){1'b0}},threshold_ctrl_i[3:0],{(4*threshold_ctrl_i[7:4]){1'b0}}};
+//assign peak_threshold_q = {{(60-4*threshold_ctrl_q[7:4]){1'b0}},threshold_ctrl_q[3:0],{(4*threshold_ctrl_q[7:4]){1'b0}}};
+//assign peak_threshold_i = {{(60-4*THRESH_CTRL[7:4]){1'b0}},THRESH_CTRL[3:0],{(4*THRESH_CTRL[7:4]){1'b0}}};
+//assign peak_threshold_q = {{(60-4*THRESH_CTRL[7:4]){1'b0}},THRESH_CTRL[3:0],{(4*THRESH_CTRL[7:4]){1'b0}}};
+assign peak_threshold_i = peak_threshold_i_r;
+assign peak_threshold_q = peak_threshold_q_r;
 
 
     sq_mag_estimate#(

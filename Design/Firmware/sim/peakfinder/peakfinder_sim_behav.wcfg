@@ -10,7 +10,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="29" />
+   <WVObjectSize size="35" />
    <wvobject type="group" fp_name="group590">
       <obj_property name="label">sim_tb_sigs</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -519,5 +519,29 @@
    <wvobject db_ref_id="1" type="logic" fp_name="/peakfinder_sim/dwout_axis_tvalid">
       <obj_property name="ElementShortName">dwout_axis_tvalid</obj_property>
       <obj_property name="ObjectShortName">dwout_axis_tvalid</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/peak_threshold_i">
+      <obj_property name="ElementShortName">peak_threshold_i[63:0]</obj_property>
+      <obj_property name="ObjectShortName">peak_threshold_i[63:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/peak_threshold_q">
+      <obj_property name="ElementShortName">peak_threshold_q[63:0]</obj_property>
+      <obj_property name="ObjectShortName">peak_threshold_q[63:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/peak_threshold_i_r">
+      <obj_property name="ElementShortName">peak_threshold_i_r[63:0]</obj_property>
+      <obj_property name="ObjectShortName">peak_threshold_i_r[63:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/peak_threshold_q_r">
+      <obj_property name="ElementShortName">peak_threshold_q_r[63:0]</obj_property>
+      <obj_property name="ObjectShortName">peak_threshold_q_r[63:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/threshold_ctrl_i_r">
+      <obj_property name="ElementShortName">threshold_ctrl_i_r[7:0]</obj_property>
+      <obj_property name="ObjectShortName">threshold_ctrl_i_r[7:0]</obj_property>
+   </wvobject>
+   <wvobject db_ref_id="1" type="array" fp_name="/peakfinder_sim/threshold_ctrl_q_r">
+      <obj_property name="ElementShortName">threshold_ctrl_q_r[7:0]</obj_property>
+      <obj_property name="ObjectShortName">threshold_ctrl_q_r[7:0]</obj_property>
    </wvobject>
 </wave_config>
