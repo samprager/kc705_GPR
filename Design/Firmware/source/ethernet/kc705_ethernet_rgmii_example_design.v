@@ -746,7 +746,7 @@ module kc705_ethernet_rgmii_example_design
     
     
    kc705_ethernet_rgmii_axi_packetizer #(
-       .DEST_ADDR                 (48'hda0102030405),
+       .DEST_ADDR                 (48'h985aebdb066f),
        .SRC_ADDR                  (48'h5a0102030405),
        .MAX_SIZE                  (32'd84),
        .MIN_SIZE                  (32'd84),
