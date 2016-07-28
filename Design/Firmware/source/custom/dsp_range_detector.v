@@ -229,9 +229,6 @@ if(iq_first)begin
 end else if (update_threshold_r) begin
   peak_threshold_i_r[4*threshold_ctrl_i[7:4]+3-:4] <=threshold_ctrl_i[3:0];
   peak_threshold_q_r[4*threshold_ctrl_q[7:4]+3-:4] <=threshold_ctrl_q[3:0];
-end else begin
-  peak_threshold_i_r <= new_peak_threshold_i_r;
-  peak_threshold_q_r <= new_peak_threshold_q_r;
 end
 end
 
