@@ -35,7 +35,7 @@ module freq_domain_lpf #(
     input tlast,
     input [TUSER_LEN-1:0] tuser,
     input [INDEX_LEN-1:0] index,
-    input [DATA_LEN-1:0] cutoff,
+    input [INDEX_LEN-1:0] cutoff,
     output [DATA_LEN-1:0] lpf_tdata,
     output lpf_tvalid,
     output lpf_tlast,

@@ -556,7 +556,7 @@ dsp_range_detector #
     .pk_axis_tdata(axis_pk_tdata),
     .pk_axis_tvalid(axis_pk_tvalid),
     .pk_axis_tlast(axis_pk_tlast),
-    .pk_axis_tkeep(axis_pk_tdkeep),
+    .pk_axis_tkeep(axis_pk_tkeep),
     .pk_axis_tdest(axis_pk_tdest),
     .pk_axis_tid(axis_pk_tid),
     .pk_axis_tstrb(axis_pk_tstrb),
