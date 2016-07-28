@@ -186,6 +186,13 @@ module kc705_ethernet_rgmii_example_design
        input                                adc_axis_tlast,
        input                                adc_axis_tuser,
        output                               adc_axis_tready,
+       
+       // data from Peak Detector DSP
+        input       [7:0]                    pk_axis_tdata,
+        input                                pk_axis_tvalid,
+        input                                pk_axis_tlast,
+        input                                pk_axis_tuser,
+        output                               pk_axis_tready,
 
        // Decoded Commands from RGMII RX fifo
        output     [31:0] cmd_axis_tdata,
@@ -298,6 +305,20 @@ module kc705_ethernet_rgmii_example_design
    wire  [1:0]          s_axi_rresp;
    wire                 s_axi_rvalid;
    wire                 s_axi_rready;
+   
+   wire [7:0] config_pkt_tdata;
+   wire config_pkt_tvalid;
+   wire config_pkt_tready;
+   wire config_pkt_tlast;
+   
+  wire [7:0] data_pkt_tdata;
+   wire data_pkt_tvalid;
+   wire data_pkt_tready;
+   wire data_pkt_tlast;
+   
+  wire [31 : 0] S00_FIFO_DATA_COUNT;
+  wire [31 : 0] S01_FIFO_DATA_COUNT;
+  wire M00_SPARSE_TKEEP_REMOVED;
 
    wire     [31:0]  cmd_pkt_axis_tdata;
    wire             cmd_pkt_axis_tvalid;
@@ -647,11 +668,16 @@ module kc705_ethernet_rgmii_example_design
         .rx_axis_tuser                (1'b0), // the FIFO drops all bad frames
         .rx_axis_tready               (),
 
-      .tx_axis_tdata                (tx_axis_fifo_tdata),
-      .tx_axis_tvalid               (tx_axis_fifo_tvalid),
-      .tx_axis_tlast                (tx_axis_fifo_tlast),
-      .tx_axis_tready               (tx_axis_fifo_tready),
+//      .tx_axis_tdata                (tx_axis_fifo_tdata),
+//      .tx_axis_tvalid               (tx_axis_fifo_tvalid),
+//      .tx_axis_tlast                (tx_axis_fifo_tlast),
+//      .tx_axis_tready               (tx_axis_fifo_tready),
 
+      .tx_axis_tdata                (data_pkt_tdata),
+      .tx_axis_tvalid               (data_pkt_tvalid),
+      .tx_axis_tlast                (data_pkt_tlast),
+      .tx_axis_tready               (data_pkt_tready),
+      
       .enable_adc_pkt            (enable_adc_pkt),
       .adc_axis_tdata           (adc_axis_tdata),
       .adc_axis_tvalid          (adc_axis_tvalid),
@@ -716,6 +742,64 @@ module kc705_ethernet_rgmii_example_design
           .tid        (cmd_axis_tid),
           .tkeep       (cmd_axis_tkeep),
           .tready      (cmd_axis_tready)
+    );
+    
+    
+   kc705_ethernet_rgmii_axi_packetizer #(
+       .DEST_ADDR                 (48'hda0102030405),
+       .SRC_ADDR                  (48'h5a0102030405),
+       .MAX_SIZE                  (32'd84),
+       .MIN_SIZE                  (32'd84),
+       .ENABLE_VLAN               (0),
+       .VLAN_ID                   (12'd2),
+       .VLAN_PRIORITY             (3'd2)
+    ) config_packetizer_inst (
+      //  .axi_tclk                  (axi_tclk),
+      //  .axi_tresetn               (axi_tresetn),
+       .axi_tclk                  (tx_fifo_clock),
+       .axi_tresetn               (tx_fifo_resetn),
+       .enable_adc_pkt            (1'b1),
+       .speed                     (mac_speed),
+
+        // data from ADC Data fifo
+        .adc_axis_tdata           (pk_axis_tdata),
+        .adc_axis_tvalid          (pk_axis_tvalid),
+        .adc_axis_tlast           (pk_axis_tlast),
+        .adc_axis_tuser           (pk_axis_tuser),
+        .adc_axis_tready          (pk_axis_tready),
+
+       .tdata                     (config_pkt_tdata),
+       .tvalid                    (config_pkt_tvalid),
+       .tlast                     (config_pkt_tlast),
+       .tready                    (config_pkt_tready)
+    );
+    
+    ethernet_tx_axis_interconnect ethernet_tx_axis_interconnect_inst (
+      .ACLK(tx_fifo_clock),                                          // input wire ACLK
+      .ARESETN(tx_fifo_resetn),                                    // input wire ARESETN
+      .S00_AXIS_ACLK(tx_fifo_clock),                        // input wire S00_AXIS_ACLK
+      .S01_AXIS_ACLK(tx_fifo_clock),                        // input wire S01_AXIS_ACLK
+      .S00_AXIS_ARESETN(tx_fifo_resetn),                  // input wire S00_AXIS_ARESETN
+      .S01_AXIS_ARESETN(tx_fifo_resetn),                  // input wire S01_AXIS_ARESETN
+      .S00_AXIS_TVALID(data_pkt_tvalid),                    // input wire S00_AXIS_TVALID
+      .S01_AXIS_TVALID(config_pkt_tvalid),                    // input wire S01_AXIS_TVALID
+      .S00_AXIS_TREADY(data_pkt_tready),                    // output wire S00_AXIS_TREADY
+      .S01_AXIS_TREADY(config_pkt_tready),                    // output wire S01_AXIS_TREADY
+      .S00_AXIS_TDATA(data_pkt_tdata),                      // input wire [7 : 0] S00_AXIS_TDATA
+      .S01_AXIS_TDATA(config_pkt_tdata),                      // input wire [7 : 0] S01_AXIS_TDATA
+      .S00_AXIS_TLAST(data_pkt_tlast),                      // input wire S00_AXIS_TLAST
+      .S01_AXIS_TLAST(config_pkt_tlast),                      // input wire S01_AXIS_TLAST
+      .M00_AXIS_ACLK(tx_fifo_clock),                        // input wire M00_AXIS_ACLK
+      .M00_AXIS_ARESETN(tx_fifo_resetn),                  // input wire M00_AXIS_ARESETN
+      .M00_AXIS_TVALID(tx_axis_fifo_tvalid),                    // output wire M00_AXIS_TVALID
+      .M00_AXIS_TREADY(tx_axis_fifo_tready),                    // input wire M00_AXIS_TREADY
+      .M00_AXIS_TDATA(tx_axis_fifo_tdata),                      // output wire [7 : 0] M00_AXIS_TDATA
+      .M00_AXIS_TLAST(tx_axis_fifo_tlast),                      // output wire M00_AXIS_TLAST
+      .S00_ARB_REQ_SUPPRESS(1'b0),                          // input wire S00_ARB_REQ_SUPPRESS
+      .S01_ARB_REQ_SUPPRESS(1'b0),                          // input wire S01_ARB_REQ_SUPPRESS
+      .S00_FIFO_DATA_COUNT(S00_FIFO_DATA_COUNT),            // output wire [31 : 0] S00_FIFO_DATA_COUNT
+      .S01_FIFO_DATA_COUNT(S01_FIFO_DATA_COUNT),            // output wire [31 : 0] S01_FIFO_DATA_COUNT
+      .M00_SPARSE_TKEEP_REMOVED(M00_SPARSE_TKEEP_REMOVED)  // output wire M00_SPARSE_TKEEP_REMOVED
     );
 
 

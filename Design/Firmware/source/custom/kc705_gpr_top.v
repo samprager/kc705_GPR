@@ -288,6 +288,13 @@ function integer clogb2 (input integer size);
   localparam ADC_AXI_TUSER_WIDTH = 1;
   localparam ADC_AXI_STREAM_ID = 1'b0;
   localparam ADC_AXI_STREAM_DEST = 1'b1;
+  
+  localparam PK_AXI_DATA_WIDTH = 512;//64;
+  localparam PK_AXI_TID_WIDTH = 1;
+  localparam PK_AXI_TDEST_WIDTH = 1;
+  localparam PK_AXI_TUSER_WIDTH = 1;
+  localparam PK_AXI_STREAM_ID = 1'b0;
+  localparam PK_AXI_STREAM_DEST = 1'b1;
 
   localparam RX_WR_CMD_DWIDTH = 224;
   localparam RX_RD_CMD_DWIDTH = 32;
@@ -359,7 +366,7 @@ wire                 clk250_resetn;
 
 reg                  sysclk_reset;
 
-wire [8:0]          adc_pkt_axis_tdata;
+wire [7:0]          adc_pkt_axis_tdata;
 wire                adc_pkt_axis_tvalid;
 wire                adc_pkt_axis_tlast;
 wire                adc_pkt_axis_tuser;
@@ -401,6 +408,29 @@ wire [ADC_AXI_TDEST_WIDTH-1:0]  axis_adc_tdest;
 wire [ADC_AXI_TUSER_WIDTH-1:0]  axis_adc_tuser;
 wire                            axis_adc_tready;
 wire [ADC_AXI_DATA_WIDTH/8-1:0] axis_adc_tstrb;
+
+ // --ADC AXI-Stream Data Out Signals from fmc150_dac_adc module
+wire [PK_AXI_DATA_WIDTH-1:0]   axis_pk_tdata;
+wire                            axis_pk_tvalid;
+wire                            axis_pk_tlast;
+wire [PK_AXI_DATA_WIDTH/8-1:0] axis_pk_tkeep;
+wire [PK_AXI_TID_WIDTH-1:0]    axis_pk_tid;
+wire [PK_AXI_TDEST_WIDTH-1:0]  axis_pk_tdest;
+wire [PK_AXI_TUSER_WIDTH-1:0]  axis_pk_tuser;
+wire                            axis_pk_tready;
+wire [PK_AXI_DATA_WIDTH/8-1:0] axis_pk_tstrb;
+
+wire [7:0]                      pk_axis_tdata;
+wire                            pk_axis_tvalid;
+wire                            pk_axis_tlast;
+wire                            pk_axis_tuser;
+wire                            pk_axis_tready;
+
+wire [7:0]                      dwout_axis_tdata;
+wire                            dwout_axis_tvalid;
+wire                            dwout_axis_tlast;
+wire                            dwout_axis_tuser;
+wire                            dwout_axis_tready;
 
 // Control Module Signals
 wire [3:0] fmc150_status_vector;
@@ -834,6 +864,13 @@ kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
   .adc_axis_tlast           (adc_pkt_axis_tlast),
   .adc_axis_tuser           (adc_pkt_axis_tuser),
   .adc_axis_tready          (adc_pkt_axis_tready),
+  
+  .pk_axis_tdata           (pk_axis_tdata),
+  .pk_axis_tvalid          (pk_axis_tvalid),
+  .pk_axis_tlast           (pk_axis_tlast),
+  .pk_axis_tuser           (pk_axis_tuser),
+  .pk_axis_tready          (pk_axis_tready),
+  
 
   // Main example design controls
   //-----------------------------
@@ -922,7 +959,13 @@ fmc150_dac_adc  #
     .ADC_AXI_TDEST_WIDTH(ADC_AXI_TDEST_WIDTH),
     .ADC_AXI_TUSER_WIDTH(ADC_AXI_TUSER_WIDTH),
     .ADC_AXI_STREAM_ID(ADC_AXI_STREAM_ID),
-    .ADC_AXI_STREAM_DEST(ADC_AXI_STREAM_DEST)
+    .ADC_AXI_STREAM_DEST(ADC_AXI_STREAM_DEST),
+    .PK_AXI_DATA_WIDTH(PK_AXI_DATA_WIDTH),
+    .PK_AXI_TID_WIDTH(PK_AXI_TID_WIDTH),
+    .PK_AXI_TDEST_WIDTH(PK_AXI_TDEST_WIDTH),
+    .PK_AXI_TUSER_WIDTH(PK_AXI_TUSER_WIDTH),
+    .PK_AXI_STREAM_ID(PK_AXI_STREAM_ID),
+    .PK_AXI_STREAM_DEST(PK_AXI_STREAM_DEST)
 )
 fmc150_dac_adc_inst
 (
@@ -940,6 +983,16 @@ fmc150_dac_adc_inst
      .axis_adc_tuser                      (axis_adc_tuser),
      .axis_adc_tready                     (axis_adc_tready),
      .axis_adc_tstrb                      (axis_adc_tstrb),
+     
+     .axis_pk_tdata                      (axis_pk_tdata),
+     .axis_pk_tvalid                     (axis_pk_tvalid),
+     .axis_pk_tlast                      (axis_pk_tlast),
+     .axis_pk_tkeep                      (axis_pk_tkeep),
+     .axis_pk_tid                        (axis_pk_tid),
+     .axis_pk_tdest                      (axis_pk_tdest),
+     .axis_pk_tuser                      (axis_pk_tuser),
+     .axis_pk_tready                     (axis_pk_tready),
+     .axis_pk_tstrb                      (axis_pk_tstrb),
 
      .fmc150_status_vector                (fmc150_status_vector),
      .chirp_ready                         (chirp_ready),
@@ -1043,6 +1096,36 @@ fmc150_dac_adc_inst
 
 );
 
+peak_axis_dwidth_converter peak_axis_dwidth_converter_inst (
+  .aclk(clk_245_76MHz),                    // input wire aclk
+  .aresetn(!clk_245_rst),              // input wire aresetn
+  .s_axis_tvalid(axis_pk_tvalid),  // input wire s_axis_tvalid
+  .s_axis_tready(axis_pk_tready),  // output wire s_axis_tready
+  .s_axis_tdata(axis_pk_tdata),    // input wire [511 : 0] s_axis_tdata
+  .s_axis_tlast(axis_pk_tlast),    // input wire s_axis_tlast
+  .s_axis_tuser(axis_pk_tuser),    // input wire s_axis_tlast
+  .m_axis_tvalid(dwout_axis_tvalid),  // output wire m_axis_tvalid
+  .m_axis_tready(dwout_axis_tready),  // input wire m_axis_tready
+  .m_axis_tdata(dwout_axis_tdata),    // output wire [7 : 0] m_axis_tdata
+  .m_axis_tlast(dwout_axis_tlast),    // output wire m_axis_tlast
+  .m_axis_tuser(dwout_axis_tuser)    // output wire m_axis_tuser
+);
+ peak_axis_clock_converter peak_axis_clock_converter_inst (
+     .s_axis_aresetn(!clk_245_rst),  // input wire s_axis_aresetn
+     .m_axis_aresetn(gtx_resetn),  // input wire m_axis_aresetn
+     .s_axis_aclk(clk_245_76MHz),        // input wire s_axis_aclk
+     .s_axis_tvalid(dwout_axis_tvalid),    // input wire s_axis_tvalid
+     .s_axis_tready(dwout_axis_tready),    // output wire s_axis_tready
+     .s_axis_tdata(dwout_axis_tdata),      // input wire [7 : 0] s_axis_tdata
+     .s_axis_tlast(dwout_axis_tlast),      // input wire s_axis_tlast
+     .s_axis_tuser(dwout_axis_tuser),    // input wire s_axis_tuser
+     .m_axis_aclk(gtx_clk_bufg),        // input wire m_axis_aclk
+     .m_axis_tvalid(pk_axis_tvalid),    // output wire m_axis_tvalid
+     .m_axis_tready(pk_axis_tready),    // input wire m_axis_tready
+     .m_axis_tdata(pk_axis_tdata),      // output wire [511 : 0] m_axis_tdata
+     .m_axis_tlast(pk_axis_tlast),      // output wire m_axis_tlast
+     .m_axis_tuser(pk_axis_tuser)
+   );
 
 axi_vfifo_ctrl_0 u_axi_vfifo_ctrl_0(
     .aclk(ui_clk),                                          // input wire aclk

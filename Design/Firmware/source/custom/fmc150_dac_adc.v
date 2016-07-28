@@ -48,7 +48,7 @@ module fmc150_dac_adc #
   output [PK_AXI_DATA_WIDTH/8-1:0]   axis_pk_tstrb,
   output [PK_AXI_TID_WIDTH-1:0] axis_pk_tid,
   output [PK_AXI_TDEST_WIDTH-1:0] axis_pk_tdest,
-  //output [PK_AXI_TUSER_WIDTH-1:0] axis_pk_tuser,
+  output [PK_AXI_TUSER_WIDTH-1:0] axis_pk_tuser,
   input axis_pk_tready,
 
 // Control Module signals
@@ -513,7 +513,7 @@ assign data_iq_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_first);
 assign data_iq_tlast = (dds_latency_counter==1)&(adc_enable_rr)&(!adc_enable_r);
 assign data_iq_first = adc_fifo_wr_first_r;
 assign data_counter_id = {glbl_counter[31:0],adc_counter};
-assign dw_axis_tready = 1'b1;
+//assign dw_axis_tready = 1'b1;
 assign lpf_cutoff_ind = FCUTOFF_IND;
 assign threshold_ctrl_i = {4'hf,4'h1};
 assign threshold_ctrl_q = {4'hf,4'h1};
@@ -544,15 +544,24 @@ dsp_range_detector #
   .iq_first(data_iq_first),
   .counter_id(data_counter_id),
 
-  .pk_axis_tdata(dw_axis_tdata),
-  .pk_axis_tvalid(dw_axis_tvalid),
-  .pk_axis_tlast(dw_axis_tlast),
-  .pk_axis_tkeep(dw_axis_tkeep),
-  .pk_axis_tdest(dw_axis_tdest),
-  .pk_axis_tid(dw_axis_tid),
-  .pk_axis_tstrb(dw_axis_tstrb),
-  .pk_axis_tuser(dw_axis_tuser),
-  .pk_axis_tready(dw_axis_tready),
+//  .pk_axis_tdata(dw_axis_tdata),
+//  .pk_axis_tvalid(dw_axis_tvalid),
+//  .pk_axis_tlast(dw_axis_tlast),
+//  .pk_axis_tkeep(dw_axis_tkeep),
+//  .pk_axis_tdest(dw_axis_tdest),
+//  .pk_axis_tid(dw_axis_tid),
+//  .pk_axis_tstrb(dw_axis_tstrb),
+//  .pk_axis_tuser(dw_axis_tuser),
+//  .pk_axis_tready(dw_axis_tready),
+    .pk_axis_tdata(axis_pk_tdata),
+    .pk_axis_tvalid(axis_pk_tvalid),
+    .pk_axis_tlast(axis_pk_tlast),
+    .pk_axis_tkeep(axis_pk_tdkeep),
+    .pk_axis_tdest(axis_pk_tdest),
+    .pk_axis_tid(axis_pk_tid),
+    .pk_axis_tstrb(axis_pk_tstrb),
+    .pk_axis_tuser(axis_pk_tuser),
+    .pk_axis_tready(axis_pk_tready),
 
   .lpf_cutoff(lpf_cutoff_ind),
   .threshold_ctrl_i(threshold_ctrl_i),    // {4b word index, 4b word value} in 64bit threshold
@@ -572,28 +581,30 @@ dsp_range_detector #
 
    );
 
-   peak_axis_clock_converter_512 peak_axis_clock_converter_512_inst (
-     .s_axis_aresetn(!clk_245_rst),  // input wire s_axis_aresetn
-     .m_axis_aresetn(aresetn),  // input wire m_axis_aresetn
-     .s_axis_aclk(clk_245_76MHz),        // input wire s_axis_aclk
-     .s_axis_tvalid(dw_axis_tvalid),    // input wire s_axis_tvalid
-     .s_axis_tready(dw_axis_tready),    // output wire s_axis_tready
-     .s_axis_tdata(dw_axis_tdata),      // input wire [511: 0] s_axis_tdata
-     .s_axis_tlast(dw_axis_tlast),      // input wire s_axis_tlast
-     .s_axis_tkeep(dw_axis_tkeep),
-     .s_axis_tdest(dw_axis_tdest),
-     .s_axis_tid(dw_axis_tid),
-     .s_axis_tstrb(dw_axis_tstrb),
-     .m_axis_aclk(aclk),        // input wire m_axis_aclk
-     .m_axis_tvalid(axis_pk_tvalid),    // output wire m_axis_tvalid
-     .m_axis_tready(axis_pk_tready),    // input wire m_axis_tready
-     .m_axis_tdata(axis_pk_tdata),      // output wire [511 : 0] m_axis_tdata
-     .m_axis_tlast(axis_pk_tlast),      // output wire m_axis_tlast
-     .m_axis_tkeep(axis_pk_tkeep),
-     .m_axis_tdest(axis_pk_tdest),
-     .m_axis_tid(axis_pk_tid),
-     .m_axis_tstrb(axis_pk_tstrb)
-   );
+//   peak_axis_clock_converter_512 peak_axis_clock_converter_512_inst (
+//     .s_axis_aresetn(!clk_245_rst),  // input wire s_axis_aresetn
+//     .m_axis_aresetn(aresetn),  // input wire m_axis_aresetn
+//     .s_axis_aclk(clk_245_76MHz),        // input wire s_axis_aclk
+//     .s_axis_tvalid(dw_axis_tvalid),    // input wire s_axis_tvalid
+//     .s_axis_tready(dw_axis_tready),    // output wire s_axis_tready
+//     .s_axis_tdata(dw_axis_tdata),      // input wire [511: 0] s_axis_tdata
+//     .s_axis_tlast(dw_axis_tlast),      // input wire s_axis_tlast
+//     .s_axis_tkeep(dw_axis_tkeep),
+//     .s_axis_tdest(dw_axis_tdest),
+//     .s_axis_tid(dw_axis_tid),
+//     .s_axis_tstrb(dw_axis_tstrb),
+//     .s_axis_tuser(dw_axis_tuser),
+//     .m_axis_aclk(aclk),        // input wire m_axis_aclk
+//     .m_axis_tvalid(axis_pk_tvalid),    // output wire m_axis_tvalid
+//     .m_axis_tready(axis_pk_tready),    // input wire m_axis_tready
+//     .m_axis_tdata(axis_pk_tdata),      // output wire [511 : 0] m_axis_tdata
+//     .m_axis_tlast(axis_pk_tlast),      // output wire m_axis_tlast
+//     .m_axis_tkeep(axis_pk_tkeep),
+//     .m_axis_tdest(axis_pk_tdest),
+//     .m_axis_tid(axis_pk_tid),
+//     .m_axis_tstrb(axis_pk_tstrb),
+//     .m_axis_tuser(axis_pk_tuser)
+//   );
 
 //ila_adc_wr_fifo ila_adc_wr_fifo_inst(
 //    //.clk (ui_clk),
