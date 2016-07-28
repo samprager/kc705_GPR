@@ -192,7 +192,7 @@ else
 
 %figure; obw(x,Fs); title(['x = I+jQ: ',get(get(gca,'title'),'string')]);
 %figure; plot(20*log10(abs(fftshift(fft(x))))); title('fft of I+i*Q');
-    fftlen = 8192*4;    
+    fftlen = 8192*1;    
     thresholdDB = 30;
 %     [I_mixfft,Ifshift,Itshift] = getFreqShift(I2shift,Ishift,Fs,chirpBW,chirpT,fftlen);
 %     [Q_mixfft,Qfshift,Qtshift] = getFreqShift(Q2shift,Qshift,Fs,chirpBW,chirpT,fftlen);
