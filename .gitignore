@@ -137,5 +137,5 @@ IP Output Products (only need .xci and .coe and .prj files)
 #########
 Generated Bitstreams and debug nets
 #########
-!*/*/implement/project_1/project_1.runs/impl*/*.bit
-!*/*/implement/project_1/project_1.runs/impl*/*.ltx
+!*/*/implement/project_1/project_1.runs/impl_*/*.bit
+!*/*/implement/project_1/project_1.runs/impl_*/*.ltx
