@@ -144,7 +144,7 @@ module chirp_dds_top #
     //  wire s_fft_i_axis_tvalid;
     //  wire s_fft_i_axis_tlast;
     //  wire s_fft_i_axis_tready;
-     // 
+     //
     //  wire [63:0] s_fft_q_axis_tdata;
     //  wire s_fft_q_axis_tvalid;
     //  wire s_fft_q_axis_tlast;
@@ -217,8 +217,8 @@ module chirp_dds_top #
     //  wire [31:0] lpf_index_q;
 
      wire [31:0] lpf_cuttof_ind;
-    //  wire [63:0] peak_threshold_i;
-    //  wire [63:0] peak_threshold_q;
+      wire [63:0] peak_threshold_i;
+      wire [63:0] peak_threshold_q;
 
      wire [255:0] dw_axis_tdata;
      wire dw_axis_tvalid;
@@ -540,6 +540,9 @@ assign dw_axis_tready = 1'b1;
 assign lpf_cutoff_ind = FCUTOFF_IND;
 assign threshold_ctrl_i = {4'hf,4'h1};
 assign threshold_ctrl_q = {4'hf,4'h1};
+assign peak_threshold_i = {{(60-4*threshold_ctrl_i[7:4]){1'b0}},threshold_ctrl_i[3:0],{(4*threshold_ctrl_i[7:4]){1'b0}}};
+assign peak_threshold_q = {{(60-4*threshold_ctrl_q[7:4]){1'b0}},threshold_ctrl_q[3:0],{(4*threshold_ctrl_q[7:4]){1'b0}}};
+
 dsp_range_detector #
   (
      .PK_AXI_DATA_WIDTH(256),
