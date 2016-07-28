@@ -669,7 +669,7 @@ dsp_range_detector #
 //    .overflow(sq_mag_q_axis_tdata_overflow)
 // );
 //
-// assign lpf_cuttof_ind = FCUTOFF_IND;
+// assign lpf_cutoff_ind = FCUTOFF_IND;
 // freq_domain_lpf #(
 //     .DATA_LEN(64)
 // ) freq_lpf_i(
@@ -680,7 +680,7 @@ dsp_range_detector #
 //      .tlast(sq_mag_i_axis_tlast),
 //      .tuser(sq_mag_i_axis_tuser),
 //      .index(sq_mag_i_index),
-//      .cutoff(lpf_cuttof_ind),
+//      .cutoff(lpf_cutoff_ind),
 //      .lpf_index(lpf_index_i),
 //      .lpf_tdata(lpf_tdata_i),
 //      .lpf_tvalid(lpf_tvalid_i),
@@ -699,7 +699,7 @@ dsp_range_detector #
 //       .tlast(sq_mag_q_axis_tlast),
 //       .tuser(sq_mag_q_axis_tuser),
 //       .index(sq_mag_q_index),
-//       .cutoff(lpf_cuttof_ind),
+//       .cutoff(lpf_cutoff_ind),
 //       .lpf_index(lpf_index_q),
 //       .lpf_tdata(lpf_tdata_q),
 //       .lpf_tvalid(lpf_tvalid_q),

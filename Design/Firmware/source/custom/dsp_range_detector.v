@@ -9,7 +9,7 @@ module dsp_range_detector #
      parameter PK_AXI_STREAM_ID = 1'b0,
      parameter PK_AXI_STREAM_DEST = 1'b0,
 
-     parameter FFT_LEN = 8192,
+     parameter FFT_LEN = 8192
 
    )
   (
@@ -145,7 +145,7 @@ module dsp_range_detector #
      wire [31:0] lpf_tuser_q;
      wire [31:0] lpf_index_q;
 
-     wire [31:0] lpf_cuttof_ind;
+     wire [31:0] lpf_cutoff_ind;
      reg [63:0] peak_threshold_i_r;
      reg [63:0] peak_threshold_q_r;
      reg [63:0] peak_threshold_i_rr;
@@ -184,8 +184,8 @@ assign iq_tready = s_fft_i_axis_tready & s_fft_q_axis_tready;
 assign m_fft_i_axis_tready = 1'b1;
 assign m_fft_q_axis_tready = 1'b1;
 
-assign lpf_cuttof_ind = lpf_cutoff;
-//assign lpf_cuttof_ind = FCUTOFF_IND;
+assign lpf_cutoff_ind = lpf_cutoff;
+//assign lpf_cutoff_ind = FCUTOFF_IND;
 // assign peak_threshold_i = {{(60-4*threshold_ctrl_i[7:4]){1'b0}},threshold_ctrl_i[3:0],{(4*threshold_ctrl_i[7:4]){1'b0}}};
 // assign peak_threshold_q = {{(60-4*threshold_ctrl_q[7:4]){1'b0}},threshold_ctrl_q[3:0],{(4*threshold_ctrl_q[7:4]){1'b0}}};
 //assign peak_threshold_i = {4'b0001,60'b0};
@@ -233,6 +233,7 @@ end else begin
   peak_threshold_i_r <= new_peak_threshold_i_r;
   peak_threshold_q_r <= new_peak_threshold_q_r;
 end
+end
 
 always @(posedge aclk) begin
 if(aresetn)begin
@@ -241,6 +242,7 @@ if(aresetn)begin
 end else if (update_threshold_rr) begin
   peak_threshold_i_rr<=peak_threshold_i_r;
   peak_threshold_i_rr<=peak_threshold_i_r;
+end
 end
 
 always @(posedge aclk) begin
@@ -367,7 +369,7 @@ freq_domain_lpf #(
      .tlast(sq_mag_i_axis_tlast),
      .tuser(sq_mag_i_axis_tuser),
      .index(sq_mag_i_index),
-     .cutoff(lpf_cuttof_ind),
+     .cutoff(lpf_cutoff_ind),
      .lpf_index(lpf_index_i),
      .lpf_tdata(lpf_tdata_i),
      .lpf_tvalid(lpf_tvalid_i),
@@ -386,7 +388,7 @@ freq_domain_lpf #(
       .tlast(sq_mag_q_axis_tlast),
       .tuser(sq_mag_q_axis_tuser),
       .index(sq_mag_q_index),
-      .cutoff(lpf_cuttof_ind),
+      .cutoff(lpf_cutoff_ind),
       .lpf_index(lpf_index_q),
       .lpf_tdata(lpf_tdata_q),
       .lpf_tvalid(lpf_tvalid_q),
