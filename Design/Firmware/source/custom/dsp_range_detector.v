@@ -2,7 +2,7 @@
 
 module dsp_range_detector #
   (
-     parameter PK_AXI_DATA_WIDTH = 256,
+     parameter PK_AXI_DATA_WIDTH = 512,
      parameter PK_AXI_TID_WIDTH = 1,
      parameter PK_AXI_TDEST_WIDTH = 1,
      parameter PK_AXI_TUSER_WIDTH = 1,
@@ -155,12 +155,12 @@ module dsp_range_detector #
      reg update_threshold_r;
      reg update_threshold_rr;
 
-     wire [PK_AXI_DATA_WIDTH-1:0] dw_axis_tdata;
+     wire [PK_AXI_DATA_WIDTH/2-1:0] dw_axis_tdata;
 
      reg pk_axis_tvalid_r;
      reg pk_axis_tlast_r;
 
-     reg [PK_AXI_DATA_WIDTH-1:0] config_r;
+     reg [PK_AXI_DATA_WIDTH/2-1:0] config_r;
 
 
 
@@ -193,9 +193,9 @@ assign lpf_cutoff_ind = lpf_cutoff;
 assign peak_threshold_i = peak_threshold_i_rr;
 assign peak_threshold_q = peak_threshold_q_rr;
 
-//assign dw_axis_tdata = {peak_num_i,peak_num_q,peak_val_i,peak_val_q,peak_result_i,peak_result_q};
-//assign pk_axis_tdata = {dw_axis_tdata,config_r};
-assign pk_axis_tdata = {peak_num_i,peak_num_q,peak_val_i,peak_val_q,peak_result_i,peak_result_q};
+assign dw_axis_tdata = {peak_num_i,peak_num_q,peak_val_i,peak_val_q,peak_result_i,peak_result_q};
+assign pk_axis_tdata = {dw_axis_tdata,config_r};
+//assign pk_axis_tdata = {peak_num_i,peak_num_q,peak_val_i,peak_val_q,peak_result_i,peak_result_q};
 assign pk_axis_tvalid = pk_axis_tvalid_r;
 assign pk_axis_tlast = pk_axis_tlast_r;
 
