@@ -2,7 +2,7 @@
 
 module dsp_range_detector #
   (
-     parameter PK_AXI_DATA_WIDTH = 512,
+     parameter PK_AXI_DATA_WIDTH = 256,
      parameter PK_AXI_TID_WIDTH = 1,
      parameter PK_AXI_TDEST_WIDTH = 1,
      parameter PK_AXI_TUSER_WIDTH = 1,
@@ -150,28 +150,13 @@ module dsp_range_detector #
      wire [63:0] peak_threshold_i;
      wire [63:0] peak_threshold_q;
 
-     wire [PK_AXI_DATA_WIDTH/2:0] dw_axis_tdata;
+     wire [PK_AXI_DATA_WIDTH-1:0] dw_axis_tdata;
 
      reg pk_axis_tvalid_r;
      reg pk_axis_tlast_r;
 
-     reg [PK_AXI_DATA_WIDTH/2:0] config_r;
+     reg [PK_AXI_DATA_WIDTH-1:0] config_r;
 
-
-
-
-
-     assign adc_data_iq = {adc_data_i,adc_data_q};
-     assign dac_data_iq = {dac_data_i,dac_data_q};
-     assign adc_data_valid = adc_data_valid_rr;
-     assign data_valid = adc_data_valid_rr;
-//     assign adc_data_i = adc_data_i_rr;
-//     assign adc_data_q = adc_data_q_rr;
-     assign adc_data_i = adc_data_i_delay[ADC_DELAY-1];
-     assign adc_data_q = adc_data_q_delay[ADC_DELAY-1];
-
-     assign dac_data_i = dac_data_i_rr;
-     assign dac_data_q = dac_data_q_rr;
 
 
 //assign clk_out_491_52MHz = clk_491_52MHz;
@@ -202,8 +187,9 @@ assign peak_threshold_i = {4'b0001,60'b0};
 assign peak_threshold_q = {4'b0001,60'b0};
 
 
-assign dw_axis_tdata = {peak_num_i,peak_num_q,peak_val_i,peak_val_q,peak_result_i,peak_result_q};
-assign pk_axis_tdata = {dw_axis_tdata,config_r};
+//assign dw_axis_tdata = {peak_num_i,peak_num_q,peak_val_i,peak_val_q,peak_result_i,peak_result_q};
+//assign pk_axis_tdata = {dw_axis_tdata,config_r};
+assign pk_axis_tdata = {peak_num_i,peak_num_q,peak_val_i,peak_val_q,peak_result_i,peak_result_q};
 assign pk_axis_tvalid = pk_axis_tvalid_r;
 assign pk_axis_tlast = pk_axis_tlast_r;
 
@@ -230,8 +216,8 @@ always @(posedge aclk) begin
   end
 end
 
-always @(posedge clk_245) begin
-  if (clk_245_rst) begin
+always @(posedge aclk) begin
+  if (!aresetn) begin
     new_peak_i <= 1'b0;
   end else if (peak_tlast_i & peak_tvalid_i) begin
     peak_result_i <= peak_index_i;
@@ -243,8 +229,8 @@ always @(posedge clk_245) begin
   end
 end
 
-always @(posedge clk_245) begin
-  if (clk_245_rst) begin
+always @(posedge aclk) begin
+  if (!aresetn) begin
     new_peak_q <= 1'b0;
   end else if (peak_tlast_q & peak_tvalid_q) begin
     peak_result_q <= peak_index_q;
@@ -256,8 +242,8 @@ always @(posedge clk_245) begin
   end
 end
 
-always @(posedge clk_245) begin
-  if (clk_245_rst) begin
+always @(posedge aclk) begin
+  if (!aresetn) begin
     pk_axis_tvalid_r <= 1'b0;
     pk_axis_tlast_r <= 1'b0;
   end else if(new_peak_i & new_peak_q & !pk_axis_tvalid_r)begin
@@ -270,14 +256,14 @@ always @(posedge clk_245) begin
 end
 
 mixer_mult_gen mixer_i (
- .CLK(clk_245),  // input wire CLK
+ .CLK(aclk),  // input wire CLK
  .A(dac_data_i),      // input wire [15 : 0] A
  .B(adc_data_i),      // input wire [15 : 0] B
  //.P(s_fft_axis_tdata[31:0])      // output wire [31 : 0] P
   .P(mixer_out_i)       // output wire [31 : 0] P
 );
 mixer_mult_gen mixer_q (
- .CLK(clk_245),  // input wire CLK
+ .CLK(aclk),  // input wire CLK
  .A(dac_data_q),      // input wire [15 : 0] A
  .B(adc_data_q),      // input wire [15 : 0] B
  //.P(s_fft_axis_tdata[63:32])      // output wire [31 : 0] P
@@ -290,7 +276,7 @@ sq_mag_estimate#(
     .REGISTER_OUTPUT(1)
 )
  sq_mag_i (
-    .clk(clk_245),
+    .clk(aclk),
     .dataI(m_fft_i_axis_tdata[31:0]),
     .dataI_tvalid(m_fft_i_axis_tvalid),
     .dataI_tlast(m_fft_i_axis_tlast),
@@ -313,7 +299,7 @@ sq_mag_estimate#(
     .REGISTER_OUTPUT(1)
 )
  sq_mag_q (
-   .clk(clk_245),
+   .clk(aclk),
    .dataI(m_fft_q_axis_tdata[31:0]),
    .dataI_tvalid(m_fft_q_axis_tvalid),
    .dataI_tlast(m_fft_q_axis_tlast),
@@ -333,8 +319,8 @@ sq_mag_estimate#(
 freq_domain_lpf #(
     .DATA_LEN(64)
 ) freq_lpf_i(
-     .clk(clk_245),
-     .aresetn(!clk_245_rst),
+     .clk(aclk),
+     .aresetn(aresetn),
      .tdata(sq_mag_i_axis_tdata),
      .tvalid(sq_mag_i_axis_tvalid),
      .tlast(sq_mag_i_axis_tlast),
@@ -352,8 +338,8 @@ freq_domain_lpf #(
  freq_domain_lpf #(
      .DATA_LEN(64)
  ) freq_lpf_q(
-      .clk(clk_245),
-      .aresetn(!clk_245_rst),
+      .clk(aclk),
+      .aresetn(aresetn),
       .tdata(sq_mag_q_axis_tdata),
       .tvalid(sq_mag_q_axis_tvalid),
       .tlast(sq_mag_q_axis_tlast),
@@ -370,8 +356,8 @@ freq_domain_lpf #(
 peak_finder #(
   .DATA_LEN(64)
 ) peak_finder_i(
-  .clk(clk_245),
-  .aresetn(!clk_245_rst),
+  .clk(aclk),
+  .aresetn(aresetn),
 //      .tdata(sq_mag_i_axis_tdata),
 //      .tvalid(sq_mag_i_axis_tvalid),
 //      .tlast(sq_mag_i_axis_tlast),
@@ -393,8 +379,8 @@ peak_finder #(
 peak_finder #(
   .DATA_LEN(64)
 ) peak_finder_q(
-  .clk(clk_245),
-  .aresetn(!clk_245_rst),
+  .clk(aclk),
+  .aresetn(aresetn),
   .tdata(lpf_tdata_q),
   .tvalid(lpf_tvalid_q),
   .tlast(lpf_tlast_q),
@@ -415,7 +401,7 @@ peak_finder #(
 //    .BETA(0.4)
 //)
 // abs_i (
-//    .clk(clk_245),
+//    .clk(aclk),
 //    .dataI(m_fft_axis_tdata[31:0]),
 //    .dataQ(m_fft_axis_tdata[63:32]),
 //    .dataMag(mag_i_axis_tdata)
@@ -427,7 +413,7 @@ peak_finder #(
 //    .BETA(0.4)
 //)
 // abs_q (
-//    .clk(clk_245),
+//    .clk(aclk),
 //    .dataI(m_fft_axis_tdata[95:64]),
 //    .dataQ(m_fft_axis_tdata[127:96]),
 //    .dataMag(mag_q_axis_tdata)
@@ -441,8 +427,8 @@ fft_dsp #(
   )
   fft_dsp_i(
 
-  .aclk (clk_245),
-  .aresetn (!clk_245_rst),
+  .aclk (aclk),
+  .aresetn (aresetn),
 
  .s_axis_tdata(s_fft_i_axis_tdata),
  .s_axis_tvalid (s_fft_i_axis_tvalid),
@@ -472,8 +458,8 @@ fft_dsp #(
   )
   fft_dsp_q(
 
-  .aclk (clk_245),
-  .aresetn (!clk_245_rst),
+  .aclk (aclk),
+  .aresetn (aresetn),
 
  .s_axis_tdata(s_fft_q_axis_tdata),
  .s_axis_tvalid (s_fft_q_axis_tvalid),

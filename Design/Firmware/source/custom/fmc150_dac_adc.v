@@ -132,7 +132,7 @@ module fmc150_dac_adc #
    );
 
   localparam DDS_LATENCY = 2;
-  
+
   wire rd_fifo_clk;
   wire clk_245_76MHz;
   wire clk_491_52MHz;
@@ -143,21 +143,22 @@ module fmc150_dac_adc #
   wire [15:0] dac_data_q;
   wire [31:0] adc_data_iq;
   wire [31:0] dac_data_iq;
-  
+
   wire [31:0] adc_counter;
   wire adc_data_valid;
-  
+
  // wire data_valid;
 //  reg [7:0] dds_route_ctrl_reg;
   wire [1:0] dds_route_ctrl_u;
   wire [1:0] dds_route_ctrl_l;
-  
+
   reg [1:0] dds_route_ctrl_u_r;
   reg [1:0] dds_route_ctrl_l_r;
 
   wire [63:0] adc_fifo_wr_tdata;
   wire       adc_fifo_wr_tvalid;
   wire       adc_fifo_wr_tlast;
+  wire       adc_fifo_wr_pre_tlast;
 
   wire       adc_fifo_wr_first;
   reg        adc_fifo_wr_first_r;
@@ -177,13 +178,13 @@ module fmc150_dac_adc #
 
      reg                      adc_enable_r;
      reg                      adc_enable_rr;
-     
+
      reg [3:0] dds_latency_counter;
      reg [31:0] glbl_counter_reg;
-     
+
      reg [31:0] adc_counter_reg;
      wire [31:0] glbl_counter;
-     
+
      wire [31:0] data_out_upper;
      wire [31:0] data_out_lower;
 //     reg data_out_upper_valid;
@@ -200,10 +201,10 @@ module fmc150_dac_adc #
         .adc_data_out_q (adc_data_q),
     //    .adc_counter_out (adc_counter),
         .adc_data_out_valid (adc_data_valid),
-        
+
         .dac_data_out_i (dac_data_i),
         .dac_data_out_q (dac_data_q),
-        
+
 //        .adc_data_out_iq (adc_data_iq),
 //        .dac_data_out_iq (dac_data_iq),
 //        .data_out_valid  (data_valid),
@@ -320,18 +321,18 @@ assign data_out_lower  = (dds_route_ctrl_l == 2'b00) ? adc_data_iq : 32'bz,
 assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 32'bz,
           data_out_upper  = (dds_route_ctrl_u == 2'b01) ? dac_data_iq : 32'bz,
           data_out_upper  = (dds_route_ctrl_u == 2'b10) ? adc_counter : 32'bz,
-          data_out_upper  = (dds_route_ctrl_u == 2'b11) ? glbl_counter : 32'bz;  
-   
-//assign dds_route_ctrl_l = chirp_control_word[1:0];  
+          data_out_upper  = (dds_route_ctrl_u == 2'b11) ? glbl_counter : 32'bz;
+
+//assign dds_route_ctrl_l = chirp_control_word[1:0];
 //assign dds_route_ctrl_u = chirp_control_word[5:4];
-assign dds_route_ctrl_l = dds_route_ctrl_l_r; 
+assign dds_route_ctrl_l = dds_route_ctrl_l_r;
 assign dds_route_ctrl_u = dds_route_ctrl_u_r;
-    
+
   always @(posedge clk_245_76MHz) begin
-     dds_route_ctrl_l_r <= chirp_control_word[1:0]; 
-     dds_route_ctrl_u_r <= chirp_control_word[5:4]; 
-  end       
-                
+     dds_route_ctrl_l_r <= chirp_control_word[1:0];
+     dds_route_ctrl_u_r <= chirp_control_word[5:4];
+  end
+
    always @(posedge clk_245_76MHz) begin
     if (clk_245_rst) begin
       adc_enable_r <= 1'b0;
@@ -340,34 +341,34 @@ assign dds_route_ctrl_u = dds_route_ctrl_u_r;
       adc_enable_r <= adc_enable;
       if (!(|dds_latency_counter))
         adc_enable_rr <= adc_enable_r;
-      else 
+      else
         adc_enable_rr <=adc_enable_rr;
     end
    end
-   
+
   always @(posedge clk_245_76MHz) begin
-    if (clk_245_rst) 
+    if (clk_245_rst)
       dds_latency_counter <= 'b0;
     else if( chirp_init)
       dds_latency_counter <= DDS_LATENCY;
    else if(adc_enable_r & !adc_enable)
-      dds_latency_counter <= DDS_LATENCY;     
+      dds_latency_counter <= DDS_LATENCY;
     else if(|dds_latency_counter)
       dds_latency_counter <= dds_latency_counter-1;
   end
-   
+
    always @(posedge clk_245_76MHz) begin
    if (cpu_reset) begin
      adc_fifo_wr_first_r <= 1'b0;
    end else begin
      if (!(|dds_latency_counter)&(adc_enable_r)&(!adc_enable_rr))
        adc_fifo_wr_first_r <= 1'b1;
-     else 
+     else
        adc_fifo_wr_first_r <= 1'b0;
    end
   end
 
-   
+
    always @(posedge clk_245_76MHz) begin
     if (clk_245_rst) begin
       adc_counter_reg <= 'b0;
@@ -378,7 +379,7 @@ assign dds_route_ctrl_u = dds_route_ctrl_u_r;
     end
    end
 assign adc_counter = adc_counter_reg;
-   
+
    always @(posedge clk_245_76MHz) begin
     if (clk_245_rst) begin
       glbl_counter_reg <= 'b0;
@@ -388,7 +389,7 @@ assign adc_counter = adc_counter_reg;
     end
    end
    assign glbl_counter = glbl_counter_reg;
-   
+
 // asynchoronous fifo for converting 245.76 MHz 32 bit adc samples (16 i, 16 q)
 // to rd clk domain 64 bit adc samples (i1 q1 i2 q2)
    fifo_generator_adc u_fifo_generator_adc
@@ -443,18 +444,19 @@ assign adc_counter = adc_counter_reg;
 
    assign adc_data_iq = {adc_data_i,adc_data_q};
    assign dac_data_iq = {dac_data_i,dac_data_q};
-   
+
   //  assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
   // assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
-  
+
  //  assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
  assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_counter,adc_counter} : {data_out_upper,data_out_lower};
 
 //   assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
 //   assign adc_fifo_wr_tvalid = data_out_upper_valid & data_out_lower_valid & adc_enable_rr;
-   
+
    assign adc_fifo_wr_first = adc_fifo_wr_first_r;
    assign adc_fifo_wr_tlast = (!(|dds_latency_counter))&(adc_enable_rr)&(!adc_enable_r);
+   assign adc_fifo_wr_pre_tlast = (dds_latency_counter==1)&(adc_enable_rr)&(!adc_enable_r);
 
    assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
 //   assign adc_fifo_wr_en = adc_enable_rr & data_out_upper_valid & data_out_lower_valid;
