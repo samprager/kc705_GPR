@@ -9,7 +9,7 @@ module dsp_range_detector #
      parameter PK_AXI_STREAM_ID = 1'b0,
      parameter PK_AXI_STREAM_DEST = 1'b0,
 
-     parameter FFT_LEN = 8192
+     parameter FFT_LEN = 8192,
 
    )
   (
@@ -56,6 +56,7 @@ module dsp_range_detector #
 
    localparam FCUTOFF_IND = FFT_LEN/2;
    localparam MIXER_LATENCY = 3;
+   localparam INIT_THRESHOLD = {4'b0001,60'b0};
 
    integer i;
 
@@ -147,8 +148,12 @@ module dsp_range_detector #
      wire [31:0] lpf_cuttof_ind;
      reg [63:0] peak_threshold_i_r;
      reg [63:0] peak_threshold_q_r;
+     reg [63:0] peak_threshold_i_rr;
+     reg [63:0] peak_threshold_q_rr;
      wire [63:0] peak_threshold_i;
      wire [63:0] peak_threshold_q;
+     reg update_threshold_r;
+     reg update_threshold_rr;
 
      wire [PK_AXI_DATA_WIDTH-1:0] dw_axis_tdata;
 
@@ -179,13 +184,14 @@ assign iq_tready = s_fft_i_axis_tready & s_fft_q_axis_tready;
 assign m_fft_i_axis_tready = 1'b1;
 assign m_fft_q_axis_tready = 1'b1;
 
-//assign lpf_cuttof_ind = lpf_cutoff;
-assign lpf_cuttof_ind = FCUTOFF_IND;
+assign lpf_cuttof_ind = lpf_cutoff;
+//assign lpf_cuttof_ind = FCUTOFF_IND;
 // assign peak_threshold_i = {{(60-4*threshold_ctrl_i[7:4]){1'b0}},threshold_ctrl_i[3:0],{(4*threshold_ctrl_i[7:4]){1'b0}}};
 // assign peak_threshold_q = {{(60-4*threshold_ctrl_q[7:4]){1'b0}},threshold_ctrl_q[3:0],{(4*threshold_ctrl_q[7:4]){1'b0}}};
-assign peak_threshold_i = {4'b0001,60'b0};
-assign peak_threshold_q = {4'b0001,60'b0};
-
+//assign peak_threshold_i = {4'b0001,60'b0};
+//assign peak_threshold_q = {4'b0001,60'b0};
+assign peak_threshold_i = peak_threshold_i_rr;
+assign peak_threshold_q = peak_threshold_q_rr;
 
 //assign dw_axis_tdata = {peak_num_i,peak_num_q,peak_val_i,peak_val_q,peak_result_i,peak_result_q};
 //assign pk_axis_tdata = {dw_axis_tdata,config_r};
@@ -214,6 +220,41 @@ always @(posedge aclk) begin
     config_r[223:208] <= 16'hbeef;
     config_r[255:224] <= 32'h504b504b; // Ascii 'PKPK'
   end
+end
+
+always @(posedge aclk) begin
+if(iq_first)begin
+  peak_threshold_i_r <= 'b0;
+  peak_threshold_q_r <= 'b0;
+end else if (update_threshold_r) begin
+  peak_threshold_i_r[4*threshold_ctrl_i[7:4]+3-:4] <=threshold_ctrl_i[3:0];
+  peak_threshold_q_r[4*threshold_ctrl_q[7:4]+3-:4] <=threshold_ctrl_q[3:0];
+end else begin
+  peak_threshold_i_r <= new_peak_threshold_i_r;
+  peak_threshold_q_r <= new_peak_threshold_q_r;
+end
+
+always @(posedge aclk) begin
+if(aresetn)begin
+  peak_threshold_i_rr <= INIT_THRESHOLD;
+  peak_threshold_q_rr <= INIT_THRESHOLD;
+end else if (update_threshold_rr) begin
+  peak_threshold_i_rr<=peak_threshold_i_r;
+  peak_threshold_i_rr<=peak_threshold_i_r;
+end
+
+always @(posedge aclk) begin
+if(iq_first)
+  update_threshold_r <= 1'b1;
+else
+  update_threshold_r <= 1'b0;
+end
+
+always @(posedge aclk) begin
+if(update_threshold_r)
+  update_threshold_rr <= 1'b1;
+else
+  update_threshold_rr <= 1'b0;
 end
 
 always @(posedge aclk) begin
