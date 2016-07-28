@@ -96,6 +96,7 @@ module chirp_dds_top #
   wire [63:0] adc_fifo_wr_tdata;
   wire       adc_fifo_wr_tvalid;
   wire       adc_fifo_wr_tlast;
+  wire       adc_fifo_wr_pre_tlast;
   wire       adc_fifo_wr_first;
   reg        adc_fifo_wr_first_r;
 
@@ -511,6 +512,8 @@ assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_coun
    assign adc_fifo_wr_first = adc_fifo_wr_first_r;
 
    assign adc_fifo_wr_tlast = (!(|dds_latency_counter))&(adc_enable_rr)&(!adc_enable_r);
+
+   assign adc_fifo_wr_pre_tlast = (dds_latency_counter==1)&(adc_enable_rr)&(!adc_enable_r);
 
 //   assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
  //  assign adc_fifo_wr_en = adc_enable_rr & data_out_upper_valid & data_out_lower_valid;
