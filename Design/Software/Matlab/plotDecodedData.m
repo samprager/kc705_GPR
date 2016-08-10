@@ -2,8 +2,8 @@
 %filenameIQ = '../outputs/single_chirpIQ.bin';
 %filenameC = '../outputs/adc_chirpC.bin';
 %filenameIQ = '../outputs/adc_chirpIQ.bin';
-filenameC = '/Users/sam/outputs/en4_dataout_45C.bin';
-filenameIQ = '/Users/sam/outputs/en4_dataout_45IQ.bin';
+filenameC = '/Users/sam/outputs/en4_dataoutC.bin';
+filenameIQ = '/Users/sam/outputs/en4_dataoutIQ.bin';
 
 has_counter = 0;
 Fs = 245.76e6;
@@ -192,8 +192,8 @@ else
 
 %figure; obw(x,Fs); title(['x = I+jQ: ',get(get(gca,'title'),'string')]);
 %figure; plot(20*log10(abs(fftshift(fft(x))))); title('fft of I+i*Q');
-    fftlen = 8192*1;    
-    thresholdDB = 30;
+    fftlen = 8192*4;    
+    thresholdDB = 50;
 %     [I_mixfft,Ifshift,Itshift] = getFreqShift(I2shift,Ishift,Fs,chirpBW,chirpT,fftlen);
 %     [Q_mixfft,Qfshift,Qtshift] = getFreqShift(Q2shift,Qshift,Fs,chirpBW,chirpT,fftlen);
     [I_mixfft,Ifshift,Itshift,ind] = getFreqShiftPeaks(I2shift,Ishift,Fs,chirpBW,chirpT,fftlen,thresholdDB);
