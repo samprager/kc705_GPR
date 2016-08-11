@@ -137,14 +137,9 @@ IP Output Products (only need .xci and .coe and .prj files)
 #########
 Generated Bitstreams and debug nets
 #########
-!*/*/implement/project_1/project_1.runs/impl_2/*.bit
-!*/*/implement/project_1/project_1.runs/impl_2/*.ltx
-!*/*/implement/project_1/project_1.runs/impl_2/*.mcs
-!*/*/implement/project_1/project_1.runs/impl_2/kc705_gpr_top.bit
-!*/*/implement/project_1/project_1.runs/impl_2/debug_nets.ltx
+!*/*/implement/project_*/project_*.runs/impl_*/*.bit
+!*/*/implement/project_*/project_*.runs/impl_*/*.ltx
+!*/*/implement/project_*/project_*.runs/impl_*/*.mcs
+!*/*/implement/project_*/project_*.runs/impl_*/kc705_gpr_top.bit
+!*/*/implement/project_*/project_*.runs/impl_*/debug_nets.ltx
 
-!*/*/implement/project_1/project_1.runs/impl_3/*.bit
-!*/*/implement/project_1/project_1.runs/impl_3/*.ltx
-!*/*/implement/project_1/project_1.runs/impl_3/*.mcs
-!*/*/implement/project_1/project_1.runs/impl_3/kc705_gpr_top.bit
-!*/*/implement/project_1/project_1.runs/impl_3/debug_nets.ltx
