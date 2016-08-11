@@ -139,5 +139,12 @@ Generated Bitstreams and debug nets
 #########
 !*/*/implement/project_1/project_1.runs/impl_2/*.bit
 !*/*/implement/project_1/project_1.runs/impl_2/*.ltx
+!*/*/implement/project_1/project_1.runs/impl_2/*.mcs
 !*/*/implement/project_1/project_1.runs/impl_2/kc705_gpr_top.bit
 !*/*/implement/project_1/project_1.runs/impl_2/debug_nets.ltx
+
+!*/*/implement/project_1/project_1.runs/impl_3/*.bit
+!*/*/implement/project_1/project_1.runs/impl_3/*.ltx
+!*/*/implement/project_1/project_1.runs/impl_3/*.mcs
+!*/*/implement/project_1/project_1.runs/impl_3/kc705_gpr_top.bit
+!*/*/implement/project_1/project_1.runs/impl_3/debug_nets.ltx
