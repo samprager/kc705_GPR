@@ -111,29 +111,29 @@ module kc705_ethernet_rgmii_example_design_resets
   //----------------------------------------------------------------------------
   // Synchronise the async dcm_locked into the refclk clock domain
   //----------------------------------------------------------------------------
-  kc705_ethernet_rgmii_sync_block dcm_refclk_sync (
-     .clk              (refclk),
-     .data_in          (dcm_locked),
-     .data_out         (dcm_locked_refclk_sync)
-  );
+//  kc705_ethernet_rgmii_sync_block dcm_refclk_sync (
+//     .clk              (refclk),
+//     .data_in          (dcm_locked),
+//     .data_out         (dcm_locked_refclk_sync)
+//  );
 
   //----------------------------------------------------------------------------
   // Synchronise the async dcm_locked into the sysclk clock domain
   //----------------------------------------------------------------------------
-  kc705_ethernet_rgmii_sync_block dcm_sysclk_sync (
-     .clk              (sysclk),
-     .data_in          (dcm_locked),
-     .data_out         (dcm_locked_sysclk_sync)
-  );
+//  kc705_ethernet_rgmii_sync_block dcm_sysclk_sync (
+//     .clk              (sysclk),
+//     .data_in          (dcm_locked),
+//     .data_out         (dcm_locked_sysclk_sync)
+//  );
 
   //----------------------------------------------------------------------------
   // Synchronise the async dcm_locked into the clk250 clock domain
   //----------------------------------------------------------------------------
-  kc705_ethernet_rgmii_sync_block dcm_clk250_sync (
-     .clk              (clk250),
-     .data_in          (dcm_locked),
-     .data_out         (dcm_locked_clk250_sync)
-  );
+//  kc705_ethernet_rgmii_sync_block dcm_clk250_sync (
+//     .clk              (clk250),
+//     .data_in          (dcm_locked),
+//     .data_out         (dcm_locked_clk250_sync)
+//  );
 
 
   //----------------------------------------------------------------------------
@@ -200,70 +200,70 @@ module kc705_ethernet_rgmii_example_design_resets
 
    //---------------
    // refclk reset
-    kc705_ethernet_rgmii_reset_sync refclk_reset_gen (
-       .clk              (refclk),
-       .enable           (dcm_locked_refclk_sync),
-       .reset_in         (glbl_rst),
-       .reset_out        (refclk_reset_int)
-    );
+//    kc705_ethernet_rgmii_reset_sync refclk_reset_gen (
+//       .clk              (refclk),
+//       .enable           (dcm_locked_refclk_sync),
+//       .reset_in         (glbl_rst),
+//       .reset_out        (refclk_reset_int)
+//    );
 
-    // Create fully synchronous reset in the refclk domain.
-    always @(posedge refclk)
-    begin
-      if (refclk_reset_int) begin
-        refclk_pre_resetn  <= 0;
-        refclk_resetn      <= 0;
-      end
-      else begin
-        refclk_pre_resetn  <= 1;
-        refclk_resetn      <= refclk_pre_resetn;
-      end
-    end
+//    // Create fully synchronous reset in the refclk domain.
+//    always @(posedge refclk)
+//    begin
+//      if (refclk_reset_int) begin
+//        refclk_pre_resetn  <= 0;
+//        refclk_resetn      <= 0;
+//      end
+//      else begin
+//        refclk_pre_resetn  <= 1;
+//        refclk_resetn      <= refclk_pre_resetn;
+//      end
+//    end
     
 
     //---------------
     // sysclk reset
-     kc705_ethernet_rgmii_reset_sync sysclk_reset_gen (
-        .clk              (sysclk),
-        .enable           (dcm_locked_sysclk_sync),
-        .reset_in         (glbl_rst),
-        .reset_out        (sysclk_reset_int)
-     );
+//     kc705_ethernet_rgmii_reset_sync sysclk_reset_gen (
+//        .clk              (sysclk),
+//        .enable           (dcm_locked_sysclk_sync),
+//        .reset_in         (glbl_rst),
+//        .reset_out        (sysclk_reset_int)
+//     );
 
-     // Create fully synchronous reset in the sysclk domain.
-     always @(posedge sysclk)
-     begin
-       if (sysclk_reset_int) begin
-         sysclk_pre_resetn  <= 0;
-         sysclk_resetn      <= 0;
-       end
-       else begin
-         sysclk_pre_resetn  <= 1;
-         sysclk_resetn      <= sysclk_pre_resetn;
-       end
-     end
+//     // Create fully synchronous reset in the sysclk domain.
+//     always @(posedge sysclk)
+//     begin
+//       if (sysclk_reset_int) begin
+//         sysclk_pre_resetn  <= 0;
+//         sysclk_resetn      <= 0;
+//       end
+//       else begin
+//         sysclk_pre_resetn  <= 1;
+//         sysclk_resetn      <= sysclk_pre_resetn;
+//       end
+//     end
 
      //---------------
      // clk250 reset
-      kc705_ethernet_rgmii_reset_sync clk250_reset_gen (
-         .clk              (clk250),
-         .enable           (dcm_locked_clk250_sync),
-         .reset_in         (glbl_rst),
-         .reset_out        (clk250_reset_int)
-      );
+//      kc705_ethernet_rgmii_reset_sync clk250_reset_gen (
+//         .clk              (clk250),
+//         .enable           (dcm_locked_clk250_sync),
+//         .reset_in         (glbl_rst),
+//         .reset_out        (clk250_reset_int)
+//      );
 
-      // Create fully synchronous reset in the clk250 domain.
-      always @(posedge clk250)
-      begin
-        if (clk250_reset_int) begin
-          clk250_pre_resetn  <= 0;
-          clk250_resetn      <= 0;
-        end
-        else begin
-          clk250_pre_resetn  <= 1;
-          clk250_resetn      <= clk250_pre_resetn;
-        end
-      end
+//      // Create fully synchronous reset in the clk250 domain.
+//      always @(posedge clk250)
+//      begin
+//        if (clk250_reset_int) begin
+//          clk250_pre_resetn  <= 0;
+//          clk250_resetn      <= 0;
+//        end
+//        else begin
+//          clk250_pre_resetn  <= 1;
+//          clk250_resetn      <= clk250_pre_resetn;
+//        end
+//      end
 
   //---------------
   // data check reset
