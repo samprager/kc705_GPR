@@ -167,8 +167,8 @@ assign s_fft_adc_axis_tlast = iq_tlast;
 
 assign iq_tready = s_fft_dac_axis_tready & s_fft_adc_axis_tready;
 
-assign m_fft_dac_axis_tready = 1'b1;
-assign m_fft_adc_axis_tready = 1'b1;
+//assign m_fft_dac_axis_tready = 1'b1;
+//assign m_fft_adc_axis_tready = 1'b1;
 
 assign lpf_cutoff_ind = lpf_cutoff;
 //assign lpf_cutoff_ind = FCUTOFF_IND;
