@@ -17,7 +17,7 @@ module fmc150_dac_adc #
      parameter PK_AXI_STREAM_DEST = 1'b0,
 
      parameter SIMULATION = 0,
-     parameter FFT_LEN = 32768//8192
+     parameter FFT_LEN = 4096//32768
 
    )
   (
@@ -521,7 +521,7 @@ assign threshold_ctrl_q = {4'hf,4'h1};
 //assign peak_threshold_i = {{(60-4*threshold_ctrl_i[7:4]){1'b0}},threshold_ctrl_i[3:0],{(4*threshold_ctrl_i[7:4]){1'b0}}};
 //assign peak_threshold_q = {{(60-4*threshold_ctrl_q[7:4]){1'b0}},threshold_ctrl_q[3:0],{(4*threshold_ctrl_q[7:4]){1'b0}}};
 
-dsp_range_detector #
+matched_filter_range_detector #
   (
      .PK_AXI_DATA_WIDTH(PK_AXI_DATA_WIDTH),
      .PK_AXI_TID_WIDTH (PK_AXI_TID_WIDTH),
@@ -532,7 +532,7 @@ dsp_range_detector #
      .FFT_LEN(FFT_LEN),
      .SIMULATION(SIMULATION)
 
-  )dsp_range_detector_inst(
+  )matched_filter_range_detector_inst(
 
    .aclk(clk_245_76MHz), // AXI input clock
    .aresetn(!clk_245_rst), // Active low AXI reset signal
@@ -566,8 +566,8 @@ dsp_range_detector #
     .pk_axis_tready(axis_pk_tready),
 
   .lpf_cutoff(lpf_cutoff_ind),
-  .threshold_ctrl_i(threshold_ctrl_i),    // {4b word index, 4b word value} in 64bit threshold
-  .threshold_ctrl_q(threshold_ctrl_q),    // {4b word index, 4b word value} in 64bit threshold
+  .threshold_ctrl(threshold_ctrl_i),    // {4b word index, 4b word value} in 64bit threshold
+ // .threshold_ctrl_q(threshold_ctrl_q),    // {4b word index, 4b word value} in 64bit threshold
 
 // Control Module signals
  .chirp_ready                         (chirp_ready),
@@ -582,6 +582,67 @@ dsp_range_detector #
  .chirp_count_max             (chirp_count_max)
 
    );
+//dsp_range_detector #
+//  (
+//     .PK_AXI_DATA_WIDTH(PK_AXI_DATA_WIDTH),
+//     .PK_AXI_TID_WIDTH (PK_AXI_TID_WIDTH),
+//     .PK_AXI_TDEST_WIDTH(PK_AXI_TDEST_WIDTH),
+//     .PK_AXI_TUSER_WIDTH(PK_AXI_TUSER_WIDTH),
+//     .PK_AXI_STREAM_ID (PK_AXI_STREAM_ID),
+//     .PK_AXI_STREAM_DEST (PK_AXI_STREAM_DEST),
+//     .FFT_LEN(FFT_LEN),
+//     .SIMULATION(SIMULATION)
+
+//  )dsp_range_detector_inst(
+
+//   .aclk(clk_245_76MHz), // AXI input clock
+//   .aresetn(!clk_245_rst), // Active low AXI reset signal
+
+//   // --ADC Data Out Signals
+//  .adc_iq_tdata(adc_data_iq),
+//  .dac_iq_tdata(dac_data_iq),
+//  .iq_tvalid(data_iq_tvalid),
+//  .iq_tlast(data_iq_tlast),
+//  .iq_tready(data_iq_tready),
+//  .iq_first(data_iq_first),
+//  .counter_id(data_counter_id),
+
+////  .pk_axis_tdata(dw_axis_tdata),
+////  .pk_axis_tvalid(dw_axis_tvalid),
+////  .pk_axis_tlast(dw_axis_tlast),
+////  .pk_axis_tkeep(dw_axis_tkeep),
+////  .pk_axis_tdest(dw_axis_tdest),
+////  .pk_axis_tid(dw_axis_tid),
+////  .pk_axis_tstrb(dw_axis_tstrb),
+////  .pk_axis_tuser(dw_axis_tuser),
+////  .pk_axis_tready(dw_axis_tready),
+//    .pk_axis_tdata(axis_pk_tdata),
+//    .pk_axis_tvalid(axis_pk_tvalid),
+//    .pk_axis_tlast(axis_pk_tlast),
+//    .pk_axis_tkeep(axis_pk_tkeep),
+//    .pk_axis_tdest(axis_pk_tdest),
+//    .pk_axis_tid(axis_pk_tid),
+//    .pk_axis_tstrb(axis_pk_tstrb),
+//    .pk_axis_tuser(axis_pk_tuser),
+//    .pk_axis_tready(axis_pk_tready),
+
+//  .lpf_cutoff(lpf_cutoff_ind),
+//  .threshold_ctrl_i(threshold_ctrl_i),    // {4b word index, 4b word value} in 64bit threshold
+//  .threshold_ctrl_q(threshold_ctrl_q),    // {4b word index, 4b word value} in 64bit threshold
+
+//// Control Module signals
+// .chirp_ready                         (chirp_ready),
+// .chirp_done                          (chirp_done),
+// .chirp_active                        (chirp_active),
+// .chirp_init                          (chirp_init),
+// .chirp_enable                        (chirp_enable),
+// .adc_enable                          (adc_enable),
+// .chirp_control_word          (chirp_control_word),
+// .chirp_freq_offset           (chirp_freq_offset),
+// .chirp_tuning_word_coeff     (chirp_tuning_word_coeff),
+// .chirp_count_max             (chirp_count_max)
+
+//   );
 
 //   peak_axis_clock_converter_512 peak_axis_clock_converter_512_inst (
 //     .s_axis_aresetn(!clk_245_rst),  // input wire s_axis_aresetn
