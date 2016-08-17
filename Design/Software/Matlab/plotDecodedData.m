@@ -2,8 +2,8 @@
 %filenameIQ = '../outputs/single_chirpIQ.bin';
 %filenameC = '../outputs/adc_chirpC.bin';
 %filenameIQ = '../outputs/adc_chirpIQ.bin';
-filenameC = '/Users/sam/outputs/en4_dataoutC.bin';
-filenameIQ = '/Users/sam/outputs/en4_dataoutIQ.bin';
+filenameC = '/Users/sam/outputs/en4_dataout_45C.bin';
+filenameIQ = '/Users/sam/outputs/en4_dataout_45IQ.bin';
 
 has_counter = 0;
 Fs = 245.76e6;
@@ -19,8 +19,7 @@ fileID_IQ = fopen(filenameIQ,'r');
 %fseek(fileID,2,'bof');
 counter=fread(fileID_C,'uint32');
 data = fread(fileID_IQ,'uint32');
-size(counter)
-size(data)
+
 fclose(fileID_C);
 fclose(fileID_IQ);
 
@@ -120,6 +119,14 @@ else
             break;
         end
     end
+    
+    for i=(partial_offset):numel(I)
+        if ((data(i)==(data(partial_offset-1)+(i-partial_offset+1)))&&(counter(i)==(counter(partial_offset-1)+(i-partial_offset+1))))
+            break;
+        end
+    end
+    single_pulse_end = i;
+    
     adcctr1 = data(partial_offset:4352:end);
     adcctr2 = data(partial_offset+4351:4352:end);
     adcctr = zeros(numel(adcctr1)+numel(adcctr2),1);
@@ -136,7 +143,8 @@ else
     %win = getHamming(chirpmax-chirpmin+1);
     win = 1;
     
-    chirpmin = partial_offset+1; chirpmax = partial_offset+4350;
+    %chirpmin = partial_offset+1; chirpmax = partial_offset+4350;
+    chirpmin = partial_offset+1; chirpmax = single_pulse_end-1; %numel(I);
     
     Ishift = add_waves*I(chirpmin:chirpmax)+scale_i*[zeros(shift_i,1);I(chirpmin:chirpmax-shift_i)];
     Qshift = add_waves*Q(chirpmin:chirpmax)+scale_q*[zeros(shift_q,1);Q(chirpmin:chirpmax-shift_q)];
@@ -192,8 +200,8 @@ else
 
 %figure; obw(x,Fs); title(['x = I+jQ: ',get(get(gca,'title'),'string')]);
 %figure; plot(20*log10(abs(fftshift(fft(x))))); title('fft of I+i*Q');
-    fftlen = 8192*4;    
-    thresholdDB = 50;
+    fftlen = 8192*2;    
+    thresholdDB = 30;
 %     [I_mixfft,Ifshift,Itshift] = getFreqShift(I2shift,Ishift,Fs,chirpBW,chirpT,fftlen);
 %     [Q_mixfft,Qfshift,Qtshift] = getFreqShift(Q2shift,Qshift,Fs,chirpBW,chirpT,fftlen);
     [I_mixfft,Ifshift,Itshift,ind] = getFreqShiftPeaks(I2shift,Ishift,Fs,chirpBW,chirpT,fftlen,thresholdDB);
@@ -250,5 +258,12 @@ else
         plot(fvec,magest(Q_mixfft,alpha(i),beta(i))); 
     end
      grid on; title('fft magest Qmix');  legend(legendmtx); hold off;
+     
+     
+%     st_sample_i = slowTimeTransform(I2shift,Ishift,freq);
+%     st_sample_q = slowTimeTransform(Q2shift,Qshift,freq);
+
+%     st_sample_i = slowTimeTransform(zeros(1,numel(Ishift)),Ishift,freq);
+%     st_sample_q = slowTimeTransform(zeros(1,numel(Qshift)),Qshift,freq);
 
 end

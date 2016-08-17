@@ -60,9 +60,13 @@ parameter RX_RD_CMD_DWIDTH                         = 32,
 
 parameter  CHIRP_CLK_FREQ                           = 245760000,    // Hz
 
-parameter ADC_SAMPLE_COUNT_INIT = 32'h000000c8,
+parameter ADC_SAMPLE_COUNT_INIT = 32'h000001fe, // 510 samples
 parameter CHIRP_PRF_INT_COUNT_INIT = 32'h00000000,
-parameter CHIRP_PRF_FRAC_COUNT_INIT = 32'h927c0000,
+parameter CHIRP_PRF_FRAC_COUNT_INIT = 32'h1d4c0000,  // 2 sec
+parameter CHIRP_TUNING_COEF_INIT = 32'b1,
+parameter CHIRP_COUNT_MAX_INIT = 32'h00000dff, // 3584 samples
+parameter CHIRP_FREQ_OFFSET_INIT = 32'h0b00, // 2816 -> 10.56 MHz min freq
+parameter CHIRP_CTRL_WORD_INIT = 32'h20,
 
 parameter ADC_CLK_FREQ                              = 245.7
 )
@@ -108,10 +112,10 @@ parameter ADC_CLK_FREQ                              = 245.7
   output reg [31:0]                 ch_prf_frac = CHIRP_PRF_FRAC_COUNT_INIT, //10*CHIRP_CLK_FREQ;  = 245760000  (10 sec)
 
   // Chirp Waveform Configuration registers
-  output reg [31:0]                 ch_tuning_coef = 32'b1,
-  output reg [31:0]                 ch_counter_max = 32'h00000fff,
-  output reg [31:0]                 ch_freq_offset = 32'h0600,
-  output reg [31:0]                 ch_ctrl_word = 32'h00000020,
+  output reg [31:0]                 ch_tuning_coef = CHIRP_TUNING_COEF_INIT,
+  output reg [31:0]                 ch_counter_max = CHIRP_COUNT_MAX_INIT,
+  output reg [31:0]                 ch_freq_offset = CHIRP_FREQ_OFFSET_INIT,
+  output reg [31:0]                 ch_ctrl_word = CHIRP_CTRL_WORD_INIT,
 
   // ADC Sample time after chirp data_tx_done -
   output reg [31:0]                 adc_sample_time = ADC_SAMPLE_COUNT_INIT,
@@ -311,10 +315,10 @@ begin
       // Chirp Control registers
       ch_prf_int           <= CHIRP_PRF_INT_COUNT_INIT; // prf in sec
       ch_prf_frac          <= CHIRP_PRF_FRAC_COUNT_INIT;
-      ch_tuning_coef       <= 32'b1;
-      ch_counter_max      <= 32'h00000fff;
-      ch_freq_offset       <= 32'h0600;
-      ch_ctrl_word         <= 32'h20;
+      ch_tuning_coef       <= CHIRP_TUNING_COEF_INIT;//32'b1;
+      ch_counter_max      <= CHIRP_COUNT_MAX_INIT;//32'h00000fff;
+      ch_freq_offset       <= CHIRP_FREQ_OFFSET_INIT; //32'h0600;
+      ch_ctrl_word         <= CHIRP_CTRL_WORD_INIT; //32'h20;
       adc_sample_time      <= ADC_SAMPLE_COUNT_INIT;
 
   end else if(network_cmd_en) begin

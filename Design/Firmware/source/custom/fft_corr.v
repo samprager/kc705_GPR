@@ -1,6 +1,6 @@
 `timescale 1ps/1ps
 
-module fft_dsp #
+module fft_corr #
   (
      parameter FFT_DIRECTION = 1'b1, // 1: FFT, 0:IFFT
      parameter FFT_LEN = 8192,
@@ -12,6 +12,7 @@ module fft_dsp #
      parameter FFT_AXI_STREAM_ID = 1'b0,
      parameter FFT_AXI_STREAM_DEST = 1'b0,
      parameter FFT_INDEX_LEN = 32,
+     parameter FFT_RUNTIME_CONFIG = 1,
      parameter SIMULATION = 0
 
    )
@@ -51,7 +52,7 @@ localparam LOG_2_FFT_LEN = clogb2(FFT_LEN);
 localparam SCH_SIZE_DIV = ceildiv(LOG_2_FFT_LEN,2);
 localparam SCH_SIZE = 2*SCH_SIZE_DIV;
 
-localparam CONFIG_DATA_SIZE = (NEED_SCALING==1) ? 24: 16;       //24;
+localparam CONFIG_DATA_SIZE = (NEED_SCALING==1) ? 24: (FFT_RUNTIME_CONFIG == 1) ? 16 : 8;       //24;
 
 localparam     IDLE        = 3'b000,
                CONFIG      = 3'b001,
@@ -159,10 +160,14 @@ always @(posedge aclk) begin
     s_axis_fft_config_tdata_r <= 'b0;
 else if(gen_state == CONFIG & s_axis_fft_config_tready) begin
     //s_axis_fft_config_tdata_r[8+SCH_SIZE-:SCH_SIZE] <= scale_sch;
-    s_axis_fft_config_tdata_r[9:9] <= fwd_inv;
-    s_axis_fft_config_tdata_r[8:8] <= fwd_inv;
-    s_axis_fft_config_tdata_r[4:0] <= nfft;
+    if(FFT_RUNTIME_CONFIG == 1) begin
+      s_axis_fft_config_tdata_r[9:9] <= fwd_inv;
+      s_axis_fft_config_tdata_r[8:8] <= fwd_inv;
+      s_axis_fft_config_tdata_r[4:0] <= nfft;
+    end else begin
+      s_axis_fft_config_tdata_r[0:0] <= fwd_inv;
     end
+  end
 end
 assign s_axis_fft_config_tdata = s_axis_fft_config_tdata_r; // {pad,scale_sh,fwd/inv,pad,cp_len,pad,nfft}
 
@@ -269,31 +274,90 @@ end
 
  assign m_axis_fft_status_tready = 1'b1;
 
-xfft_0 xfft_0_inst (
-  .aclk(aclk),                                              // input wire aclk
-.aresetn(aresetn),                                        // input wire aresetn
-.s_axis_config_tdata(s_axis_fft_config_tdata),                // input wire [15:0] (block) [23 : 0] s_axis_config_tdata
-.s_axis_config_tvalid(s_axis_fft_config_tvalid),              // input wire s_axis_config_tvalid
-.s_axis_config_tready(s_axis_fft_config_tready),              // output wire s_axis_config_tready
-.s_axis_data_tdata(s_axis_fft_data_tdata),                    // input wire [31 : 0] s_axis_data_tdata
-.s_axis_data_tvalid(s_axis_fft_data_tvalid),                  // input wire s_axis_data_tvalid
-.s_axis_data_tready(s_axis_fft_data_tready),                  // output wire s_axis_data_tready
-.s_axis_data_tlast(s_axis_fft_data_tlast),                    // input wire s_axis_data_tlast
-.m_axis_data_tdata(m_axis_fft_data_tdata),                    // output wire [31 : 0] m_axis_data_tdata
-.m_axis_data_tvalid(m_axis_fft_data_tvalid),                  // output wire m_axis_data_tvalid
-.m_axis_data_tready(m_axis_fft_data_tready),                    // input wire m_axis_data_tready
-.m_axis_data_tlast(m_axis_fft_data_tlast),                    // output wire m_axis_data_tlast
-.m_axis_data_tuser(m_axis_fft_data_tuser),                    // output wire m_axis_data_tuser
- .m_axis_status_tdata(m_axis_fft_status_tdata),                  // output wire [7 : 0] m_axis_status_tdata
- .m_axis_status_tvalid(m_axis_fft_status_tvalid),                // output wire m_axis_status_tvalid
- .m_axis_status_tready(m_axis_fft_status_tready),                // input wire m_axis_status_tready
- .event_frame_started(fft_event_frame_started),                  // output wire event_frame_started
- .event_tlast_unexpected(fft_event_tlast_unexpected),            // output wire event_tlast_unexpected
- .event_tlast_missing(fft_event_tlast_missing),                  // output wire event_tlast_missing
- .event_status_channel_halt(fft_event_status_channel_halt),      // output wire event_status_channel_halt
- .event_data_in_channel_halt(fft_event_data_in_channel_halt),    // output wire event_data_in_channel_halt
- .event_data_out_channel_halt(fft_event_data_out_channel_halt)  // output wire event_data_out_channel_halt
+
+generate if ((FFT_AXI_DATA_WIDTH == 32)&(FFT_LEN == 4096)) begin
+xfft_short_16b xfft_short_16b_inst (
+  .aclk(aclk),                                                // input wire aclk
+  .aresetn(aresetn),                                        // input wire aresetn
+  .s_axis_config_tdata(s_axis_fft_config_tdata),                  // input wire [7 : 0] s_axis_config_tdata
+  .s_axis_config_tvalid(s_axis_fft_config_tvalid),                // input wire s_axis_config_tvalid
+  .s_axis_config_tready(s_axis_fft_config_tready),                // output wire s_axis_config_tready
+  .s_axis_data_tdata(s_axis_fft_data_tdata),                      // input wire [31 : 0] s_axis_data_tdata
+  .s_axis_data_tvalid(s_axis_fft_data_tvalid),                    // input wire s_axis_data_tvalid
+  .s_axis_data_tready(s_axis_fft_data_tready),                    // output wire s_axis_data_tready
+  .s_axis_data_tlast(s_axis_fft_data_tlast),                      // input wire s_axis_data_tlast
+  .m_axis_data_tdata(m_axis_fft_data_tdata),                    // output wire [31 : 0] m_axis_data_tdata
+  .m_axis_data_tvalid(m_axis_fft_data_tvalid),                  // output wire m_axis_data_tvalid
+  .m_axis_data_tready(m_axis_fft_data_tready),                    // input wire m_axis_data_tready
+  .m_axis_data_tlast(m_axis_fft_data_tlast),                    // output wire m_axis_data_tlast
+  .m_axis_data_tuser(m_axis_fft_data_tuser),                    // output wire [7:0] m_axis_data_tuser
+   .m_axis_status_tdata(m_axis_fft_status_tdata),                  // output wire [7 : 0] m_axis_status_tdata
+   .m_axis_status_tvalid(m_axis_fft_status_tvalid),                // output wire m_axis_status_tvalid
+   .m_axis_status_tready(m_axis_fft_status_tready),                // input wire m_axis_status_tready
+   .event_frame_started(fft_event_frame_started),                  // output wire event_frame_started
+   .event_tlast_unexpected(fft_event_tlast_unexpected),            // output wire event_tlast_unexpected
+   .event_tlast_missing(fft_event_tlast_missing),                  // output wire event_tlast_missing
+   .event_status_channel_halt(fft_event_status_channel_halt),      // output wire event_status_channel_halt
+   .event_data_in_channel_halt(fft_event_data_in_channel_halt),    // output wire event_data_in_channel_halt
+   .event_data_out_channel_halt(fft_event_data_out_channel_halt)  // output wire event_data_out_channel_halt
 );
+end
+else if ((FFT_AXI_DATA_WIDTH == 64)&(FFT_LEN == 4096)) begin
+xfft_short_32b xfft_short_32b_inst (
+  .aclk(aclk),                                                // input wire aclk
+  .aresetn(aresetn),                                        // input wire aresetn
+  .s_axis_config_tdata(s_axis_fft_config_tdata),                  // input wire [7 : 0] s_axis_config_tdata
+  .s_axis_config_tvalid(s_axis_fft_config_tvalid),                // input wire s_axis_config_tvalid
+  .s_axis_config_tready(s_axis_fft_config_tready),                // output wire s_axis_config_tready
+  .s_axis_data_tdata(s_axis_fft_data_tdata),                      // input wire [63 : 0] s_axis_data_tdata
+  .s_axis_data_tvalid(s_axis_fft_data_tvalid),                    // input wire s_axis_data_tvalid
+  .s_axis_data_tready(s_axis_fft_data_tready),                    // output wire s_axis_data_tready
+  .s_axis_data_tlast(s_axis_fft_data_tlast),                      // input wire s_axis_data_tlast
+  .m_axis_data_tdata(m_axis_fft_data_tdata),                    // output wire [63 : 0] m_axis_data_tdata
+  .m_axis_data_tvalid(m_axis_fft_data_tvalid),                  // output wire m_axis_data_tvalid
+  .m_axis_data_tready(m_axis_fft_data_tready),                    // input wire m_axis_data_tready
+  .m_axis_data_tlast(m_axis_fft_data_tlast),                    // output wire m_axis_data_tlast
+  .m_axis_data_tuser(m_axis_fft_data_tuser),                    // output wire [7:0] m_axis_data_tuser
+   .m_axis_status_tdata(m_axis_fft_status_tdata),                  // output wire [7 : 0] m_axis_status_tdata
+   .m_axis_status_tvalid(m_axis_fft_status_tvalid),                // output wire m_axis_status_tvalid
+   .m_axis_status_tready(m_axis_fft_status_tready),                // input wire m_axis_status_tready
+   .event_frame_started(fft_event_frame_started),                  // output wire event_frame_started
+   .event_tlast_unexpected(fft_event_tlast_unexpected),            // output wire event_tlast_unexpected
+   .event_tlast_missing(fft_event_tlast_missing),                  // output wire event_tlast_missing
+   .event_status_channel_halt(fft_event_status_channel_halt),      // output wire event_status_channel_halt
+   .event_data_in_channel_halt(fft_event_data_in_channel_halt),    // output wire event_data_in_channel_halt
+   .event_data_out_channel_halt(fft_event_data_out_channel_halt)  // output wire event_data_out_channel_halt
+);
+end
+//else begin
+//xfft_0 xfft_0_inst (
+//  .aclk(aclk),                                              // input wire aclk
+//  .aresetn(aresetn),                                        // input wire aresetn
+//  .s_axis_config_tdata(s_axis_fft_config_tdata),                // input wire [15:0] (block) [23 : 0] s_axis_config_tdata
+//  .s_axis_config_tvalid(s_axis_fft_config_tvalid),              // input wire s_axis_config_tvalid
+//  .s_axis_config_tready(s_axis_fft_config_tready),              // output wire s_axis_config_tready
+//  .s_axis_data_tdata(s_axis_fft_data_tdata),                    // input wire [31 : 0] s_axis_data_tdata
+//  .s_axis_data_tvalid(s_axis_fft_data_tvalid),                  // input wire s_axis_data_tvalid
+//  .s_axis_data_tready(s_axis_fft_data_tready),                  // output wire s_axis_data_tready
+//  .s_axis_data_tlast(s_axis_fft_data_tlast),                    // input wire s_axis_data_tlast
+//  .m_axis_data_tdata(m_axis_fft_data_tdata),                    // output wire [31 : 0] m_axis_data_tdata
+//  .m_axis_data_tvalid(m_axis_fft_data_tvalid),                  // output wire m_axis_data_tvalid
+//  .m_axis_data_tready(m_axis_fft_data_tready),                    // input wire m_axis_data_tready
+//  .m_axis_data_tlast(m_axis_fft_data_tlast),                    // output wire m_axis_data_tlast
+//  .m_axis_data_tuser(m_axis_fft_data_tuser),                    // output wire m_axis_data_tuser
+//   .m_axis_status_tdata(m_axis_fft_status_tdata),                  // output wire [7 : 0] m_axis_status_tdata
+//   .m_axis_status_tvalid(m_axis_fft_status_tvalid),                // output wire m_axis_status_tvalid
+//   .m_axis_status_tready(m_axis_fft_status_tready),                // input wire m_axis_status_tready
+//   .event_frame_started(fft_event_frame_started),                  // output wire event_frame_started
+//   .event_tlast_unexpected(fft_event_tlast_unexpected),            // output wire event_tlast_unexpected
+//   .event_tlast_missing(fft_event_tlast_missing),                  // output wire event_tlast_missing
+//   .event_status_channel_halt(fft_event_status_channel_halt),      // output wire event_status_channel_halt
+//   .event_data_in_channel_halt(fft_event_data_in_channel_halt),    // output wire event_data_in_channel_halt
+//   .event_data_out_channel_halt(fft_event_data_out_channel_halt)  // output wire event_data_out_channel_halt
+//  );
+//end
+endgenerate
+
 //generate if (SIMULATION == 0) begin
 //ila_fft ila_fft_inst(
 //.clk(aclk),          // input wire clk

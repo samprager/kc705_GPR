@@ -538,12 +538,66 @@ assign data_iq_tlast = (dds_latency_counter==1)&(adc_enable_rr)&(!adc_enable_r);
 assign data_iq_first = adc_fifo_wr_first_r;
 assign data_counter_id = {glbl_counter[31:0],adc_counter};
 assign dw_axis_tready = glbl_counter[4] | glbl_counter[1]; //1'b1;
-assign lpf_cutoff_ind = FCUTOFF_IND;
+assign lpf_cutoff_ind = 2048; //FCUTOFF_IND;
 assign threshold_ctrl_i = {4'hf,4'h1};
 assign threshold_ctrl_q = {4'hf,4'h1};
 //assign peak_threshold_i = {{(60-4*threshold_ctrl_i[7:4]){1'b0}},threshold_ctrl_i[3:0],{(4*threshold_ctrl_i[7:4]){1'b0}}};
 //assign peak_threshold_q = {{(60-4*threshold_ctrl_q[7:4]){1'b0}},threshold_ctrl_q[3:0],{(4*threshold_ctrl_q[7:4]){1'b0}}};
 
+matched_filter_range_detector #
+  (
+     .PK_AXI_DATA_WIDTH(512),
+     .PK_AXI_TID_WIDTH (1),
+     .PK_AXI_TDEST_WIDTH(1),
+     .PK_AXI_TUSER_WIDTH(1),
+     .PK_AXI_STREAM_ID (1'b0),
+     .PK_AXI_STREAM_DEST (1'b0),
+     .FFT_LEN(4096),
+     .SIMULATION(SIMULATION)
+
+  )matched_filter_range_detector_inst(
+
+   .aclk(clk_245_76MHz), // AXI input clock
+   .aresetn(!clk_245_rst), // Active low AXI reset signal
+
+   // --ADC Data Out Signals
+  .adc_iq_tdata(adc_data_iq),
+  .dac_iq_tdata(dac_data_iq),
+  .iq_tvalid(data_iq_tvalid),
+  .iq_tlast(data_iq_tlast),
+  .iq_tready(data_iq_tready),
+  .iq_first(data_iq_first),
+  .counter_id(data_counter_id),
+
+  .pk_axis_tdata(dw_axis_tdata),
+  .pk_axis_tvalid(dw_axis_tvalid),
+  .pk_axis_tlast(dw_axis_tlast),
+  .pk_axis_tkeep(),
+  .pk_axis_tdest(),
+  .pk_axis_tid(),
+  .pk_axis_tstrb(),
+  .pk_axis_tuser(),
+  .pk_axis_tready(dw_axis_tready),
+
+  .lpf_cutoff(lpf_cutoff_ind),
+  .threshold_ctrl(threshold_ctrl_i),    // {4b word index, 4b word value} in 64bit threshold
+ // .threshold_ctrl(threshold_ctrl_q),    // {4b word index, 4b word value} in 64bit threshold
+
+// Control Module signals
+ .chirp_ready                         (chirp_ready),
+ .chirp_done                          (chirp_done),
+ .chirp_active                        (chirp_active),
+ .chirp_init                          (chirp_init),
+ .chirp_enable                        (chirp_enable),
+ .adc_enable                          (adc_enable),
+ .chirp_control_word          (chirp_control_word),
+ .chirp_freq_offset           (chirp_freq_offset),
+ .chirp_tuning_word_coeff     (chirp_tuning_word_coeff),
+ .chirp_count_max             (chirp_count_max)
+
+   );
+   
+/*
 dsp_range_detector #
   (
      .PK_AXI_DATA_WIDTH(512),
@@ -596,301 +650,7 @@ dsp_range_detector #
  .chirp_count_max             (chirp_count_max)
 
    );
-
-
-//assign s_fft_axis_tdata = {dac_data_q,dac_data_i,adc_data_q,adc_data_i};
-// assign s_fft_i_axis_tdata = {32'b0,mixer_out_i};
-// assign s_fft_i_axis_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_first);
-// assign s_fft_i_axis_tlast = adc_fifo_wr_tlast;
-//
-// assign s_fft_q_axis_tdata = {32'b0,mixer_out_q};
-// assign s_fft_q_axis_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_first);
-// assign s_fft_q_axis_tlast = adc_fifo_wr_tlast;
-//
-// assign m_fft_i_axis_tready = 1'b1;
-// assign m_fft_q_axis_tready = 1'b1;
-//
-// mixer_mult_gen mixer_i (
-//  .CLK(clk_245),  // input wire CLK
-//  .A(dac_data_i),      // input wire [15 : 0] A
-//  .B(adc_data_i),      // input wire [15 : 0] B
-//  //.P(s_fft_axis_tdata[31:0])      // output wire [31 : 0] P
-//   .P(mixer_out_i)       // output wire [31 : 0] P
-// );
-// mixer_mult_gen mixer_q (
-//  .CLK(clk_245),  // input wire CLK
-//  .A(dac_data_q),      // input wire [15 : 0] A
-//  .B(adc_data_q),      // input wire [15 : 0] B
-//  //.P(s_fft_axis_tdata[63:32])      // output wire [31 : 0] P
-//  .P(mixer_out_q)    // output wire [31 : 0] P
-// );
-//
-// sq_mag_estimate#(
-//     .DATA_LEN(32),
-//     .DIV_OR_OVERFLOW(0),  // (1): Divide output by 2, (0): use overflow bit
-//     .REGISTER_OUTPUT(1)
-// )
-//  sq_mag_i (
-//     .clk(clk_245),
-//     .dataI(m_fft_i_axis_tdata[31:0]),
-//     .dataI_tvalid(m_fft_i_axis_tvalid),
-//     .dataI_tlast(m_fft_i_axis_tlast),
-//     .dataQ(m_fft_i_axis_tdata[63:32]),
-//     .dataQ_tvalid(m_fft_i_axis_tvalid),
-//     .dataQ_tlast(m_fft_i_axis_tlast),
-//     .data_index(m_fft_i_index),
-//     .data_tuser(chirp_tuning_word_coeff),
-//     .dataMagSq(sq_mag_i_axis_tdata),
-//     .dataMag_tvalid(sq_mag_i_axis_tvalid),
-//     .dataMag_tlast(sq_mag_i_axis_tlast),
-//     .dataMag_tuser(sq_mag_i_axis_tuser),
-//     .dataMag_index(sq_mag_i_index),
-//     .overflow(sq_mag_i_axis_tdata_overflow)
-// );
-//
-// sq_mag_estimate#(
-//     .DATA_LEN(32),
-//     .DIV_OR_OVERFLOW(0),     // (1): Divide output by 2, (0): use overflow bit
-//     .REGISTER_OUTPUT(1)
-// )
-//  sq_mag_q (
-//    .clk(clk_245),
-//    .dataI(m_fft_q_axis_tdata[31:0]),
-//    .dataI_tvalid(m_fft_q_axis_tvalid),
-//    .dataI_tlast(m_fft_q_axis_tlast),
-//    .dataQ(m_fft_q_axis_tdata[63:32]),
-//    .dataQ_tvalid(m_fft_q_axis_tvalid),
-//    .dataQ_tlast(m_fft_q_axis_tlast),
-//    .data_index(m_fft_q_index),
-//    .data_tuser(chirp_tuning_word_coeff),
-//    .dataMagSq(sq_mag_q_axis_tdata),
-//    .dataMag_tvalid(sq_mag_q_axis_tvalid),
-//    .dataMag_tlast(sq_mag_q_axis_tlast),
-//    .dataMag_tuser(sq_mag_q_axis_tuser),
-//    .dataMag_index(sq_mag_q_index),
-//    .overflow(sq_mag_q_axis_tdata_overflow)
-// );
-//
-// assign lpf_cutoff_ind = FCUTOFF_IND;
-// freq_domain_lpf #(
-//     .DATA_LEN(64)
-// ) freq_lpf_i(
-//      .clk(clk_245),
-//      .aresetn(!clk_245_rst),
-//      .tdata(sq_mag_i_axis_tdata),
-//      .tvalid(sq_mag_i_axis_tvalid),
-//      .tlast(sq_mag_i_axis_tlast),
-//      .tuser(sq_mag_i_axis_tuser),
-//      .index(sq_mag_i_index),
-//      .cutoff(lpf_cutoff_ind),
-//      .lpf_index(lpf_index_i),
-//      .lpf_tdata(lpf_tdata_i),
-//      .lpf_tvalid(lpf_tvalid_i),
-//      .lpf_tlast(lpf_tlast_i),
-//      .lpf_tuser(lpf_tuser_i)
-//    );
-//
-//
-//  freq_domain_lpf #(
-//      .DATA_LEN(64)
-//  ) freq_lpf_q(
-//       .clk(clk_245),
-//       .aresetn(!clk_245_rst),
-//       .tdata(sq_mag_q_axis_tdata),
-//       .tvalid(sq_mag_q_axis_tvalid),
-//       .tlast(sq_mag_q_axis_tlast),
-//       .tuser(sq_mag_q_axis_tuser),
-//       .index(sq_mag_q_index),
-//       .cutoff(lpf_cutoff_ind),
-//       .lpf_index(lpf_index_q),
-//       .lpf_tdata(lpf_tdata_q),
-//       .lpf_tvalid(lpf_tvalid_q),
-//       .lpf_tlast(lpf_tlast_q),
-//       .lpf_tuser(lpf_tuser_q)
-//     );
-//
-//
-// assign peak_threshold_i = {4'b0001,60'b0};
-// assign peak_threshold_q = {4'b0001,60'b0};
-// peak_finder #(
-//   .DATA_LEN(64)
-// ) peak_finder_i(
-//   .clk(clk_245),
-//   .aresetn(!clk_245_rst),
-// //      .tdata(sq_mag_i_axis_tdata),
-// //      .tvalid(sq_mag_i_axis_tvalid),
-// //      .tlast(sq_mag_i_axis_tlast),
-// //      .tuser(sq_mag_i_axis_tuser),
-// //      .index(sq_mag_i_index),
-//   .tdata(lpf_tdata_i),
-//   .tvalid(lpf_tvalid_i),
-//   .tlast(lpf_tlast_i),
-//   .tuser(lpf_tuser_i),
-//   .index(lpf_index_i),
-//   .threshold(peak_threshold_i),
-//   .peak_index(peak_index_i),
-//   .peak_tdata(peak_tdata_i),
-//   .peak_tvalid(peak_tvalid_i),
-//   .peak_tlast(peak_tlast_i),
-//   .peak_tuser(peak_tuser_i),
-//   .num_peaks(num_peaks_i)
-// );
-// peak_finder #(
-//   .DATA_LEN(64)
-// ) peak_finder_q(
-//   .clk(clk_245),
-//   .aresetn(!clk_245_rst),
-//   .tdata(lpf_tdata_q),
-//   .tvalid(lpf_tvalid_q),
-//   .tlast(lpf_tlast_q),
-//   .tuser(lpf_tuser_q),
-//   .index(lpf_index_q),
-//   .threshold(peak_threshold_q),
-//   .peak_index(peak_index_q),
-//   .peak_tdata(peak_tdata_q),
-//   .peak_tvalid(peak_tvalid_q),
-//   .peak_tlast(peak_tlast_q),
-//   .peak_tuser(peak_tuser_q),
-//   .num_peaks(num_peaks_q)
-// );
-// always @(posedge clk_245) begin
-//   if (clk_245_rst) begin
-//     new_peak_i <= 1'b0;
-//   end else if (peak_tlast_i & peak_tvalid_i) begin
-//     peak_result_i <= peak_index_i;
-//     peak_val_i <= peak_tdata_i;
-//     peak_num_i <= num_peaks_i;
-//     new_peak_i <= 1'b1;
-//   end else if (dw_axis_tvalid_r)begin
-//     new_peak_i <= 1'b0;
-//   end
-// end
-//
-// always @(posedge clk_245) begin
-//   if (clk_245_rst) begin
-//     new_peak_q <= 1'b0;
-//   end else if (peak_tlast_q & peak_tvalid_q) begin
-//     peak_result_q <= peak_index_q;
-//     peak_val_q <= peak_tdata_q;
-//     peak_num_q <= num_peaks_q;
-//     new_peak_q <= 1'b1;
-//   end else if (dw_axis_tvalid_r)begin
-//     new_peak_q <= 1'b0;
-//   end
-// end
-//
-// always @(posedge clk_245) begin
-//   if (clk_245_rst) begin
-//     dw_axis_tvalid_r <= 1'b0;
-//     dw_axis_tlast_r <= 1'b0;
-//   end else if(new_peak_i & new_peak_q & !dw_axis_tvalid_r)begin
-//     dw_axis_tvalid_r <= 1'b1;
-//     dw_axis_tlast_r <= 1'b1;
-//   end else if (dw_axis_tready)begin
-//     dw_axis_tvalid_r <= 1'b0;
-//     dw_axis_tlast_r <= 1'b0;
-//   end
-// end
-//
-// assign dw_axis_tdata = {peak_num_i,peak_num_q,peak_val_i,peak_val_q,peak_result_i,peak_result_q};
-// assign dw_axis_tvalid = dw_axis_tvalid_r;
-// assign dw_axis_tlast = dw_axis_tlast_r;
-// //c_mag_estimate#(
-// //    .DATA_LEN(32),
-// //    .ALPHA(0.9),
-// //    .BETA(0.4)
-// //)
-// // abs_i (
-// //    .clk(clk_245),
-// //    .dataI(m_fft_axis_tdata[31:0]),
-// //    .dataQ(m_fft_axis_tdata[63:32]),
-// //    .dataMag(mag_i_axis_tdata)
-// //);
-//
-// //c_mag_estimate#(
-// //    .DATA_LEN(32),
-// //    .ALPHA(0.9),
-// //    .BETA(0.4)
-// //)
-// // abs_q (
-// //    .clk(clk_245),
-// //    .dataI(m_fft_axis_tdata[95:64]),
-// //    .dataQ(m_fft_axis_tdata[127:96]),
-// //    .dataMag(mag_q_axis_tdata)
-// //);
-//
-// //assign m_fft_axis_tdata = {32'h80000000,32'h80000000,32'hefffffff,32'hefffffff};
-//
-// fft_dsp #(
-//   .FFT_LEN(FFT_LEN),
-//   .FFT_CHANNELS(1),
-//   .FFT_AXI_DATA_WIDTH (64)
-//   )
-//   fft_dsp_i(
-//
-//   .aclk (clk_245),
-//   .aresetn (!clk_245_rst),
-//
-//  .s_axis_tdata(s_fft_i_axis_tdata),
-//  .s_axis_tvalid (s_fft_i_axis_tvalid),
-//  .s_axis_tlast(s_fft_i_axis_tlast),
-//  .s_axis_tready(s_fft_i_axis_tready),
-//
-// .m_axis_tdata(m_fft_i_axis_tdata),
-// .m_axis_tvalid(m_fft_i_axis_tvalid),
-// .m_axis_tlast(m_fft_i_axis_tlast),
-// .m_axis_tready(m_fft_i_axis_tready),
-//
-// .m_index(m_fft_i_index),
-//
-//    .chirp_ready                         (chirp_ready),
-//    .chirp_done                          (chirp_done),
-//    .chirp_active                        (chirp_active),
-//    .chirp_init                          (chirp_init),
-//    .chirp_enable                        (chirp_enable),
-//    .adc_enable                          (adc_enable)
-//
-// );
-//
-// fft_dsp #(
-//   .FFT_LEN(8192),
-//   .FFT_CHANNELS(1),
-//   .FFT_AXI_DATA_WIDTH (64)
-//   )
-//   fft_dsp_q(
-//
-//   .aclk (clk_245),
-//   .aresetn (!clk_245_rst),
-//
-//  .s_axis_tdata(s_fft_q_axis_tdata),
-//  .s_axis_tvalid (s_fft_q_axis_tvalid),
-//  .s_axis_tlast(s_fft_q_axis_tlast),
-//  .s_axis_tready(s_fft_q_axis_tready),
-//
-// .m_axis_tdata(m_fft_q_axis_tdata),
-// .m_axis_tvalid(m_fft_q_axis_tvalid),
-// .m_axis_tlast(m_fft_q_axis_tlast),
-// .m_axis_tready(m_fft_q_axis_tready),
-//
-// .m_index(m_fft_q_index),
-//
-//    .chirp_ready                         (chirp_ready),
-//    .chirp_done                          (chirp_done),
-//    .chirp_active                        (chirp_active),
-//    .chirp_init                          (chirp_init),
-//    .chirp_enable                        (chirp_enable),
-//    .adc_enable                          (adc_enable)
-//
-// );
-
-//assign chirp_ready_sig = chirp_ready;
-//assign chirp_done_sig = chirp_done;
-//assign chirp_active_sig = chirp_active;
-//assign chirp_init_sig = chirp_init;
-//assign chirp_enable_sig = chirp_enable;
-//assign adc_enable_sig = adc_enable;
-
-
+*/
 
 
    endmodule

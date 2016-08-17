@@ -11,7 +11,6 @@ module dsp_range_detector #
 
      parameter FFT_LEN = 8192,
      parameter SIMULATION = 0
-
    )
   (
 

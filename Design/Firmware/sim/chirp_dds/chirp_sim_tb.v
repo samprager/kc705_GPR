@@ -35,7 +35,7 @@ wire [127:0] chirp_parameters;
 
 reg [31:0] ch_freq_offset = 32'd768; //32'h0600;
 reg [31:0] ch_tuning_coef = 32'b1;
-reg [31:0] ch_counter_max = 32'd1023; //32'h00000fff;
+reg [31:0] ch_counter_max = 'b1;//32'd1023; //32'h00000fff;
 reg [31:0] ch_ctrl_word = 32'b0;
 
 
