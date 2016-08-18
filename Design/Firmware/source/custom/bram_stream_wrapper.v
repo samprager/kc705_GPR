@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:
-// Engineer:
+// Company:MiXIL
+// Engineer: Samuel Prager
 //
 // Create Date: 07/14/2016 07:29:14 PM
 // Design Name:

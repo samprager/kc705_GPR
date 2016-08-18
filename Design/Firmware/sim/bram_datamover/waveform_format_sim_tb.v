@@ -1,11 +1,11 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:
-// Engineer:
+// Company:MiXIL
+// Engineer: Samuel Prager
 //
 // Create Date: 07/14/2016 04:32:51 PM
 // Design Name:
-// Module Name: datamover_bram_sim_tb
+// Module Name: waveform_format_sim_tb
 // Project Name:
 // Target Devices:
 // Tool Versions:
@@ -119,12 +119,12 @@ always @(posedge fmc_tclk) begin
         wfrm_counter <= 0;
     end
     else begin
-        
+
         wfout_axis_tready_reg <= 1'b1;
         wfin_axis_tvalid_reg <= 1'b1;
         wfin_axis_tkeep_reg <= 4'hf;
 
-        
+
         if (&counter) begin
            wfin_axis_tlast_reg <= 1'b1;
            wfrm_counter <= wfrm_counter+1'b1;
@@ -136,11 +136,11 @@ always @(posedge fmc_tclk) begin
         end else if (wfin_axis_tready) begin
             wfin_axis_tlast_reg <= 1'b0;
         end
-        
+
         if (counter == 0) begin
           wfin_axis_tdata_reg <= wfrm_cmd;
           counter <= counter + 1'b1;
-        end  
+        end
         else if  (wfin_axis_tvalid_reg & wfin_axis_tready) begin
           counter <= counter + 1'b1;
           if (counter == 1)

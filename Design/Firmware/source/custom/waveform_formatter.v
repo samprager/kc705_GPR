@@ -3,9 +3,9 @@
 // Company: MiXIL
 // Engineer: Samuel Prager
 //
-// Create Date: 06/30/2016 03:54:31 PM
+// Create Date: 08/14/2016 03:54:31 PM
 // Design Name:
-// Module Name: axi_rx_command_gen
+// Module Name: waveform_formatter
 // Project Name:
 // Target Devices:
 // Tool Versions:
@@ -24,7 +24,7 @@
 module waveform_formatter(
    input                   axi_tclk,
    input                   axi_tresetn,
-   
+
    input                   wf_write_ready,
    output                  [127:0] waveform_parameters,
    output                  init_wf_write,
