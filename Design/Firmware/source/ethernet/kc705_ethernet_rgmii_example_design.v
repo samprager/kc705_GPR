@@ -186,7 +186,7 @@ module kc705_ethernet_rgmii_example_design
        input                                adc_axis_tlast,
        input                                adc_axis_tuser,
        output                               adc_axis_tready,
-       
+
        // data from Peak Detector DSP
         input       [7:0]                    pk_axis_tdata,
         input                                pk_axis_tvalid,
@@ -305,17 +305,17 @@ module kc705_ethernet_rgmii_example_design
    wire  [1:0]          s_axi_rresp;
    wire                 s_axi_rvalid;
    wire                 s_axi_rready;
-   
+
    wire [7:0] config_pkt_tdata;
    wire config_pkt_tvalid;
    wire config_pkt_tready;
    wire config_pkt_tlast;
-   
+
   wire [7:0] data_pkt_tdata;
    wire data_pkt_tvalid;
    wire data_pkt_tready;
    wire data_pkt_tlast;
-   
+
   wire [31 : 0] S00_FIFO_DATA_COUNT;
   wire [31 : 0] S01_FIFO_DATA_COUNT;
   wire M00_SPARSE_TKEEP_REMOVED;
@@ -677,7 +677,7 @@ module kc705_ethernet_rgmii_example_design
       .tx_axis_tvalid               (data_pkt_tvalid),
       .tx_axis_tlast                (data_pkt_tlast),
       .tx_axis_tready               (data_pkt_tready),
-      
+
       .enable_adc_pkt            (enable_adc_pkt),
       .adc_axis_tdata           (adc_axis_tdata),
       .adc_axis_tvalid          (adc_axis_tvalid),
@@ -693,9 +693,9 @@ module kc705_ethernet_rgmii_example_design
      //   parameter                            DEST_ADDR       = 48'hda0102030405,
         .DEST_ADDR       (48'h985aebdb066f),
         .SRC_ADDR        (48'h5a0102030405),
-        .MAX_SIZE        (16'd500),
+        .MAX_SIZE        (16'd532),
      //   parameter                            MIN_SIZE        = 16'd64,
-       .MIN_SIZE         (16'd500),
+       .MIN_SIZE         (16'd532),
        .ENABLE_VLAN      (1'b0),
        .VLAN_ID          (12'd2),
        .VLAN_PRIORITY    (3'd2)
@@ -743,8 +743,8 @@ module kc705_ethernet_rgmii_example_design
           .tkeep       (cmd_axis_tkeep),
           .tready      (cmd_axis_tready)
     );
-    
-    
+
+
    kc705_ethernet_rgmii_axi_packetizer #(
        .DEST_ADDR                 (48'h985aebdb066f),
        .SRC_ADDR                  (48'h5a0102030405),
@@ -773,7 +773,7 @@ module kc705_ethernet_rgmii_example_design
        .tlast                     (config_pkt_tlast),
        .tready                    (config_pkt_tready)
     );
-    
+
     ethernet_tx_axis_interconnect ethernet_tx_axis_interconnect_inst (
       .ACLK(tx_fifo_clock),                                          // input wire ACLK
       .ARESETN(tx_fifo_resetn),                                    // input wire ARESETN

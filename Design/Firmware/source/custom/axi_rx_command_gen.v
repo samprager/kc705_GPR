@@ -190,7 +190,7 @@ begin
     write_command <= 1'b0;
   end
   else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int) begin
-    if ((cmd_axis_tdata == CHIRP_WRITE_COMMAND) | (cmd_axis_tdata == FMC150_WRITE_COMMAND))
+    if ((cmd_axis_tdata == CHIRP_WRITE_COMMAND) | (cmd_axis_tdata == FMC150_WRITE_COMMAND)|(cmd_axis_tdata == DATA_WRITE_COMMAND))
       write_command <= 1'b1;
     else
       write_command <= 1'b0;
@@ -324,10 +324,13 @@ begin
         tdest_reg <= 4'b0000;
       else if(curr_cmd_word == FMC150_WRITE_COMMAND)
         tdest_reg <= 4'b0001;
-     else if(curr_cmd_word == CHIRP_READ_COMMAND)
+     else if(curr_cmd_word == DATA_WRITE_COMMAND)
           tdest_reg <= 4'b0010;
       else if(curr_cmd_word == FMC150_READ_COMMAND)
           tdest_reg <= 4'b0011;
+      else if(curr_cmd_word == CHIRP_READ_COMMAND)
+          tdest_reg <= 4'b0011;
+
    end
   //  else if (gen_state == NEXT_CMD & cmd_axis_tvalid & cmd_axis_tready_int & new_command) begin
   //    tdata_reg <= cmd_axis_tdata;
@@ -336,9 +339,11 @@ begin
       tdest_reg <= 4'b0000;
     else if(curr_cmd_word == FMC150_WRITE_COMMAND)
       tdest_reg <= 4'b0001;
-    else if(curr_cmd_word == CHIRP_READ_COMMAND)
+    else if(curr_cmd_word == DATA_WRITE_COMMAND)
          tdest_reg <= 4'b0010;
      else if(curr_cmd_word == FMC150_READ_COMMAND)
+         tdest_reg <= 4'b0011;
+     else if(curr_cmd_word == CHIRP_READ_COMMAND)
          tdest_reg <= 4'b0011;
    end
 end

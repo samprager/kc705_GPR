@@ -288,7 +288,7 @@ function integer clogb2 (input integer size);
   localparam ADC_AXI_TUSER_WIDTH = 1;
   localparam ADC_AXI_STREAM_ID = 1'b0;
   localparam ADC_AXI_STREAM_DEST = 1'b1;
-  
+
   localparam PK_AXI_DATA_WIDTH = 512;//64;
   localparam PK_AXI_TID_WIDTH = 1;
   localparam PK_AXI_TDEST_WIDTH = 1;
@@ -489,6 +489,15 @@ wire [(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:0]    sp_wr_cmd_axis_tuser;
 wire [(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)/8-1:0]  sp_wr_cmd_axis_tkeep;
 wire [3:0]                      sp_wr_cmd_axis_tdest;
 wire [3:0]                      sp_wr_cmd_axis_tid;
+
+wire [31:0]                     wfrm_wr_data_axis_tdata;
+wire                            wfrm_wr_data_axis_tvalid;
+wire                            wfrm_wr_data_axis_tlast;
+wire                            wfrm_wr_data_axis_tready;
+wire [31:0]                     wfrm_wr_data_axis_tuser;
+wire [3:0]                      wfrm_wr_data_axis_tkeep;
+wire [3:0]                      wfrm_wr_data_axis_tdest;
+wire [3:0]                      wfrm_wr_data_axis_tid;
 
 wire [(RX_RD_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:0]     ch_rd_cmd_axis_tdata;
 wire                            ch_rd_cmd_axis_tvalid;
@@ -754,35 +763,43 @@ rx_cmd_1s4m_axis_interconnect rx_cmd_1s4m_axis_interconnect_inst (
   .M03_AXIS_ARESETN(s_axi_resetn),        // input wire M03_AXIS_ARESETN
   .M00_AXIS_TVALID(ch_wr_cmd_axis_tvalid),          // output wire M00_AXIS_TVALID
   .M01_AXIS_TVALID(sp_wr_cmd_axis_tvalid),          // output wire M01_AXIS_TVALID
-  .M02_AXIS_TVALID(ch_rd_cmd_axis_tvalid),          // output wire M02_AXIS_TVALID
+  .M02_AXIS_TVALID(wfrm_wr_data_axis_tvalid),          // output wire M02_AXIS_TVALID
+//  .M02_AXIS_TVALID(ch_rd_cmd_axis_tvalid),          // output wire M02_AXIS_TVALID
   .M03_AXIS_TVALID(sp_rd_cmd_axis_tvalid),          // output wire M03_AXIS_TVALID
   .M00_AXIS_TREADY(ch_wr_cmd_axis_tready),          // input wire M00_AXIS_TREADY
   .M01_AXIS_TREADY(sp_wr_cmd_axis_tready),          // input wire M01_AXIS_TREADY
-  .M02_AXIS_TREADY(ch_rd_cmd_axis_tready),          // input wire M02_AXIS_TREADY
+  .M02_AXIS_TREADY(wfrm_wr_data_axis_tready),          // input wire M02_AXIS_TREADY
+  //  .M02_AXIS_TREADY(ch_rd_cmd_axis_tready),          // input wire M02_AXIS_TREADY
   .M03_AXIS_TREADY(sp_rd_cmd_axis_tready),          // input wire M03_AXIS_TREADY
   .M00_AXIS_TDATA(ch_wr_cmd_axis_tdata),            // output wire [223 : 0] M00_AXIS_TDATA
   .M01_AXIS_TDATA(sp_wr_cmd_axis_tdata),            // output wire [223 : 0] M01_AXIS_TDATA
-  .M02_AXIS_TDATA(ch_rd_cmd_axis_tdata),            // output wire [63 : 0] M02_AXIS_TDATA
+  .M02_AXIS_TDATA(wfrm_wr_data_axis_tdata),            // output wire [63 : 0] M02_AXIS_TDATA
+//  .M02_AXIS_TDATA(ch_rd_cmd_axis_tdata),            // output wire [63 : 0] M02_AXIS_TDATA
   .M03_AXIS_TDATA(sp_rd_cmd_axis_tdata),            // output wire [63 : 0] M03_AXIS_TDATA
   .M00_AXIS_TKEEP(ch_wr_cmd_axis_tkeep),            // output wire [27 : 0] M00_AXIS_TKEEP
   .M01_AXIS_TKEEP(sp_wr_cmd_axis_tkeep),            // output wire [27 : 0] M01_AXIS_TKEEP
-  .M02_AXIS_TKEEP(ch_rd_cmd_axis_tkeep),            // output wire [7 : 0] M02_AXIS_TKEEP
+  .M02_AXIS_TKEEP(wfrm_wr_data_axis_tkeep),            // output wire [7 : 0] M02_AXIS_TKEEP
+//  .M02_AXIS_TKEEP(ch_rd_cmd_axis_tkeep),            // output wire [7 : 0] M02_AXIS_TKEEP
   .M03_AXIS_TKEEP(sp_rd_cmd_axis_tkeep),            // output wire [7 : 0] M03_AXIS_TKEEP
   .M00_AXIS_TLAST(ch_wr_cmd_axis_tlast),            // output wire M00_AXIS_TLAST
   .M01_AXIS_TLAST(sp_wr_cmd_axis_tlast),            // output wire M01_AXIS_TLAST
-  .M02_AXIS_TLAST(ch_rd_cmd_axis_tlast),            // output wire M02_AXIS_TLAST
+  .M02_AXIS_TLAST(wfrm_wr_data_axis_tlast),            // output wire M02_AXIS_TLAST
+//  .M02_AXIS_TLAST(ch_rd_cmd_axis_tlast),            // output wire M02_AXIS_TLAST
   .M03_AXIS_TLAST(sp_rd_cmd_axis_tlast),            // output wire M03_AXIS_TLAST
   .M00_AXIS_TID(ch_wr_cmd_axis_tid),                // output wire [3 : 0] M00_AXIS_TID
   .M01_AXIS_TID(sp_wr_cmd_axis_tid),                // output wire [3 : 0] M01_AXIS_TID
-  .M02_AXIS_TID(ch_rd_cmd_axis_tid),                // output wire [3 : 0] M02_AXIS_TID
+  .M02_AXIS_TID(wfrm_wr_data_axis_tid),                // output wire [3 : 0] M02_AXIS_TID
+//  .M02_AXIS_TID(ch_rd_cmd_axis_tid),                // output wire [3 : 0] M02_AXIS_TID
   .M03_AXIS_TID(sp_rd_cmd_axis_tid),                // output wire [3 : 0] M03_AXIS_TID
   .M00_AXIS_TDEST(ch_wr_cmd_axis_tdest),            // output wire [3 : 0] M00_AXIS_TDEST
   .M01_AXIS_TDEST(sp_wr_cmd_axis_tdest),            // output wire [3 : 0] M01_AXIS_TDEST
-  .M02_AXIS_TDEST(ch_rd_cmd_axis_tdest),            // output wire [3 : 0] M02_AXIS_TDEST
+  .M02_AXIS_TDEST(wfrm_wr_data_axis_tdest),            // output wire [3 : 0] M02_AXIS_TDEST
+//  .M02_AXIS_TDEST(ch_rd_cmd_axis_tdest),            // output wire [3 : 0] M02_AXIS_TDEST
   .M03_AXIS_TDEST(sp_rd_cmd_axis_tdest),            // output wire [3 : 0] M03_AXIS_TDEST
   .M00_AXIS_TUSER(ch_wr_cmd_axis_tuser),            // output wire [223 : 0] M00_AXIS_TUSER
   .M01_AXIS_TUSER(sp_wr_cmd_axis_tuser),            // output wire [223 : 0] M01_AXIS_TUSER
-  .M02_AXIS_TUSER(ch_rd_cmd_axis_tuser),            // output wire [63 : 0] M02_AXIS_TUSER
+  .M02_AXIS_TUSER(wfrm_wr_data_axis_tuser),            // output wire [63 : 0] M02_AXIS_TUSER
+//  .M02_AXIS_TUSER(ch_rd_cmd_axis_tuser),            // output wire [63 : 0] M02_AXIS_TUSER
   .M03_AXIS_TUSER(sp_rd_cmd_axis_tuser),            // output wire [63 : 0] M03_AXIS_TUSER
   .S00_DECODE_ERR(S00_CMD_DECODE_ERR),            // output wire S00_DECODE_ERR
   .S00_FIFO_DATA_COUNT(S00_CMD_FIFO_DATA_COUNT),  // output wire [31 : 0] S00_FIFO_DATA_COUNT
@@ -864,13 +881,13 @@ kc705_ethernet_rgmii_example_design ethernet_rgmii_wrapper
   .adc_axis_tlast           (adc_pkt_axis_tlast),
   .adc_axis_tuser           (adc_pkt_axis_tuser),
   .adc_axis_tready          (adc_pkt_axis_tready),
-  
+
   .pk_axis_tdata           (pk_axis_tdata),
   .pk_axis_tvalid          (pk_axis_tvalid),
   .pk_axis_tlast           (pk_axis_tlast),
   .pk_axis_tuser           (pk_axis_tuser),
   .pk_axis_tready          (pk_axis_tready),
-  
+
 
   // Main example design controls
   //-----------------------------
@@ -983,7 +1000,7 @@ fmc150_dac_adc_inst
      .axis_adc_tuser                      (axis_adc_tuser),
      .axis_adc_tready                     (axis_adc_tready),
      .axis_adc_tstrb                      (axis_adc_tstrb),
-     
+
      .axis_pk_tdata                      (axis_pk_tdata),
      .axis_pk_tvalid                     (axis_pk_tvalid),
      .axis_pk_tlast                      (axis_pk_tlast),

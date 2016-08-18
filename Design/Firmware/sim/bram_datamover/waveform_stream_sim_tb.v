@@ -195,15 +195,11 @@ waveform_stream #(
     .wfout_axis_tready(wfout_axis_tready)
 );
 CHIRP_DDS u_chirp_dds(
-    .CLOCK(fmc_tclk_fast),
-    .CLOCK1(fmc_tclk),
-    .CLOCK2(1'b0),
+    .CLOCK(fmc_tclk),
     .RESET(!fmc_tresetn),
-    .IF_FREQ(28'b0),
     .IF_OUT_I(dds_out_i),
     .IF_OUT_Q(dds_out_q),
     .IF_OUT_VALID(),
-    .DUC_DCC_ROUTE_CTRL(3'b0),
 
     .chirp_ready (chirp_ready),
     .chirp_done  (chirp_done),
