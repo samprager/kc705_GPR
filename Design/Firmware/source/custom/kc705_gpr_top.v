@@ -438,6 +438,10 @@ wire [(RX_WR_CMD_DWIDTH+RX_CMD_ID_WIDTH)/8-1:0]  sp_wr_cmd_axis_tkeep;
 wire [3:0]                      sp_wr_cmd_axis_tdest;
 wire [3:0]                      sp_wr_cmd_axis_tid;
 
+//////////////////////////////////////////
+// Waveform Data from Network  wires
+//////////////////////////////////////////
+
 wire [31:0]                     wfrm_wr_data_axis_tdata;
 wire                            wfrm_wr_data_axis_tvalid;
 wire                            wfrm_wr_data_axis_tlast;
@@ -446,6 +450,27 @@ wire [31:0]                     wfrm_wr_data_axis_tuser;
 wire [3:0]                      wfrm_wr_data_axis_tkeep;
 wire [3:0]                      wfrm_wr_data_axis_tdest;
 wire [3:0]                      wfrm_wr_data_axis_tid;
+
+wire       [31:0]                    wfin_axis_tdata;
+wire                                 wfin_axis_tvalid;
+wire                                 wfin_axis_tlast;
+wire       [31:0]                    wfin_axis_tuser;
+wire       [3:0]                    wfin_axis_tkeep;
+wire       [3:0]                    wfin_axis_tdest;
+wire       [3:0]                    wfin_axis_tid;
+wire                                wfin_axis_tready;
+
+wire       [31:0]                    wfout_axis_tdata;
+wire                                 wfout_axis_tvalid;
+wire                                 wfout_axis_tlast;
+wire       [3:0]                     wfout_axis_tkeep;
+wire                                wfout_axis_tready;
+
+wire [127:0] waveform_parameters;
+wire init_wf_write;
+wire wf_write_ready;
+wire wf_read_ready;
+
 
 wire [(RX_RD_CMD_DWIDTH+RX_CMD_ID_WIDTH)-1:0]     ch_rd_cmd_axis_tdata;
 wire                            ch_rd_cmd_axis_tvalid;
@@ -703,11 +728,13 @@ rx_cmd_1s4m_axis_interconnect rx_cmd_1s4m_axis_interconnect_inst (
   .S00_AXIS_TUSER(cmd_pkt_s_axis_tuser),            // input wire [31 : 0] S00_AXIS_TUSER
   .M00_AXIS_ACLK(s_axi_aclk),              // input wire M00_AXIS_ACLK
   .M01_AXIS_ACLK(s_axi_aclk),              // input wire M01_AXIS_ACLK
-  .M02_AXIS_ACLK(s_axi_aclk),              // input wire M02_AXIS_ACLK
+  //.M02_AXIS_ACLK(s_axi_aclk),              // input wire M02_AXIS_ACLK
+  .M02_AXIS_ACLK(clk_245_76MHz),              // input wire M02_AXIS_ACLK
   .M03_AXIS_ACLK(s_axi_aclk),              // input wire M03_AXIS_ACLK
   .M00_AXIS_ARESETN(s_axi_resetn),        // input wire M00_AXIS_ARESETN
   .M01_AXIS_ARESETN(s_axi_resetn),        // input wire M01_AXIS_ARESETN
-  .M02_AXIS_ARESETN(s_axi_resetn),        // input wire M02_AXIS_ARESETN
+//  .M02_AXIS_ARESETN(s_axi_resetn),        // input wire M02_AXIS_ARESETN
+  .M02_AXIS_ARESETN(!clk_245_rst),        // input wire M02_AXIS_ARESETN
   .M03_AXIS_ARESETN(s_axi_resetn),        // input wire M03_AXIS_ARESETN
   .M00_AXIS_TVALID(ch_wr_cmd_axis_tvalid),          // output wire M00_AXIS_TVALID
   .M01_AXIS_TVALID(sp_wr_cmd_axis_tvalid),          // output wire M01_AXIS_TVALID
@@ -967,6 +994,12 @@ fmc150_dac_adc_inst
      .chirp_enable                        (chirp_enable),
      .adc_enable                          (adc_enable),
 
+     .wf_read_ready(wf_read_ready),
+     .wfrm_axis_tdata(wfout_axis_tdata),
+     .wfrm_axis_tvalid(wfout_axis_tvalid),
+     .wfrm_axis_tlast(wfout_axis_tlast),
+     .wfrm_axis_tready(wfout_axis_tready),
+
      .chirp_control_word         (chirp_parameters[127:96]),
      .chirp_freq_offset          (chirp_parameters[95:64]),
      .chirp_tuning_word_coeff    (chirp_parameters[63:32]),
@@ -1059,6 +1092,55 @@ fmc150_dac_adc_inst
     // --FMC Present status
      .prsnt_m2c_l (prsnt_m2c_l)        //             : in    std_logic
 
+);
+
+waveform_formatter waveform_formatter_inst (
+    .axi_tclk(clk_245_76MHz),
+    .axi_tresetn(!clk_245_rst),
+    .wf_write_ready(wf_write_ready),
+    .init_wf_write(init_wf_write),
+    .waveform_parameters(waveform_parameters),
+    .wfrm_axis_tdata(wfrm_wr_data_axis_tdata),
+    .wfrm_axis_tvalid(wfrm_wr_data_axis_tvalid),
+    .wfrm_axis_tlast(wfrm_wr_data_axis_tlast),
+    .wfrm_axis_tkeep(wfrm_wr_data_axis_tkeep),
+    .wfrm_axis_tdest(wfrm_wr_data_axis_tdest),
+    .wfrm_axis_tid(wfrm_wr_data_axis_tid),
+    .wfrm_axis_tuser(wfrm_wr_data_axis_tuser),
+    .wfrm_axis_tready(wfrm_wr_data_axis_tready),
+
+    .tdata(wfin_axis_tdata),
+    .tvalid(wfin_axis_tvalid),
+    .tlast(wfin_axis_tlast),
+    .tkeep(wfin_axis_tkeep),
+    .tdest(wfin_axis_tdest),
+    .tid(wfin_axis_tid),
+    .tuser(wfin_axis_tuser),
+    .tready(wfin_axis_tready)
+);
+
+waveform_stream #(
+   .WRITE_BEFORE_READ(1'b1)
+) waveform_stream_inst(
+    .clk_in1(clk_245_76MHz),
+    .aresetn(!clk_245_rst),
+    .waveform_parameters(waveform_parameters),
+    .init_wf_write (init_wf_write),
+    .wf_write_ready (wf_write_ready),
+    .wf_read_ready (wf_read_ready),
+    // data from ADC Data fifo
+    .wfin_axis_tdata (wfin_axis_tdata),
+    .wfin_axis_tvalid(wfin_axis_tvalid),
+    .wfin_axis_tlast(wfin_axis_tlast),
+    .wfin_axis_tkeep(wfin_axis_tkeep),
+    .wfin_axis_tready(wfin_axis_tready),
+
+    // data from ADC Data fifo
+    .wfout_axis_tdata(wfout_axis_tdata),
+    .wfout_axis_tvalid(wfout_axis_tvalid),
+    .wfout_axis_tlast(wfout_axis_tlast),
+    .wfout_axis_tkeep(wfout_axis_tkeep),
+    .wfout_axis_tready(wfout_axis_tready)
 );
 
 peak_axis_dwidth_converter peak_axis_dwidth_converter_inst (

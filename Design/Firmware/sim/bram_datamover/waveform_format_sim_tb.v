@@ -56,6 +56,10 @@ wire                                 wfout_axis_tlast;
 wire       [3:0]                     wfout_axis_tkeep;
 wire                                wfout_axis_tready;
 
+wire                  wfrm_data_valid;
+wire [15:0]           wfrm_data_i;
+wire [15:0]           wfrm_data_q;
+
 
 reg       [31:0]                    wfin_axis_tdata_reg;
 reg                                 wfin_axis_tvalid_reg;
@@ -75,6 +79,12 @@ reg [31:0] wfrm_cmd = 32'h57574441;
 reg [1:0] wfrm_counter;
 
 reg [10:0] chirp_count;
+
+reg chirp_init;
+wire chirp_active;
+wire chirp_done;
+wire chirp_ready;
+reg dds_source_select;
 
 initial
 begin
@@ -117,12 +127,21 @@ always @(posedge fmc_tclk) begin
         counter <= 0;
 
         wfrm_counter <= 0;
+
+        dds_source_select <= 0;
+        chirp_init <= 0;
     end
     else begin
 
         wfout_axis_tready_reg <= 1'b1;
         wfin_axis_tvalid_reg <= 1'b1;
         wfin_axis_tkeep_reg <= 4'hf;
+
+        dds_source_select <= 1;
+        if (counter == 0 & wfrm_counter == 2'b10)
+            chirp_init <= 1;
+        else
+          chirp_init <= 0;
 
 
         if (&counter) begin
@@ -206,11 +225,33 @@ waveform_stream #(
     .wfout_axis_tready(wfout_axis_tready)
 );
 
+waveform_dds u_waveform_dds(
+    .axi_tclk(fmc_tclk),
+    .axi_tresetn(fmc_tresetn),
+    .wf_read_ready(wf_read_ready),
+    
+    .chirp_ready (chirp_ready),
+    .chirp_done (chirp_done),
+    .chirp_active (chirp_active),
+    .chirp_init  (chirp_init),
+    .chirp_enable  (1'b1),
+    
+    .dds_source_select(dds_source_select),
+
+    .wfrm_axis_tdata(wfout_axis_tdata),
+    .wfrm_axis_tvalid(wfout_axis_tvalid),
+    .wfrm_axis_tlast(wfout_axis_tlast),
+    .wfrm_axis_tready(wfout_axis_tready),
+
+    .wfrm_data_valid(wfrm_data_valid),
+    .wfrm_data_i(wfrm_data_i),
+    .wfrm_data_q(wfrm_data_q)
+);
+
 assign wfin_axis_tdata = wfin_axis_tdata_reg;
 assign wfin_axis_tvalid = wfin_axis_tvalid_reg;
 assign wfin_axis_tlast = wfin_axis_tlast_reg;
 assign wfin_axis_tkeep = wfin_axis_tkeep_reg;
-assign wfout_axis_tready = wfout_axis_tready_reg;
 
 
 endmodule

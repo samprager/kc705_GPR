@@ -1,38 +1,25 @@
 ----------------------------------------------------------------------------------
---    _____
---   /     \
---  /____   \____
--- / \===\   \==/
---/___\===\___\/  AVNET
---     \======/
---      \====/
+-- Company:MiXIL
+-- Engineer: Samuel Prager
+--
+-- Create Date: 07/14/2016 04:32:51 PM
+-- Design Name:
+-- Module Name: KC705_fmc150.vhd
+-- Project Name:
+-- Target Devices:
+-- Tool Versions:
+-- Description:
+--
+-- Dependencies:
+--
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
 --
 ----------------------------------------------------------------------------------
--- This design is the property of Avnet.  Publication of this
--- design is not authorized without written consent from Avnet.
---
--- Any modifications that are made to the Source Code are
--- done at the user's sole risk and will be unsupported.
---
--- Disclaimer:
---    Avnet, Inc. makes no warranty for the use of this code or design.
---    This code is provided  "As Is". Avnet, Inc assumes no responsibility for
---    any errors, which may appear in this code, nor does it make a commitment
---    to update the information contained herein. Avnet, Inc specifically
---    disclaims any implied warranties of fitness for a particular purpose.
---                     Copyright(c) 2010 Avnet, Inc.
---                             All rights reserved.
---
---
--- This copyright and support notice must be retained as part
--- of this text at all times.
---
--- Xilinx products are not intended for use in life support
--- appliances, devices, or systems. Use in such applications is
--- expressly prohibited.
---
 ----------------------------------------------------------------------------------
 --
+-- Modified From Original Avnet Design:
 ----------------------------------------------------------------------------------
 -- FILE NAME : KC705_fmc150.vhd
 --
@@ -66,61 +53,7 @@
 --
 -- For information on all Avnet development kits contact your local Avnet FAE, or visit the Avnet Design Resource Center: http://www.em.avnet.com/drc
 -------------------------------------------------------------------------------------
--- Revisions
--- Luc Langlois \ Avnet
--- August 2011 :
---		- Update to ISE 13.2
---		- Increased DUC output sampling rate to 245.76 MSPS to DAC3283 with 2X interpolation
---		- Increased ADC input sampling rate to 245.76 MSPS
---
--- Nov 4, 2011:
---		- Update to ISE 13.3 build O.76
---		- DUC_DDC module as user design
--- Nov 29, 2011:
---    - added trig1 to 'ila_baseband_out' connected to 'baseband_out_valid' for storage qualifier in Chipscope
---    - ... valid signal out of last stage of DDC (RRC FIR)
---    - ... enable storage qualifier in Chipscope to avoid 8X repeated samples (DDC downsamples total of 8X)
--- Dec 9, 2011:
---    - Ported to 13.4 O.87
---       - ADC iSERDES differential clock input ports back to true polarity from inverted in 13.3
---       - updated ADC iDelays
---       - updated ChipScope .CPJ project with 5-bit busses to display iDelay settings (ADC Ch A, Ch B, CLK) as read out of iDELAYE2
--- Dec 19, 2011:
---       - added ADC auto-calibration at reset-time, independant on both ADC channels A, B
---       -... changes to ADC_auto_calibration.vhd, fmc150_spi_ctrl.vhd
---
--- February 16, 2012 : updated to 491.52 MHz system clock, for 2X over-clocking of fastest stage with input sampling rate of 245.76 MSPS
---
--- Aug 19, 2012:
---       - Updated to Vivado 2012.2
---       - Updated ADC auto-calibration to fix intermittent ADC data-capture errors
---         - added reset pulse to iSERDES synchronous to 122_88_Mhz clock domain, simultaneous with pulse to update iDelay value from auto calibration
---         - changed clock to iDelay to 122.88 MHz, same as iserdes CLKDIV
---         - updated clock of 'Delay_update: process' to clk_122_88MHz, synchronous with iSerdes CLKDIV
---         - simplified ADC auto-calibration to generate pulse to iDelay 'CE' port thereby incrementing the delay value, as opposed to loading a 5-bit value
---         - ... the result is consistent ADC auto-calibration at power-on and system reset for error-free ADC data capture
---         - gpio_led(7) (the LED closest to SD card slot on KC705) should come 'ON' shortly after reset to indicate successful capture of ADC ramp test pattern
---         - user may verify by asserting pushbutton 'CPU_RST' on KC705
---
--- Nov 29 2012:
---		-Updated to Vivado 2012.4
---		-Changed debug to Vivado Analayzer ILA2.0
---
----- June 4 2013:
---		-Updated to Vivado 2013.2
---		-Changed debug to Vivado Analayzer ILA2.1 and VIO to Vivado v2.0
---      -upgraded FIR and complex multiplier IP
---      -Commented out black box in complex_mixer VHDL
---
---  July 20 2013:
---		- Complex multiplier outputs in DUC and DDC:
---          - IP lacks rounding function, so ...
---          - Added rounding to match MATLAB model
---
---  Aug 5 2013:
---		- ILA v3 and VIO v3 ports UPPERCASE to lowercase.
---      - Changed mmcms to single clock input.
---      - Modelsim globally Static chnage for CLKB, PROBE4, PROBE5
+
 -------------------------------------------------------------------------------------
 -- Library declarations
 -------------------------------------------------------------------------------------
@@ -137,7 +70,7 @@ library unisim;
 -------------------------------------------------------------------------------------
 entity KC705_fmc150 is
 generic (
-  DDS_LATENCY : integer := 2;   
+  DDS_LATENCY : integer := 2;
   MAX_PATTERN_CNT : integer := 2000 -- value of 15000 = approx 1 sec for ramp of length 2^14 samples @ 245.76 MSPS
 );
 port (
@@ -147,12 +80,15 @@ port (
   adc_data_out_q : out std_logic_vector(15 downto 0);
 --  adc_counter_out : out std_logic_vector(31 downto 0);
   adc_data_out_valid : out std_logic;
-  
+
   dac_data_out_i : out std_logic_vector(15 downto 0);
   dac_data_out_q : out std_logic_vector(15 downto 0);
 --  adc_data_out_iq : out std_logic_vector(31 downto 0);
 --  dac_data_out_iq : out std_logic_vector(31 downto 0);
 --  data_out_valid : out std_logic;
+  wfrm_data_in_i : in std_logic_vector(15 downto 0);
+  wfrm_data_in_q : in std_logic_vector(15 downto 0);
+  wfrm_data_in_valid : in std_logic;
 
   fmc150_status_vector : out std_logic_vector(3 downto 0);
   chirp_ready  : out std_logic;
@@ -161,6 +97,8 @@ port (
   chirp_init  : in std_logic;
   chirp_enable : in std_logic;
   adc_enable : in std_logic;
+
+  dds_source_select : in std_logic;
 
 --  dac_loopback : in std_logic;
   chirp_freq_offset : in std_logic_vector(31 downto 0);
@@ -591,6 +529,15 @@ signal dac_din_i         : std_logic_vector(15 downto 0);
 signal dac_din_q         : std_logic_vector(15 downto 0);
 signal DUC_if_out_i      : std_logic_vector(15 downto 0);
 signal DUC_if_out_q      : std_logic_vector(15 downto 0);
+
+signal DDS_if_out_i      : std_logic_vector(15 downto 0);
+signal DDS_if_out_q      : std_logic_vector(15 downto 0);
+
+signal CHIRP_if_out_i      : std_logic_vector(15 downto 0);
+signal CHIRP_if_out_q      : std_logic_vector(15 downto 0);
+
+signal WFRM_if_out_i      : std_logic_vector(15 downto 0);
+signal WFRM_if_out_q      : std_logic_vector(15 downto 0);
 
 signal frame             : std_logic;
 signal io_rst          	 : std_logic;
@@ -1615,7 +1562,7 @@ begin
   if rising_edge(clk_245_76MHz) then
         dac_data_out_i_sig <= dac_din_i;
         dac_data_out_q_sig <= dac_din_q;
-        
+
       adc_data_out_i_sig <= adc_dout_i;
       adc_data_out_q_sig <= adc_dout_q;
       adc_data_out_valid_sig <= adc_dout_valid;
@@ -1971,8 +1918,8 @@ port map(
 	reset						=> rst,
 --	if_freq					=> x"0000000",							-- unused / placeholder for I/F frequency for complex mixer
 
-	if_out_i					=> DUC_if_out_i,							-- i data to dac, 16-bit
-	if_out_q					=> DUC_if_out_q,							-- q data to dac, 16-bit,
+	if_out_i					=> CHIRP_if_out_i,							-- i data to dac, 16-bit
+	if_out_q					=> CHIRP_if_out_q,							-- q data to dac, 16-bit,
 
 --	duc_dcc_route_ctrl	=> duc_dcc_route_ctrl_sig,			-- control of various mux'es within duc_ddc module
 
@@ -1986,6 +1933,26 @@ port map(
   tuning_word_coeff_in => chirp_tuning_word_coeff_sig,
   chirp_count_max_in =>  chirp_count_max_sig
 );
+
+DDS_if_out_i <= WFRM_if_out_i when (dds_source_select='1')
+                else CHIRP_if_out_i;
+DDS_if_out_q <= WFRM_if_out_q when (dds_source_select='1')
+                else CHIRP_if_out_q;
+
+  ----------------------------------------------------------------------------------------------------
+  -- Register WFRM data out of input
+  ----------------------------------------------------------------------------------------------------
+-- WFRM_re_clock_to_245_76_MHz: process (clk_245_76MHz)
+-- begin
+-- 	if (rising_edge(clk_245_76MHz)) then
+-- 		WFRM_if_out_i <= wfrm_data_in_i;
+-- 		WFRM_if_out_q <= wfrm_data_in_q;
+-- 	end if;
+-- end process WFRM_re_clock_to_245_76_MHz;
+
+WFRM_if_out_i <= wfrm_data_in_i;
+WFRM_if_out_q <= wfrm_data_in_q;
+
 
 ------------------------------------------------------------------------------------------------------
 ---- DUC / DDC
@@ -2124,8 +2091,8 @@ end process register_to_ILA;
 DAC_re_clock_to_245_76_MHz: process (clk_245_76MHz)
 begin
 	if (rising_edge(clk_245_76MHz)) then
-		dac_din_i <= DUC_if_out_i;
-		dac_din_q <= DUC_if_out_q;
+		dac_din_i <= DDS_if_out_i;
+		dac_din_q <= DDS_if_out_q;
 	end if;
 end process DAC_re_clock_to_245_76_MHz;
 

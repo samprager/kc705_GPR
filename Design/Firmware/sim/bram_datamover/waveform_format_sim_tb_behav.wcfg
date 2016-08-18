@@ -13,7 +13,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="3" />
+   <WVObjectSize size="4" />
    <wvobject type="group" fp_name="group306">
       <obj_property name="label">sim_sigs</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -692,6 +692,94 @@
       <wvobject db_ref_id="1" type="array" fp_name="/waveform_format_sim_tb/u_waveform_stream/NUM_BTT">
          <obj_property name="ElementShortName">NUM_BTT[31:0]</obj_property>
          <obj_property name="ObjectShortName">NUM_BTT[31:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject type="group" fp_name="group4391">
+      <obj_property name="label">waveform_dds_sigs</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/axi_tclk">
+         <obj_property name="ElementShortName">axi_tclk</obj_property>
+         <obj_property name="ObjectShortName">axi_tclk</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/axi_tresetn">
+         <obj_property name="ElementShortName">axi_tresetn</obj_property>
+         <obj_property name="ObjectShortName">axi_tresetn</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/wf_read_ready">
+         <obj_property name="ElementShortName">wf_read_ready</obj_property>
+         <obj_property name="ObjectShortName">wf_read_ready</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/chirp_init">
+         <obj_property name="ElementShortName">chirp_init</obj_property>
+         <obj_property name="ObjectShortName">chirp_init</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/dds_source_select">
+         <obj_property name="ElementShortName">dds_source_select</obj_property>
+         <obj_property name="ObjectShortName">dds_source_select</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/waveform_format_sim_tb/u_waveform_dds/wfrm_axis_tdata">
+         <obj_property name="ElementShortName">wfrm_axis_tdata[31:0]</obj_property>
+         <obj_property name="ObjectShortName">wfrm_axis_tdata[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/wfrm_axis_tvalid">
+         <obj_property name="ElementShortName">wfrm_axis_tvalid</obj_property>
+         <obj_property name="ObjectShortName">wfrm_axis_tvalid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/wfrm_axis_tlast">
+         <obj_property name="ElementShortName">wfrm_axis_tlast</obj_property>
+         <obj_property name="ObjectShortName">wfrm_axis_tlast</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/wfrm_axis_tready">
+         <obj_property name="ElementShortName">wfrm_axis_tready</obj_property>
+         <obj_property name="ObjectShortName">wfrm_axis_tready</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/wfrm_data_valid">
+         <obj_property name="ElementShortName">wfrm_data_valid</obj_property>
+         <obj_property name="ObjectShortName">wfrm_data_valid</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/waveform_format_sim_tb/u_waveform_dds/wfrm_data_i">
+         <obj_property name="ElementShortName">wfrm_data_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">wfrm_data_i[15:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/waveform_format_sim_tb/u_waveform_dds/wfrm_data_q">
+         <obj_property name="ElementShortName">wfrm_data_q[15:0]</obj_property>
+         <obj_property name="ObjectShortName">wfrm_data_q[15:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/waveform_format_sim_tb/u_waveform_dds/wfrm_data_iq_r">
+         <obj_property name="ElementShortName">wfrm_data_iq_r[31:0]</obj_property>
+         <obj_property name="ObjectShortName">wfrm_data_iq_r[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/wfrm_data_valid_r">
+         <obj_property name="ElementShortName">wfrm_data_valid_r</obj_property>
+         <obj_property name="ObjectShortName">wfrm_data_valid_r</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/waveform_format_sim_tb/u_waveform_dds/next_gen_state">
+         <obj_property name="ElementShortName">next_gen_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">next_gen_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/waveform_format_sim_tb/u_waveform_dds/gen_state">
+         <obj_property name="ElementShortName">gen_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">gen_state[2:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/waveform_format_sim_tb/u_waveform_dds/data_count">
+         <obj_property name="ElementShortName">data_count[31:0]</obj_property>
+         <obj_property name="ObjectShortName">data_count[31:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/wfrm_axis_tready_int">
+         <obj_property name="ElementShortName">wfrm_axis_tready_int</obj_property>
+         <obj_property name="ObjectShortName">wfrm_axis_tready_int</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/axi_treset">
+         <obj_property name="ElementShortName">axi_treset</obj_property>
+         <obj_property name="ObjectShortName">axi_treset</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/waveform_format_sim_tb/u_waveform_dds/IDLE">
+         <obj_property name="ElementShortName">IDLE[2:0]</obj_property>
+         <obj_property name="ObjectShortName">IDLE[2:0]</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="array" fp_name="/waveform_format_sim_tb/u_waveform_dds/DATA">
+         <obj_property name="ElementShortName">DATA[2:0]</obj_property>
+         <obj_property name="ObjectShortName">DATA[2:0]</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

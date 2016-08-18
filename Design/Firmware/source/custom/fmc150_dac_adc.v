@@ -1,3 +1,23 @@
+//////////////////////////////////////////////////////////////////////////////////
+// Company:MiXIL
+// Engineer: Samuel Prager
+//
+// Create Date: 07/14/2016 04:32:51 PM
+// Design Name:
+// Module Name: fmc150_dac_adc
+// Project Name:
+// Target Devices:
+// Tool Versions:
+// Description:
+//
+// Dependencies:
+//
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+//
+//////////////////////////////////////////////////////////////////////////////////
+
 `timescale 1ps/1ps
 
 module fmc150_dac_adc #
@@ -65,6 +85,12 @@ module fmc150_dac_adc #
   input [31:0] chirp_freq_offset,
   input [31:0] chirp_tuning_word_coeff,
   input [31:0] chirp_count_max,
+
+  input                                 wf_read_ready,
+  input       [31:0]                    wfrm_axis_tdata,
+  input                                 wfrm_axis_tvalid,
+  input                                 wfrm_axis_tlast,
+  output                                wfrm_axis_tready,
 
   // output clk_100Mhz,
   // output clk_100Mhz_rst,
@@ -165,6 +191,10 @@ module fmc150_dac_adc #
   wire [31:0] adc_data_iq;
   wire [31:0] dac_data_iq;
 
+  wire [15:0] wfrm_data_i;
+  wire [15:0] wfrm_data_q;
+  wire wfrm_data_valid;
+
   wire [31:0] adc_counter;
   wire adc_data_valid;
 
@@ -172,9 +202,24 @@ module fmc150_dac_adc #
 //  reg [7:0] dds_route_ctrl_reg;
   wire [1:0] dds_route_ctrl_u;
   wire [1:0] dds_route_ctrl_l;
+  wire [1:0] dds_source_ctrl;
+  wire dds_source_select;
+
+  wire wfrm_ready;
+  wire wfrm_done;
+  wire wfrm_active;
+  wire wfrm_init;
+  wire wfrm_enable;
+
+  wire dds_ready;
+  wire dds_done;
+  wire dds_active;
+  wire dds_init;
+  wire dds_enable;
 
   reg [1:0] dds_route_ctrl_u_r;
   reg [1:0] dds_route_ctrl_l_r;
+  reg [1:0] dds_source_ctrl_r;
 
   wire [63:0] adc_fifo_wr_tdata;
   wire       adc_fifo_wr_tvalid;
@@ -249,6 +294,13 @@ module fmc150_dac_adc #
         .dac_data_out_i (dac_data_i),
         .dac_data_out_q (dac_data_q),
 
+
+        .wfrm_data_in_i (wfrm_data_i),
+        .wfrm_data_in_q (wfrm_data_q),
+        .wfrm_data_in_valid(wfrm_data_valid),
+
+        .dds_source_select(dds_source_select),
+
 //        .adc_data_out_iq (adc_data_iq),
 //        .dac_data_out_iq (dac_data_iq),
 //        .data_out_valid  (data_valid),
@@ -265,11 +317,11 @@ module fmc150_dac_adc #
         .mmcm_locked (mmcm_locked),
 
         .fmc150_status_vector (fmc150_status_vector),
-        .chirp_ready (chirp_ready),
-        .chirp_done (chirp_done),
-        .chirp_active (chirp_active),
-        .chirp_init  (chirp_init),
-        .chirp_enable  (chirp_enable),
+        .chirp_ready (dds_ready),
+        .chirp_done (dds_done),
+        .chirp_active (dds_active),
+        .chirp_init  (dds_init),
+        .chirp_enable  (dds_enable),
         .adc_enable    (adc_enable),
 
 //        .dac_loopback               (chirp_control_word[0]),
@@ -354,8 +406,39 @@ module fmc150_dac_adc #
 
    );
 
+   waveform_dds waveform_dds_inst(
+       .axi_tclk(clk_245_76MHz),
+       .axi_tresetn(!clk_245_rst),
+       .wf_read_ready(wf_read_ready),
 
+       .chirp_ready (wfrm_ready),
+       .chirp_done (wfrm_done),
+       .chirp_active (wfrm_active),
+       .chirp_init  (wfrm_init),
+       .chirp_enable  (wfrm_enable),
 
+       .dds_source_select(dds_source_select),
+
+       .wfrm_axis_tdata(wfrm_axis_tdata),
+       .wfrm_axis_tvalid(wfrm_axis_tvalid),
+       .wfrm_axis_tlast(wfrm_axis_tlast),
+       .wfrm_axis_tready(wfrm_axis_tready),
+
+       .wfrm_data_valid(wfrm_data_valid),
+       .wfrm_data_i(wfrm_data_i),
+       .wfrm_data_q(wfrm_data_q)
+   );
+
+assign wfrm_init = (dds_source_select) ? chirp_init : 1'b0;
+assign dds_init = (!dds_source_select) ? chirp_init : 1'b0;
+assign wfrm_enable = (dds_source_select) ? chirp_enable : 1'b0;
+assign dds_enable = (!dds_source_select) ? chirp_enable : 1'b0;
+
+assign chirp_done = (dds_source_select) ? wfrm_done : dds_done;
+assign chirp_active = (dds_source_select) ? wfrm_active : dds_active;
+assign chirp_ready =  (dds_source_select) ? wfrm_ready : dds_ready;
+
+assign dds_source_select = (&dds_source_ctrl);
 
 assign data_out_lower  = (dds_route_ctrl_l == 2'b00) ? adc_data_iq : 32'bz,
     data_out_lower  = (dds_route_ctrl_l == 2'b01) ? dac_data_iq : 32'bz,
@@ -371,10 +454,13 @@ assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 32'bz,
 //assign dds_route_ctrl_u = chirp_control_word[5:4];
 assign dds_route_ctrl_l = dds_route_ctrl_l_r;
 assign dds_route_ctrl_u = dds_route_ctrl_u_r;
+assign dds_source_ctrl = dds_source_ctrl_r;
+
 
   always @(posedge clk_245_76MHz) begin
      dds_route_ctrl_l_r <= chirp_control_word[1:0];
      dds_route_ctrl_u_r <= chirp_control_word[5:4];
+     dds_source_ctrl_r <= chirp_control_word[9:8];
   end
 
    always @(posedge clk_245_76MHz) begin
