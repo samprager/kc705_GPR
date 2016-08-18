@@ -53,7 +53,7 @@ localparam     IDLE        = 3'b000,
 localparam FIXED = 1'b0;
 localparam INCR = 1'b1;
 
-localparam NUM_WRITE = 'h80;            // 32 bit words to write
+localparam NUM_WRITE = 'd1004;//'h80;            // 32 bit words to write
 localparam NUM_BTT = 4*NUM_WRITE;       // bytes to transfer
 
 wire [7:0]m_axis_mm2s_sts_tdata;
