@@ -24,7 +24,10 @@
 module waveform_formatter(
    input                   axi_tclk,
    input                   axi_tresetn,
-
+   
+   input                   wf_write_ready,
+   output                  [127:0] waveform_parameters,
+   output                  init_wf_write,
        // data from ADC Data fifo
     input       [31:0]                    wfrm_axis_tdata,
     input                                 wfrm_axis_tvalid,
@@ -88,6 +91,8 @@ reg                         wfrm_axis_tlast_reg;
 reg     [31:0]              wfrm_axis_tdata_reg;
 
 reg                         wfrm_axis_tready_int;
+reg                         init_wf_write_reg;
+reg         [127:0]         waveform_parameters_reg;
 
 reg       [31:0]                   tdata_reg;
 reg                                tvalid_reg;
@@ -310,6 +315,24 @@ begin
     new_waveform <= 1'b0;
 end
 
+always @(posedge axi_tclk)
+begin
+  if (axi_treset)
+    init_wf_write_reg <= 0;
+  else if (new_waveform)
+    init_wf_write_reg <= 1'b1;
+  else if(wf_write_ready)
+    init_wf_write_reg <= 1'b0;
+end
+
+always @(posedge axi_tclk)
+begin
+  if (axi_treset)
+    waveform_parameters_reg <= 'b0;
+  else if (new_waveform)
+    waveform_parameters_reg[31:0] <= next_wfrm_len;
+end
+
 
 always @(posedge axi_tclk)
 begin
@@ -462,6 +485,9 @@ assign tkeep = tkeep_reg;
 assign tid = tid_reg;
 
 assign wfrm_axis_tready = wfrm_axis_tready_int;
+assign init_wf_write = init_wf_write_reg;
+
+assign waveform_parameters = waveform_parameters_reg;
 
 
 endmodule
