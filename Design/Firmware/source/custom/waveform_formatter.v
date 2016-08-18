@@ -90,7 +90,9 @@ reg                         wfrm_axis_tvalid_reg;
 reg                         wfrm_axis_tlast_reg;
 reg     [31:0]              wfrm_axis_tdata_reg;
 
-reg                         wfrm_axis_tready_int;
+//reg                         wfrm_axis_tready_int;
+wire                         wfrm_axis_tready_int;
+
 reg                         init_wf_write_reg;
 reg         [127:0]         waveform_parameters_reg;
 
@@ -135,7 +137,7 @@ begin
    if (axi_treset) begin
       overhead_count <= 0;
    end
-   else if (gen_state == OVERHEAD & |overhead_count & tready) begin
+   else if (gen_state == OVERHEAD & |overhead_count) begin
       overhead_count <= overhead_count - 1;
    end
    else if (gen_state == IDLE) begin
@@ -175,12 +177,12 @@ end
 
 // simple state machine to control the data
 // on the transition from IDLE we reset the counters and increment the packet size
-always @(gen_state or new_command or cont_command or waveform_good or data_count or header_count or tready or tvalid_reg or overhead_count or wfrm_axis_tvalid or wfrm_axis_tlast or wfrm_axis_tready_int)
+always @(gen_state or new_command or wf_write_ready or cont_command or waveform_good or data_count or header_count or tready or tvalid_reg or overhead_count or wfrm_axis_tvalid or wfrm_axis_tlast or wfrm_axis_tready_int)
 begin
    next_gen_state = gen_state;
    case (gen_state)
       IDLE : begin
-         if (!tvalid_reg & tready) begin
+         if ((!tvalid_reg & tready) | wf_write_ready) begin
             next_gen_state = NEXT_CMD;
          end
       end
@@ -207,7 +209,7 @@ begin
          end
       end
       OVERHEAD : begin
-         if (overhead_count == 1 & tready) begin
+         if (overhead_count == 1) begin
             next_gen_state = IDLE;
          end
       end
@@ -447,7 +449,7 @@ always @(posedge axi_tclk)
 begin
    if (axi_treset)
       tvalid_reg <= 0;
-   else if (gen_state == DATA & wfrm_axis_tvalid)
+   else if (gen_state == DATA & wfrm_axis_tvalid & tready ) //& !(tvalid_reg & tready & !wfrm_axis_tready_int))
       tvalid_reg <= 1'b1;
    else if (tready)
       tvalid_reg <= 0;
@@ -455,22 +457,23 @@ end
 
 // need to generate the ready output
 
-always @(posedge axi_tclk)
-begin
-   if (axi_treset) begin
-      wfrm_axis_tready_int <= 0;
-   end
-   else begin
-    if (next_gen_state == DATA & tready)
-         wfrm_axis_tready_int <= 1;
-   //else if(gen_state == NEXT_CMD & (!new_command | tready))
-   else if(gen_state == NEXT_CMD | gen_state == HEADER)
-        wfrm_axis_tready_int <= 1;
-    else
-        wfrm_axis_tready_int <= 0;
-   end
-end
+//always @(posedge axi_tclk)
+//begin
+//   if (axi_treset) begin
+//      wfrm_axis_tready_int <= 0;
+//   end
+//   else begin
+//    if (next_gen_state == DATA & tready)
+//         wfrm_axis_tready_int <= 1;
+//   //else if(gen_state == NEXT_CMD & (!new_command | tready))
+//   else if(gen_state == NEXT_CMD | gen_state == HEADER)
+//        wfrm_axis_tready_int <= 1;
+//    else
+//        wfrm_axis_tready_int <= 0;
+//   end
+//end
 
+assign wfrm_axis_tready_int = ((gen_state == DATA & tready) | (gen_state == NEXT_CMD | gen_state == HEADER));
 
 //assign tvalid = wr_fifo_rx_axis_tvalid_reg;
 //assign tlast = wr_fifo_rx_axis_tlast_reg;

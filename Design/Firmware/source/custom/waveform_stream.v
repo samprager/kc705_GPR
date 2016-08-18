@@ -94,10 +94,10 @@ reg s_axis_mm2s_cmd_tvalid_reg;
 reg [71:0]s_axis_s2mm_cmd_tdata_reg; //{RSVD(4b),TAG(4b),SADDR(32b),DRR(1b),EOF(1b),DSA(6b),Type(1b),BTT(23b)}
 reg s_axis_s2mm_cmd_tvalid_reg;
 
-reg [31:0]s_axis_s2mm_tdata_reg;
-reg [3:0]s_axis_s2mm_tkeep_reg;
-reg s_axis_s2mm_tlast_reg;
-reg s_axis_s2mm_tvalid_reg;
+//reg [31:0]s_axis_s2mm_tdata_reg;
+//reg [3:0]s_axis_s2mm_tkeep_reg;
+//reg s_axis_s2mm_tlast_reg;
+//reg s_axis_s2mm_tvalid_reg;
 
 reg wf_write_ready_reg;
 reg wf_read_ready_reg;
@@ -243,37 +243,35 @@ always @(posedge clk_in1)begin
     end
 end
 
-always @(posedge clk_in1)begin
-    if(!aresetn) begin
-        s_axis_s2mm_tvalid_reg <= 0;
-    end
-    else if (gen_state == WR_DATA) begin
-        s_axis_s2mm_tvalid_reg <= 1;
-    end
-    else if(s_axis_s2mm_tready) begin
-       s_axis_s2mm_tvalid_reg <= 0;
-    end
-end
+//always @(posedge clk_in1)begin
+//    if(!aresetn) begin
+//        s_axis_s2mm_tvalid_reg <= 0;
+//    end
+//    else if (gen_state == WR_DATA) begin
+//        s_axis_s2mm_tvalid_reg <= 1;
+//    end
+//    else if(s_axis_s2mm_tready) begin
+//       s_axis_s2mm_tvalid_reg <= 0;
+//    end
+//end
+
+//always @(posedge clk_in1)begin
+//    if(!aresetn) begin
+//        s_axis_s2mm_tkeep_reg <= 0;
+//    end
+//    else if (gen_state == WR_DATA) begin
+//        s_axis_s2mm_tkeep_reg <= 4'hf;
+//    end
+//    else begin
+//       s_axis_s2mm_tkeep_reg <= 0;
+//    end
+//end
 
 always @(posedge clk_in1)begin
     if(!aresetn) begin
-        s_axis_s2mm_tkeep_reg <= 0;
-    end
-    else if (gen_state == WR_DATA) begin
-        s_axis_s2mm_tkeep_reg <= 4'hf;
-    end
-    else begin
-       s_axis_s2mm_tkeep_reg <= 0;
-    end
-end
-
-always @(posedge clk_in1)begin
-    if(!aresetn) begin
-       s_axis_s2mm_tdata_reg <= 0;
         wr_counter <= 0;
     end
-    else if(gen_state == WR_DATA & s_axis_s2mm_tready & s_axis_s2mm_tvalid_reg) begin
-        s_axis_s2mm_tdata_reg <= wr_counter;
+    else if(gen_state == WR_DATA & s_axis_s2mm_tready & s_axis_s2mm_tvalid) begin
         wr_counter <= wr_counter + 1'b1;
     end
     else if(gen_state != WR_DATA) begin
@@ -282,17 +280,17 @@ always @(posedge clk_in1)begin
 end
 
 
-always @(posedge clk_in1)begin
-    if(!aresetn) begin
-        s_axis_s2mm_tlast_reg <= 0;
-    end
-    else if(gen_state == WR_DATA & (wr_counter == (wf_cur_size-1)) & s_axis_s2mm_tready) begin
-        s_axis_s2mm_tlast_reg <= 1;
-    end
-    else if(s_axis_s2mm_tready) begin
-        s_axis_s2mm_tlast_reg <= 0;
-    end
-end
+//always @(posedge clk_in1)begin
+//    if(!aresetn) begin
+//        s_axis_s2mm_tlast_reg <= 0;
+//    end
+//    else if(gen_state == WR_DATA & (wr_counter == (wf_cur_size-1)) & s_axis_s2mm_tready) begin
+//        s_axis_s2mm_tlast_reg <= 1;
+//    end
+//    else if(s_axis_s2mm_tready) begin
+//        s_axis_s2mm_tlast_reg <= 0;
+//    end
+//end
 
 always @(posedge clk_in1)begin
     if(!aresetn) begin
@@ -333,7 +331,7 @@ begin
             next_gen_state = WR_DATA;
       end
       WR_DATA : begin
-         if (wr_counter == (wf_cur_size-1))
+         if (wr_counter == wf_cur_size)
             next_gen_state = IDLE;
       end
       RD_CMD : begin

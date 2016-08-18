@@ -130,7 +130,7 @@ always @(posedge fmc_tclk) begin
            wfrm_counter <= wfrm_counter+1'b1;
            if(&wfrm_counter) begin
              wfrm_ind <= 'b0;
-             wfrm_id <= wfrm_id + 1'b0;
+             wfrm_id <= wfrm_id + 1'b1;
            end else
              wfrm_ind <= wfrm_ind + 1'b1;
         end else if (wfin_axis_tready) begin
