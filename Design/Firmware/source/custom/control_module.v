@@ -65,7 +65,7 @@ parameter CHIRP_PRF_FRAC_COUNT_INIT = 32'h1d4c0000,
 parameter CHIRP_TUNING_COEF_INIT = 32'b1,
 parameter CHIRP_COUNT_MAX_INIT = 32'h00000dff, // 3584 samples
 parameter CHIRP_FREQ_OFFSET_INIT = 32'h0b00, // 2816 -> 10.56 MHz min freq
-parameter CHIRP_CTRL_WORD_INIT = 32'h20,
+parameter CHIRP_CTRL_WORD_INIT = 32'h10,
 
 parameter CHIRP_CLK_FREQ = 245760000    // Hz
 )

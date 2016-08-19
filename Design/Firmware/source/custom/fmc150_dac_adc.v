@@ -178,6 +178,8 @@ module fmc150_dac_adc #
    );
 
   localparam DDS_LATENCY = 2;
+  localparam DDS_CHIRP_DELAY = 3;
+  localparam DDS_WFRM_DELAY = 19;
   localparam FCUTOFF_IND = FFT_LEN/2;
 
   wire rd_fifo_clk;
@@ -484,12 +486,19 @@ assign dds_source_ctrl = dds_source_ctrl_r;
   always @(posedge clk_245_76MHz) begin
     if (clk_245_rst)
       dds_latency_counter <= 'b0;
-    else if( chirp_init)
-      dds_latency_counter <= DDS_LATENCY;
-   else if(adc_enable_r & !adc_enable)
-      dds_latency_counter <= DDS_LATENCY;
-    else if(|dds_latency_counter)
+    else if( chirp_init) begin
+        if(dds_source_select )
+            dds_latency_counter <= DDS_WFRM_DELAY;
+         else
+            dds_latency_counter <= DDS_CHIRP_DELAY;    
+   end else if(adc_enable_r & !adc_enable) begin
+      if(dds_source_select )
+        dds_latency_counter <= DDS_WFRM_DELAY;
+      else
+        dds_latency_counter <= DDS_CHIRP_DELAY; 
+   end else if(|dds_latency_counter) begin
       dds_latency_counter <= dds_latency_counter-1;
+   end   
   end
 
    always @(posedge clk_245_76MHz) begin
