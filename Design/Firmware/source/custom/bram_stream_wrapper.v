@@ -108,6 +108,9 @@ wire [3 : 0] s_axi_bid;
 wire s_axi_arlock;
 wire [3 : 0] s_axi_rid;
 
+assign s_axi_awlock = 0;    // unused by core
+assign s_axi_arlock = 0;    // unused by core
+
 assign s_axi_aclk = clk_in1;
 assign s_axi_aresetn = aresetn;
 assign m_axi_mm2s_aclk = clk_in1;

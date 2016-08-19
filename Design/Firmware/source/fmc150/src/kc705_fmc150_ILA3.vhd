@@ -539,6 +539,9 @@ signal CHIRP_if_out_q      : std_logic_vector(15 downto 0);
 signal WFRM_if_out_i      : std_logic_vector(15 downto 0);
 signal WFRM_if_out_q      : std_logic_vector(15 downto 0);
 
+signal wfrm_data_in_i_sig      : std_logic_vector(15 downto 0);
+signal wfrm_data_in_q_sig      : std_logic_vector(15 downto 0);
+
 signal frame             : std_logic;
 signal io_rst          	 : std_logic;
 
@@ -1934,24 +1937,38 @@ port map(
   chirp_count_max_in =>  chirp_count_max_sig
 );
 
-DDS_if_out_i <= WFRM_if_out_i when (dds_source_select='1')
-                else CHIRP_if_out_i;
-DDS_if_out_q <= WFRM_if_out_q when (dds_source_select='1')
-                else CHIRP_if_out_q;
+--DDS_if_out_i <= WFRM_if_out_i when (dds_source_select='1')
+--                else CHIRP_if_out_i;
+--DDS_if_out_q <= WFRM_if_out_q when (dds_source_select='1')
+--                else CHIRP_if_out_q;
 
+ mux_DDS_data_source: process (clk_245_76MHz)
+ begin
+ 	if (rising_edge(clk_245_76MHz)) then
+ 	  if(dds_source_select='1') then
+ 		DDS_if_out_i <= WFRM_if_out_i;
+ 		DDS_if_out_q <= WFRM_if_out_q;
+ 	  else 
+  		DDS_if_out_i <= CHIRP_if_out_i;
+        DDS_if_out_q <= CHIRP_if_out_q;	  
+ 	 end if;
+ 	end if; 
+ end process mux_DDS_data_source;
   ----------------------------------------------------------------------------------------------------
   -- Register WFRM data out of input
   ----------------------------------------------------------------------------------------------------
--- WFRM_re_clock_to_245_76_MHz: process (clk_245_76MHz)
--- begin
--- 	if (rising_edge(clk_245_76MHz)) then
--- 		WFRM_if_out_i <= wfrm_data_in_i;
--- 		WFRM_if_out_q <= wfrm_data_in_q;
--- 	end if;
--- end process WFRM_re_clock_to_245_76_MHz;
+ WFRM_re_clock_to_245_76_MHz: process (clk_245_76MHz)
+ begin
+ 	if (rising_edge(clk_245_76MHz)) then
+ 		WFRM_if_out_i <= wfrm_data_in_i_sig;
+ 		WFRM_if_out_q <= wfrm_data_in_q_sig;
+ 	end if;
+ end process WFRM_re_clock_to_245_76_MHz;
 
-WFRM_if_out_i <= wfrm_data_in_i;
-WFRM_if_out_q <= wfrm_data_in_q;
+wfrm_data_in_i_sig <= wfrm_data_in_i;
+wfrm_data_in_q_sig <= wfrm_data_in_q;
+--WFRM_if_out_i <= wfrm_data_in_i;
+--WFRM_if_out_q <= wfrm_data_in_q;
 
 
 ------------------------------------------------------------------------------------------------------

@@ -429,14 +429,19 @@ module fmc150_dac_adc #
        .wfrm_data_q(wfrm_data_q)
    );
 
-assign wfrm_init = (dds_source_select) ? chirp_init : 1'b0;
-assign dds_init = (!dds_source_select) ? chirp_init : 1'b0;
-assign wfrm_enable = (dds_source_select) ? chirp_enable : 1'b0;
-assign dds_enable = (!dds_source_select) ? chirp_enable : 1'b0;
+//assign wfrm_init = (dds_source_select) ? chirp_init : 1'b0;
+//assign dds_init = (!dds_source_select) ? chirp_init : 1'b0;
+//assign wfrm_enable = (dds_source_select) ? chirp_enable : 1'b0;
+//assign dds_enable = (!dds_source_select) ? chirp_enable : 1'b0;
 
-assign chirp_done = (dds_source_select) ? wfrm_done : dds_done;
-assign chirp_active = (dds_source_select) ? wfrm_active : dds_active;
-assign chirp_ready =  (dds_source_select) ? wfrm_ready : dds_ready;
+assign wfrm_init = (dds_source_select & chirp_init);
+assign dds_init = (!dds_source_select & chirp_init);
+assign wfrm_enable = (dds_source_select & chirp_enable);
+assign dds_enable = (!dds_source_select & chirp_enable);
+
+assign chirp_done = ((dds_source_select & wfrm_done)|(!dds_source_select & dds_done));
+assign chirp_active = ((dds_source_select & wfrm_active)|(!dds_source_select & dds_active));
+assign chirp_ready =  ((dds_source_select & wfrm_ready)|(!dds_source_select & dds_ready));
 
 assign dds_source_select = (&dds_source_ctrl);
 
