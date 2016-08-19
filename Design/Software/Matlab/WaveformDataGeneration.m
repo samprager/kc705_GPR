@@ -1,0 +1,22 @@
+fs = 245.76e6;
+n = 6%4096-512;
+f0 = 10e6; f1 = 50e6;
+t = linspace(0,n/fs,n);
+ti  = linspace(-n/(1*fs),n/(1*fs),n);
+f = 10;
+scale = double(intmax('int16'));
+I = gauspuls(ti,10E6,.1);
+Q =chirp(t,f0,t(end),f1,'q',[],'convex');
+% I = cos(2*pi*f*t);
+% Q = sin(2*pi*f*t);
+data_i = int16(scale*I);
+data_q = int16(scale*Q);
+data = reshape([data_i;data_q],1,2*n);
+fileID = fopen('/Users/sam/outputs/waveform_data.bin','w');
+frewind(fileID);
+fwrite(fileID,data,'int16');
+fclose(fileID);
+
+figure; plot(I);title('I');
+figure; plot(Q);title('Q');
+figure; obw(Q,fs);

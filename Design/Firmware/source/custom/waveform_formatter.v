@@ -188,7 +188,7 @@ begin
       end
       NEXT_CMD : begin
         // if (rx_axis_tvalid & (rx_axis_tlast | prev_tlast_aligned) & rx_axis_tready_int)
-        if (new_command)
+        if (new_command &  & wfrm_axis_tvalid & wfrm_axis_tready_int)
             next_gen_state = HEADER;
       end
       HEADER : begin

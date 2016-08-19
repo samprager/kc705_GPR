@@ -162,6 +162,39 @@ wire  [RX_CMD_ID_WIDTH-1:0]     sp_rd_cmd_id;
 wire  [RX_CMD_ID_WIDTH-1:0]     sp_rd_cmd_id_tuser;
 wire  [RX_CMD_ID_WIDTH/8-1:0]   sp_rd_cmd_id_tkeep;
 
+//////////////////////////////////////////
+// Waveform Data from Network  wires
+//////////////////////////////////////////
+
+wire [31:0]                     wfrm_wr_data_axis_tdata;
+wire                            wfrm_wr_data_axis_tvalid;
+wire                            wfrm_wr_data_axis_tlast;
+wire                            wfrm_wr_data_axis_tready;
+wire [31:0]                     wfrm_wr_data_axis_tuser;
+wire [3:0]                      wfrm_wr_data_axis_tkeep;
+wire [3:0]                      wfrm_wr_data_axis_tdest;
+wire [3:0]                      wfrm_wr_data_axis_tid;
+
+wire       [31:0]                    wfin_axis_tdata;
+wire                                 wfin_axis_tvalid;
+wire                                 wfin_axis_tlast;
+wire       [31:0]                    wfin_axis_tuser;
+wire       [3:0]                    wfin_axis_tkeep;
+wire       [3:0]                    wfin_axis_tdest;
+wire       [3:0]                    wfin_axis_tid;
+wire                                wfin_axis_tready;
+
+wire       [31:0]                    wfout_axis_tdata;
+wire                                 wfout_axis_tvalid;
+wire                                 wfout_axis_tlast;
+wire       [3:0]                     wfout_axis_tkeep;
+wire                                wfout_axis_tready;
+
+wire [127:0] waveform_parameters;
+wire init_wf_write;
+wire wf_write_ready;
+wire wf_read_ready;
+
 wire S00_CMD_DECODE_ERR;           // output wire S00_DECODE_ERR
 wire [31:0] S00_CMD_FIFO_DATA_COUNT;  // output wire [31 : 0] S00_FIFO_DATA_COUNT
 wire [31:0] M00_CMD_FIFO_DATA_COUNT;  // output wire [31 : 0] M00_FIFO_DATA_COUNT
@@ -189,6 +222,9 @@ wire tlast_hold8;
 reg tlast_hold_en;
 reg hold_en = 0;
 
+wire clk_245_76MHz;
+wire clk_245_rst;
+
 // Start of User Design top instance
 //***************************************************************************
 // The User design is instantiated below. The memory interface ports are
@@ -196,6 +232,9 @@ reg hold_en = 0;
 // connected to the traffic generator module. This provides a reference
 // for connecting the memory controller to system.
 //***************************************************************************
+
+assign clk_245_76MHz = clk_fmc150;
+assign clk_245_rst = !resetn_fmc150;
 
 assign tx_axis_tdata = 'b0;
 assign tx_axis_tvalid = 'b0;
@@ -306,6 +345,12 @@ chirp_dds_top #(
    .axis_adc_tready                     (axis_adc_tready),
    .axis_adc_tstrb                      (axis_adc_tstrb),
 
+   .wf_read_ready(wf_read_ready),
+   .wfrm_axis_tdata(wfout_axis_tdata),
+   .wfrm_axis_tvalid(wfout_axis_tvalid),
+   .wfrm_axis_tlast(wfout_axis_tlast),
+   .wfrm_axis_tready(wfout_axis_tready),
+
    .fmc150_status_vector                (fmc150_status_vector),
    .chirp_ready                         (chirp_ready),
    .chirp_done                          (chirp_done),
@@ -327,6 +372,55 @@ chirp_dds_top #(
   );
 
   assign axis_adc_tready = 1'b1;
+
+  waveform_formatter waveform_formatter_inst (
+      .axi_tclk(clk_245_76MHz),
+      .axi_tresetn(!clk_245_rst),
+      .wf_write_ready(wf_write_ready),
+      .init_wf_write(init_wf_write),
+      .waveform_parameters(waveform_parameters),
+      .wfrm_axis_tdata(wfrm_wr_data_axis_tdata),
+      .wfrm_axis_tvalid(wfrm_wr_data_axis_tvalid),
+      .wfrm_axis_tlast(wfrm_wr_data_axis_tlast),
+      .wfrm_axis_tkeep(wfrm_wr_data_axis_tkeep),
+      .wfrm_axis_tdest(wfrm_wr_data_axis_tdest),
+      .wfrm_axis_tid(wfrm_wr_data_axis_tid),
+      .wfrm_axis_tuser(wfrm_wr_data_axis_tuser),
+      .wfrm_axis_tready(wfrm_wr_data_axis_tready),
+
+      .tdata(wfin_axis_tdata),
+      .tvalid(wfin_axis_tvalid),
+      .tlast(wfin_axis_tlast),
+      .tkeep(wfin_axis_tkeep),
+      .tdest(wfin_axis_tdest),
+      .tid(wfin_axis_tid),
+      .tuser(wfin_axis_tuser),
+      .tready(wfin_axis_tready)
+  );
+
+  waveform_stream #(
+     .WRITE_BEFORE_READ(1'b1)
+  ) waveform_stream_inst(
+      .clk_in1(clk_245_76MHz),
+      .aresetn(!clk_245_rst),
+      .waveform_parameters(waveform_parameters),
+      .init_wf_write (init_wf_write),
+      .wf_write_ready (wf_write_ready),
+      .wf_read_ready (wf_read_ready),
+      // data from ADC Data fifo
+      .wfin_axis_tdata (wfin_axis_tdata),
+      .wfin_axis_tvalid(wfin_axis_tvalid),
+      .wfin_axis_tlast(wfin_axis_tlast),
+      .wfin_axis_tkeep(wfin_axis_tkeep),
+      .wfin_axis_tready(wfin_axis_tready),
+
+      // data from ADC Data fifo
+      .wfout_axis_tdata(wfout_axis_tdata),
+      .wfout_axis_tvalid(wfout_axis_tvalid),
+      .wfout_axis_tlast(wfout_axis_tlast),
+      .wfout_axis_tkeep(wfout_axis_tkeep),
+      .wfout_axis_tready(wfout_axis_tready)
+  );
 
 
 // rx_cmd_axis_data_fifo rx_cmd_axis_data_fifo_inst (
@@ -391,43 +485,53 @@ rx_cmd_1s4m_axis_interconnect rx_cmd_1s4m_axis_interconnect_inst (
   .S00_AXIS_TUSER(cmd_pkt_s_axis_tuser),            // input wire [31 : 0] S00_AXIS_TUSER
   .M00_AXIS_ACLK(s_axi_aclk),              // input wire M00_AXIS_ACLK
   .M01_AXIS_ACLK(s_axi_aclk),              // input wire M01_AXIS_ACLK
-  .M02_AXIS_ACLK(s_axi_aclk),              // input wire M02_AXIS_ACLK
+  //.M02_AXIS_ACLK(s_axi_aclk),              // input wire M02_AXIS_ACLK
+  .M02_AXIS_ACLK(clk_245_76MHz),              // input wire M02_AXIS_ACLK
   .M03_AXIS_ACLK(s_axi_aclk),              // input wire M03_AXIS_ACLK
   .M00_AXIS_ARESETN(s_axi_resetn),        // input wire M00_AXIS_ARESETN
   .M01_AXIS_ARESETN(s_axi_resetn),        // input wire M01_AXIS_ARESETN
-  .M02_AXIS_ARESETN(s_axi_resetn),        // input wire M02_AXIS_ARESETN
+//  .M02_AXIS_ARESETN(s_axi_resetn),        // input wire M02_AXIS_ARESETN
+  .M02_AXIS_ARESETN(!clk_245_rst),        // input wire M02_AXIS_ARESETN
   .M03_AXIS_ARESETN(s_axi_resetn),        // input wire M03_AXIS_ARESETN
   .M00_AXIS_TVALID(ch_wr_cmd_axis_tvalid),          // output wire M00_AXIS_TVALID
   .M01_AXIS_TVALID(sp_wr_cmd_axis_tvalid),          // output wire M01_AXIS_TVALID
-  .M02_AXIS_TVALID(ch_rd_cmd_axis_tvalid),          // output wire M02_AXIS_TVALID
+  .M02_AXIS_TVALID(wfrm_wr_data_axis_tvalid),          // output wire M02_AXIS_TVALID
+//  .M02_AXIS_TVALID(ch_rd_cmd_axis_tvalid),          // output wire M02_AXIS_TVALID
   .M03_AXIS_TVALID(sp_rd_cmd_axis_tvalid),          // output wire M03_AXIS_TVALID
   .M00_AXIS_TREADY(ch_wr_cmd_axis_tready),          // input wire M00_AXIS_TREADY
   .M01_AXIS_TREADY(sp_wr_cmd_axis_tready),          // input wire M01_AXIS_TREADY
-  .M02_AXIS_TREADY(ch_rd_cmd_axis_tready),          // input wire M02_AXIS_TREADY
+  .M02_AXIS_TREADY(wfrm_wr_data_axis_tready),          // input wire M02_AXIS_TREADY
+  //  .M02_AXIS_TREADY(ch_rd_cmd_axis_tready),          // input wire M02_AXIS_TREADY
   .M03_AXIS_TREADY(sp_rd_cmd_axis_tready),          // input wire M03_AXIS_TREADY
   .M00_AXIS_TDATA(ch_wr_cmd_axis_tdata),            // output wire [223 : 0] M00_AXIS_TDATA
   .M01_AXIS_TDATA(sp_wr_cmd_axis_tdata),            // output wire [223 : 0] M01_AXIS_TDATA
-  .M02_AXIS_TDATA(ch_rd_cmd_axis_tdata),            // output wire [63 : 0] M02_AXIS_TDATA
+  .M02_AXIS_TDATA(wfrm_wr_data_axis_tdata),            // output wire [63 : 0] M02_AXIS_TDATA
+//  .M02_AXIS_TDATA(ch_rd_cmd_axis_tdata),            // output wire [63 : 0] M02_AXIS_TDATA
   .M03_AXIS_TDATA(sp_rd_cmd_axis_tdata),            // output wire [63 : 0] M03_AXIS_TDATA
   .M00_AXIS_TKEEP(ch_wr_cmd_axis_tkeep),            // output wire [27 : 0] M00_AXIS_TKEEP
   .M01_AXIS_TKEEP(sp_wr_cmd_axis_tkeep),            // output wire [27 : 0] M01_AXIS_TKEEP
-  .M02_AXIS_TKEEP(ch_rd_cmd_axis_tkeep),            // output wire [7 : 0] M02_AXIS_TKEEP
+  .M02_AXIS_TKEEP(wfrm_wr_data_axis_tkeep),            // output wire [7 : 0] M02_AXIS_TKEEP
+//  .M02_AXIS_TKEEP(ch_rd_cmd_axis_tkeep),            // output wire [7 : 0] M02_AXIS_TKEEP
   .M03_AXIS_TKEEP(sp_rd_cmd_axis_tkeep),            // output wire [7 : 0] M03_AXIS_TKEEP
   .M00_AXIS_TLAST(ch_wr_cmd_axis_tlast),            // output wire M00_AXIS_TLAST
   .M01_AXIS_TLAST(sp_wr_cmd_axis_tlast),            // output wire M01_AXIS_TLAST
-  .M02_AXIS_TLAST(ch_rd_cmd_axis_tlast),            // output wire M02_AXIS_TLAST
+  .M02_AXIS_TLAST(wfrm_wr_data_axis_tlast),            // output wire M02_AXIS_TLAST
+//  .M02_AXIS_TLAST(ch_rd_cmd_axis_tlast),            // output wire M02_AXIS_TLAST
   .M03_AXIS_TLAST(sp_rd_cmd_axis_tlast),            // output wire M03_AXIS_TLAST
   .M00_AXIS_TID(ch_wr_cmd_axis_tid),                // output wire [3 : 0] M00_AXIS_TID
   .M01_AXIS_TID(sp_wr_cmd_axis_tid),                // output wire [3 : 0] M01_AXIS_TID
-  .M02_AXIS_TID(ch_rd_cmd_axis_tid),                // output wire [3 : 0] M02_AXIS_TID
+  .M02_AXIS_TID(wfrm_wr_data_axis_tid),                // output wire [3 : 0] M02_AXIS_TID
+//  .M02_AXIS_TID(ch_rd_cmd_axis_tid),                // output wire [3 : 0] M02_AXIS_TID
   .M03_AXIS_TID(sp_rd_cmd_axis_tid),                // output wire [3 : 0] M03_AXIS_TID
   .M00_AXIS_TDEST(ch_wr_cmd_axis_tdest),            // output wire [3 : 0] M00_AXIS_TDEST
   .M01_AXIS_TDEST(sp_wr_cmd_axis_tdest),            // output wire [3 : 0] M01_AXIS_TDEST
-  .M02_AXIS_TDEST(ch_rd_cmd_axis_tdest),            // output wire [3 : 0] M02_AXIS_TDEST
+  .M02_AXIS_TDEST(wfrm_wr_data_axis_tdest),            // output wire [3 : 0] M02_AXIS_TDEST
+//  .M02_AXIS_TDEST(ch_rd_cmd_axis_tdest),            // output wire [3 : 0] M02_AXIS_TDEST
   .M03_AXIS_TDEST(sp_rd_cmd_axis_tdest),            // output wire [3 : 0] M03_AXIS_TDEST
   .M00_AXIS_TUSER(ch_wr_cmd_axis_tuser),            // output wire [223 : 0] M00_AXIS_TUSER
   .M01_AXIS_TUSER(sp_wr_cmd_axis_tuser),            // output wire [223 : 0] M01_AXIS_TUSER
-  .M02_AXIS_TUSER(ch_rd_cmd_axis_tuser),            // output wire [63 : 0] M02_AXIS_TUSER
+  .M02_AXIS_TUSER(wfrm_wr_data_axis_tuser),            // output wire [63 : 0] M02_AXIS_TUSER
+//  .M02_AXIS_TUSER(ch_rd_cmd_axis_tuser),            // output wire [63 : 0] M02_AXIS_TUSER
   .M03_AXIS_TUSER(sp_rd_cmd_axis_tuser),            // output wire [63 : 0] M03_AXIS_TUSER
   .S00_DECODE_ERR(S00_CMD_DECODE_ERR),            // output wire S00_DECODE_ERR
   .S00_FIFO_DATA_COUNT(S00_CMD_FIFO_DATA_COUNT),  // output wire [31 : 0] S00_FIFO_DATA_COUNT
@@ -436,7 +540,6 @@ rx_cmd_1s4m_axis_interconnect rx_cmd_1s4m_axis_interconnect_inst (
   .M02_FIFO_DATA_COUNT(M02_CMD_FIFO_DATA_COUNT),  // output wire [31 : 0] M02_FIFO_DATA_COUNT
   .M03_FIFO_DATA_COUNT(M03_CMD_FIFO_DATA_COUNT)  // output wire [31 : 0] M03_FIFO_DATA_COUNT
 );
-
 
 assign fmc150_ctrl_bus_bypass = {3'b0,gpio_dip_sw[3],1'b0,1'b0,1'b0,1'b0};
 //fmc150_ctrl_bus = {3'b0,ddc_duc_bypass,digital_mode,adc_out_dac_in,external_clock,gen_adc_test_pattern};

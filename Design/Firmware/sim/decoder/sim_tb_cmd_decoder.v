@@ -8,7 +8,7 @@ module sim_tb_cmd_decoder;
    localparam RESET_PERIOD = 320000; //in pSec
    localparam HOST_MAC_ADDR = 48'h985aebdb066f;
    localparam FPGA_MAC_ADDR = 48'h5a0102030405;
-   
+
    localparam CHIRP_PRF_INT_COUNT_INIT = 32'h00000000;
    localparam CHIRP_PRF_FRAC_COUNT_INIT = 32'h00000010;//32'h927c0000;
 
@@ -64,6 +64,16 @@ module sim_tb_cmd_decoder;
   reg [127:0] chirp_default_packet_3 = 128'hc8000000000300000100000000100000;
   reg [31:0] chirp_default_packet_4 = 32'h00000000;
 
+  reg [127:0] wfrm_test_packet_1 = 128'h5a0102030405a45e60ee9f3500260000;
+  reg [127:0] wfrm_test_packet_2 = 128'h41445757adebaec9e65bddcc00000000;
+  reg [127:0] wfrm_test_packet_3 = 128'h0600000000000000b3043a65724d0a2f;
+  reg [31:0] wfrm_test_packet_4 = 32'h027adbbc;
+
+  reg [127:0] wfrm_test_packet2_1 = 128'h5a0102030405a45e60ee9f3500260800;
+  reg [127:0] wfrm_test_packet2_2 = 128'h41445757adebd17ee65bddcc01000000;
+  reg [127:0] wfrm_test_packet2_3 = 128'h0600000000000000027aac82724dce06;
+  reg [31:0] wfrm_test_packet2_4 = 32'hb304ff7f;
+
 
   reg [127:0] test_packet_rd_1 = 128'h5a0102030405a45e60ee9f35000e0100;
   reg[95:0] test_packet_rd_2 = 96'h4343525204000000efbeedfe;
@@ -96,7 +106,10 @@ wire                                rx_axis_tuser;
  reg [7:0] cmd_id_reg = 8'h00;
  reg [1:0] command_type;
  reg use_wr_packet = 1'b1;
- 
+
+ reg use_wfrm_packet = 1'b1;
+ reg sel_wfrm_packet = 1'b0;
+
  reg [15:0] dds_route_ctrl;
 
 
@@ -209,7 +222,45 @@ wire                                rx_axis_tuser;
            cmd_id_reg <= 'b0;
            command_type <= 0;
            dds_route_ctrl <= 'b1;
+           sel_wfrm_packet <= 1;
 
+      end else if(use_wfrm_packet) begin
+              data_counter <= data_counter + 1'b1;
+               if (data_counter < 8'hcc)
+                   rx_axis_tvalid_reg <= 1'b0;
+               else
+                   rx_axis_tvalid_reg <= 1'b1;
+
+              if (sel_wfrm_packet) begin
+                 test_packet_1 <= wfrm_test_packet_1;
+                 test_packet_2 <= wfrm_test_packet_2;
+                 test_packet_3 <= wfrm_test_packet_3;
+                 test_packet_4 <= wfrm_test_packet_4;
+              end else begin
+                test_packet_1 <= wfrm_test_packet2_1;
+                test_packet_2 <= wfrm_test_packet2_2;
+                test_packet_3 <= wfrm_test_packet2_3;
+                test_packet_4 <= wfrm_test_packet2_4;
+              end
+
+               if (data_counter == 8'hff)
+                  rx_axis_tlast_reg <= 1'b1;
+               else
+                   rx_axis_tlast_reg <= 1'b0;
+
+               if (data_counter >=8'hcc & data_counter<8'hdc) begin
+                   rx_axis_tdata_reg <= test_packet_1[8'h80-(8'h8*(data_counter-8'hcc))-1-:8];
+               end else if (data_counter >=8'hdc & data_counter<8'hec) begin
+                   rx_axis_tdata_reg <= test_packet_2[8'h80-(8'h8*(data_counter-8'hdc))-1-:8];
+               end else if (data_counter >=8'hec & data_counter<8'hfc)begin
+                   rx_axis_tdata_reg <= test_packet_3[8'h80-(8'h8*(data_counter-8'hec))-1-:8];
+               end else if (data_counter >=8'hfc) begin
+                   rx_axis_tdata_reg <= test_packet_4[8'h20-(8'h8*(data_counter-8'hfc))-1-:8];
+               end
+
+             if (data_counter == 8'hff) begin
+                sel_wfrm_packet <= !sel_wfrm_packet;
+             end
       end else if(use_test_packet) begin
         if (use_wr_packet) begin
          data_counter <= data_counter + 1'b1;

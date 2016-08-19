@@ -275,7 +275,7 @@ always @(posedge clk_in1)begin
         wr_counter <= wr_counter + 1'b1;
     end
     else if(gen_state != WR_DATA) begin
-        wr_counter <= 1'b1;
+        wr_counter <= 1'b0;
     end
 end
 

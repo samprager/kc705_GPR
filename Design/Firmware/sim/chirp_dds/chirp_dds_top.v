@@ -35,6 +35,12 @@ module chirp_dds_top #
   output [ADC_AXI_TUSER_WIDTH-1:0] axis_adc_tuser,
   input axis_adc_tready,
 
+  input                                 wf_read_ready,
+  input       [31:0]                    wfrm_axis_tdata,
+  input                                 wfrm_axis_tvalid,
+  input                                 wfrm_axis_tlast,
+  output                                wfrm_axis_tready,
+
 // Control Module signals
   output [3:0] fmc150_status_vector,
   output chirp_ready,
@@ -78,6 +84,11 @@ module chirp_dds_top #
   wire [31:0] adc_counter;
   wire adc_data_valid;
 
+  wire [15:0] wfrm_data_i;
+  wire [15:0] wfrm_data_q;
+  wire wfrm_data_valid;
+
+
   reg [15:0] adc_data_i_r;
   reg [15:0] adc_data_q_r;
   reg [15:0] adc_data_i_rr;
@@ -118,6 +129,24 @@ module chirp_dds_top #
 
   wire [1:0] dds_route_ctrl_l;
   wire [1:0] dds_route_ctrl_u;
+  wire [1:0] dds_source_ctrl;
+  wire dds_source_select;
+
+  wire wfrm_ready;
+  wire wfrm_done;
+  wire wfrm_active;
+  wire wfrm_init;
+  wire wfrm_enable;
+
+  wire dds_ready;
+  wire dds_done;
+  wire dds_active;
+  wire dds_init;
+  wire dds_enable;
+
+  reg [1:0] dds_route_ctrl_u_r;
+  reg [1:0] dds_route_ctrl_l_r;
+  reg [1:0] dds_source_ctrl_r;
 
   reg [ADC_AXI_DATA_WIDTH-1:0]     chirp_header;
   reg [7:0]  chirp_header_counter;
@@ -335,11 +364,11 @@ end
          .IF_OUT_Q(dds_out_q),
          .IF_OUT_VALID(dds_out_valid),
 
-         .chirp_ready (chirp_ready),
-         .chirp_done  (chirp_done),
-         .chirp_active (chirp_active),
-         .chirp_init  (chirp_init),
-         .chirp_enable (chirp_enable),
+         .chirp_ready (dds_ready),
+         .chirp_done  (dds_done),
+         .chirp_active (dds_active),
+         .chirp_init  (dds_init),
+         .chirp_enable (dds_enable),
 
          .freq_offset_in          (chirp_freq_offset),
          .tuning_word_coeff_in    (chirp_tuning_word_coeff),
@@ -372,15 +401,45 @@ end
 //  end
 //  assign data_out_lower = data_out_lower_r;
 //  assign data_out_upper = data_out_upper_r;
-  assign data_out_lower  = (dds_route_ctrl_l == 2'b00) ? adc_data_iq : 32'bz,
-        data_out_lower  = (dds_route_ctrl_l == 2'b01) ? dac_data_iq : 32'bz,
-        data_out_lower  = (dds_route_ctrl_l == 2'b10) ? adc_counter : 32'bz,
-        data_out_lower  = (dds_route_ctrl_l == 2'b11) ? glbl_counter[31:0] : 32'bz;
 
-   assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 32'bz,
-              data_out_upper  = (dds_route_ctrl_u == 2'b01) ? dac_data_iq : 32'bz,
-              data_out_upper  = (dds_route_ctrl_u == 2'b10) ? adc_counter : 32'bz,
-              data_out_upper  = (dds_route_ctrl_u == 2'b11) ? glbl_counter[31:0] : 32'bz;
+//assign wfrm_init = (dds_source_select) ? chirp_init : 1'b0;
+//assign dds_init = (!dds_source_select) ? chirp_init : 1'b0;
+//assign wfrm_enable = (dds_source_select) ? chirp_enable : 1'b0;
+//assign dds_enable = (!dds_source_select) ? chirp_enable : 1'b0;
+
+assign wfrm_init = (dds_source_select & chirp_init);
+assign dds_init = (!dds_source_select & chirp_init);
+assign wfrm_enable = (dds_source_select & chirp_enable);
+assign dds_enable = (!dds_source_select & chirp_enable);
+
+assign chirp_done = ((dds_source_select & wfrm_done)|(!dds_source_select & dds_done));
+assign chirp_active = ((dds_source_select & wfrm_active)|(!dds_source_select & dds_active));
+assign chirp_ready =  ((dds_source_select & wfrm_ready)|(!dds_source_select & dds_ready));
+
+assign dds_source_select = (&dds_source_ctrl);
+
+assign data_out_lower  = (dds_route_ctrl_l == 2'b00) ? adc_data_iq : 32'bz,
+    data_out_lower  = (dds_route_ctrl_l == 2'b01) ? dac_data_iq : 32'bz,
+    data_out_lower  = (dds_route_ctrl_l == 2'b10) ? adc_counter : 32'bz,
+    data_out_lower  = (dds_route_ctrl_l == 2'b11) ? glbl_counter : 32'bz;
+
+assign data_out_upper  = (dds_route_ctrl_u == 2'b00) ? adc_data_iq : 32'bz,
+          data_out_upper  = (dds_route_ctrl_u == 2'b01) ? dac_data_iq : 32'bz,
+          data_out_upper  = (dds_route_ctrl_u == 2'b10) ? adc_counter : 32'bz,
+          data_out_upper  = (dds_route_ctrl_u == 2'b11) ? glbl_counter : 32'bz;
+
+//assign dds_route_ctrl_l = chirp_control_word[1:0];
+//assign dds_route_ctrl_u = chirp_control_word[5:4];
+assign dds_route_ctrl_l = dds_route_ctrl_l_r;
+assign dds_route_ctrl_u = dds_route_ctrl_u_r;
+assign dds_source_ctrl = dds_source_ctrl_r;
+
+
+  always @(posedge clk_245_76MHz) begin
+     dds_route_ctrl_l_r <= chirp_control_word[1:0];
+     dds_route_ctrl_u_r <= chirp_control_word[5:4];
+     dds_source_ctrl_r <= chirp_control_word[9:8];
+  end
 
 
    always @(posedge clk_245_76MHz) begin
@@ -454,6 +513,28 @@ end
     end
 
 
+    waveform_dds waveform_dds_inst(
+        .axi_tclk(clk_245_76MHz),
+        .axi_tresetn(!clk_245_rst),
+        .wf_read_ready(wf_read_ready),
+
+        .chirp_ready (wfrm_ready),
+        .chirp_done (wfrm_done),
+        .chirp_active (wfrm_active),
+        .chirp_init  (wfrm_init),
+        .chirp_enable  (wfrm_enable),
+
+        .dds_source_select(dds_source_select),
+
+        .wfrm_axis_tdata(wfrm_axis_tdata),
+        .wfrm_axis_tvalid(wfrm_axis_tvalid),
+        .wfrm_axis_tlast(wfrm_axis_tlast),
+        .wfrm_axis_tready(wfrm_axis_tready),
+
+        .wfrm_data_valid(wfrm_data_valid),
+        .wfrm_data_i(wfrm_data_i),
+        .wfrm_data_q(wfrm_data_q)
+    );
 // asynchoronous fifo for converting 245.76 MHz 32 bit adc samples (16 i, 16 q)
 // to rd clk domain 64 bit adc samples (i1 q1 i2 q2)
    fifo_generator_adc u_fifo_generator_adc
@@ -544,59 +625,59 @@ assign threshold_ctrl_q = {4'hf,4'h1};
 //assign peak_threshold_i = {{(60-4*threshold_ctrl_i[7:4]){1'b0}},threshold_ctrl_i[3:0],{(4*threshold_ctrl_i[7:4]){1'b0}}};
 //assign peak_threshold_q = {{(60-4*threshold_ctrl_q[7:4]){1'b0}},threshold_ctrl_q[3:0],{(4*threshold_ctrl_q[7:4]){1'b0}}};
 
-matched_filter_range_detector #
-  (
-     .PK_AXI_DATA_WIDTH(512),
-     .PK_AXI_TID_WIDTH (1),
-     .PK_AXI_TDEST_WIDTH(1),
-     .PK_AXI_TUSER_WIDTH(1),
-     .PK_AXI_STREAM_ID (1'b0),
-     .PK_AXI_STREAM_DEST (1'b0),
-     .FFT_LEN(4096),
-     .SIMULATION(SIMULATION)
+// matched_filter_range_detector #
+//   (
+//      .PK_AXI_DATA_WIDTH(512),
+//      .PK_AXI_TID_WIDTH (1),
+//      .PK_AXI_TDEST_WIDTH(1),
+//      .PK_AXI_TUSER_WIDTH(1),
+//      .PK_AXI_STREAM_ID (1'b0),
+//      .PK_AXI_STREAM_DEST (1'b0),
+//      .FFT_LEN(4096),
+//      .SIMULATION(SIMULATION)
+//
+//   )matched_filter_range_detector_inst(
+//
+//    .aclk(clk_245_76MHz), // AXI input clock
+//    .aresetn(!clk_245_rst), // Active low AXI reset signal
+//
+//    // --ADC Data Out Signals
+//   .adc_iq_tdata(adc_data_iq),
+//   .dac_iq_tdata(dac_data_iq),
+//   .iq_tvalid(data_iq_tvalid),
+//   .iq_tlast(data_iq_tlast),
+//   .iq_tready(data_iq_tready),
+//   .iq_first(data_iq_first),
+//   .counter_id(data_counter_id),
+//
+//   .pk_axis_tdata(dw_axis_tdata),
+//   .pk_axis_tvalid(dw_axis_tvalid),
+//   .pk_axis_tlast(dw_axis_tlast),
+//   .pk_axis_tkeep(),
+//   .pk_axis_tdest(),
+//   .pk_axis_tid(),
+//   .pk_axis_tstrb(),
+//   .pk_axis_tuser(),
+//   .pk_axis_tready(dw_axis_tready),
+//
+//   .lpf_cutoff(lpf_cutoff_ind),
+//   .threshold_ctrl(threshold_ctrl_i),    // {4b word index, 4b word value} in 64bit threshold
+//  // .threshold_ctrl(threshold_ctrl_q),    // {4b word index, 4b word value} in 64bit threshold
+//
+// // Control Module signals
+//  .chirp_ready                         (chirp_ready),
+//  .chirp_done                          (chirp_done),
+//  .chirp_active                        (chirp_active),
+//  .chirp_init                          (chirp_init),
+//  .chirp_enable                        (chirp_enable),
+//  .adc_enable                          (adc_enable),
+//  .chirp_control_word          (chirp_control_word),
+//  .chirp_freq_offset           (chirp_freq_offset),
+//  .chirp_tuning_word_coeff     (chirp_tuning_word_coeff),
+//  .chirp_count_max             (chirp_count_max)
+//
+//    );
 
-  )matched_filter_range_detector_inst(
-
-   .aclk(clk_245_76MHz), // AXI input clock
-   .aresetn(!clk_245_rst), // Active low AXI reset signal
-
-   // --ADC Data Out Signals
-  .adc_iq_tdata(adc_data_iq),
-  .dac_iq_tdata(dac_data_iq),
-  .iq_tvalid(data_iq_tvalid),
-  .iq_tlast(data_iq_tlast),
-  .iq_tready(data_iq_tready),
-  .iq_first(data_iq_first),
-  .counter_id(data_counter_id),
-
-  .pk_axis_tdata(dw_axis_tdata),
-  .pk_axis_tvalid(dw_axis_tvalid),
-  .pk_axis_tlast(dw_axis_tlast),
-  .pk_axis_tkeep(),
-  .pk_axis_tdest(),
-  .pk_axis_tid(),
-  .pk_axis_tstrb(),
-  .pk_axis_tuser(),
-  .pk_axis_tready(dw_axis_tready),
-
-  .lpf_cutoff(lpf_cutoff_ind),
-  .threshold_ctrl(threshold_ctrl_i),    // {4b word index, 4b word value} in 64bit threshold
- // .threshold_ctrl(threshold_ctrl_q),    // {4b word index, 4b word value} in 64bit threshold
-
-// Control Module signals
- .chirp_ready                         (chirp_ready),
- .chirp_done                          (chirp_done),
- .chirp_active                        (chirp_active),
- .chirp_init                          (chirp_init),
- .chirp_enable                        (chirp_enable),
- .adc_enable                          (adc_enable),
- .chirp_control_word          (chirp_control_word),
- .chirp_freq_offset           (chirp_freq_offset),
- .chirp_tuning_word_coeff     (chirp_tuning_word_coeff),
- .chirp_count_max             (chirp_count_max)
-
-   );
-   
 /*
 dsp_range_detector #
   (

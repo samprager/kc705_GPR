@@ -753,6 +753,22 @@
          <obj_property name="ElementShortName">wfrm_data_valid_r</obj_property>
          <obj_property name="ObjectShortName">wfrm_data_valid_r</obj_property>
       </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/chirp_ready">
+         <obj_property name="ElementShortName">chirp_ready</obj_property>
+         <obj_property name="ObjectShortName">chirp_ready</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/chirp_done">
+         <obj_property name="ElementShortName">chirp_done</obj_property>
+         <obj_property name="ObjectShortName">chirp_done</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/chirp_active">
+         <obj_property name="ElementShortName">chirp_active</obj_property>
+         <obj_property name="ObjectShortName">chirp_active</obj_property>
+      </wvobject>
+      <wvobject db_ref_id="1" type="logic" fp_name="/waveform_format_sim_tb/u_waveform_dds/chirp_enable">
+         <obj_property name="ElementShortName">chirp_enable</obj_property>
+         <obj_property name="ObjectShortName">chirp_enable</obj_property>
+      </wvobject>
       <wvobject db_ref_id="1" type="array" fp_name="/waveform_format_sim_tb/u_waveform_dds/next_gen_state">
          <obj_property name="ElementShortName">next_gen_state[2:0]</obj_property>
          <obj_property name="ObjectShortName">next_gen_state[2:0]</obj_property>
