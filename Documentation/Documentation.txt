@@ -7,7 +7,7 @@ Tutorial on Indirectly Programming FPGA with BPI Flash Memory:
 http://www.xilinx.com/video/hardware/indirectly-program-fpga-using-vivado.html
 
 Tcl command to create mcs file for BPI:
-write_cfgmem -format mcs -interface bpix16 -size 128 -loadbit "up 0x0 kc705_gpr_top.bit" -file kc705_gpr_top_bpix16.mcs
+write_cfgmem -force -format mcs -interface bpix16 -size 128 -loadbit "up 0x0 kc705_gpr_top.bit" -file kc705_gpr_top_bpix16.mcs
 
 bpi memory device part: 28f00ap30t (28f00ap30t-bpi-x16)
 
