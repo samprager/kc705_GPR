@@ -179,7 +179,7 @@ module fmc150_dac_adc #
 
   localparam DDS_LATENCY = 2;
   localparam DDS_CHIRP_DELAY = 3;
-  localparam DDS_WFRM_DELAY = 19;
+  localparam DDS_WFRM_DELAY = 50;//33;//19;
   localparam FCUTOFF_IND = FFT_LEN/2;
 
   wire rd_fifo_clk;
