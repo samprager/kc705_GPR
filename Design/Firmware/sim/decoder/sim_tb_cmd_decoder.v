@@ -49,10 +49,16 @@ module sim_tb_cmd_decoder;
   //reg [127:0]  test_packet_3 = 128'hc8000000000300000100000000100000;
   //reg [31:0] test_packet_4 = 32'h00000000;
 
-  reg [127:0] test_packet_1 = 128'h5a0102030405985aebdb066f00260000;
-  reg [127:0] test_packet_2 = 128'h434357572747000000000000f6000000;
-  reg [127:0] test_packet_3 = 128'hc8000000000300000100000002000000;//128'hc8000000000300000100000000100000;
-  reg [31:0] test_packet_4 = 32'h00000000;
+  reg [127:0] test_packet_1 = 128'h5a0102030405a45e60ee9f3500260200;
+  //reg [127:0] test_packet_2 = 128'h43435757df50910d0000000000004c1d;
+  reg [127:0] test_packet_2 = 128'h43435757df50910d0000000000100000;
+  reg [127:0] test_packet_3 = 128'hfe010000000b000001000000000e0000;//128'hc8000000000300000100000000100000;
+  reg [31:0] test_packet_4 = 32'h10030000;
+
+   reg [127:0] wfrm_packet_1;
+   reg [127:0] wfrm_packet_2;
+   reg [127:0] wfrm_packet_3;
+   reg [31:0] wfrm_packet_4;
 
   // reg [127:0] chirp_fast_packet_1 = 128'h5a0102030405985aebdb066f00260000;
   // reg [127:0] chirp_fast_packet_2 = 128'h434357572747000000000000f6000000;
@@ -184,8 +190,9 @@ wire                                rx_axis_tuser;
       repeat(32) @(posedge gtx_tclk_i);
       tx_axis_tready_reg = 1'b1;
       use_wr_packet = 1'b1;
-      repeat(2048) @(posedge gtx_tclk_i);
-      use_wr_packet = 1'b0;
+      repeat(16000) @(posedge gtx_tclk_i);
+      //use_wr_packet = 1'b0;
+      use_wfrm_packet = 1'b0;
       repeat(32000) @(posedge gtx_tclk_i);
       // tx_axis_tready_reg = 1'b0;
       // repeat(32) @(posedge gtx_tclk_i);
@@ -232,15 +239,15 @@ wire                                rx_axis_tuser;
                    rx_axis_tvalid_reg <= 1'b1;
 
               if (sel_wfrm_packet) begin
-                 test_packet_1 <= wfrm_test_packet_1;
-                 test_packet_2 <= wfrm_test_packet_2;
-                 test_packet_3 <= wfrm_test_packet_3;
-                 test_packet_4 <= wfrm_test_packet_4;
+                 wfrm_packet_1 <= wfrm_test_packet_1;
+                 wfrm_packet_2 <= wfrm_test_packet_2;
+                 wfrm_packet_3 <= wfrm_test_packet_3;
+                 wfrm_packet_4 <= wfrm_test_packet_4;
               end else begin
-                test_packet_1 <= wfrm_test_packet2_1;
-                test_packet_2 <= wfrm_test_packet2_2;
-                test_packet_3 <= wfrm_test_packet2_3;
-                test_packet_4 <= wfrm_test_packet2_4;
+                wfrm_packet_1 <= wfrm_test_packet2_1;
+                wfrm_packet_2 <= wfrm_test_packet2_2;
+                wfrm_packet_3 <= wfrm_test_packet2_3;
+                wfrm_packet_4 <= wfrm_test_packet2_4;
               end
 
                if (data_counter == 8'hff)
@@ -249,13 +256,13 @@ wire                                rx_axis_tuser;
                    rx_axis_tlast_reg <= 1'b0;
 
                if (data_counter >=8'hcc & data_counter<8'hdc) begin
-                   rx_axis_tdata_reg <= test_packet_1[8'h80-(8'h8*(data_counter-8'hcc))-1-:8];
+                   rx_axis_tdata_reg <= wfrm_packet_1[8'h80-(8'h8*(data_counter-8'hcc))-1-:8];
                end else if (data_counter >=8'hdc & data_counter<8'hec) begin
-                   rx_axis_tdata_reg <= test_packet_2[8'h80-(8'h8*(data_counter-8'hdc))-1-:8];
+                   rx_axis_tdata_reg <= wfrm_packet_2[8'h80-(8'h8*(data_counter-8'hdc))-1-:8];
                end else if (data_counter >=8'hec & data_counter<8'hfc)begin
-                   rx_axis_tdata_reg <= test_packet_3[8'h80-(8'h8*(data_counter-8'hec))-1-:8];
+                   rx_axis_tdata_reg <= wfrm_packet_3[8'h80-(8'h8*(data_counter-8'hec))-1-:8];
                end else if (data_counter >=8'hfc) begin
-                   rx_axis_tdata_reg <= test_packet_4[8'h20-(8'h8*(data_counter-8'hfc))-1-:8];
+                   rx_axis_tdata_reg <= wfrm_packet_4[8'h20-(8'h8*(data_counter-8'hfc))-1-:8];
                end
 
              if (data_counter == 8'hff) begin
@@ -286,10 +293,10 @@ wire                                rx_axis_tuser;
               rx_axis_tdata_reg <= test_packet_4[8'h20-(8'h8*(data_counter-8'hfc))-1-:8];
           end
 
-        if (data_counter == 8'hff) begin
-            test_packet_4[31:24] <= dds_route_ctrl[9:2];
-            dds_route_ctrl <= dds_route_ctrl+1'b1;
-        end
+//        if (data_counter == 8'hff) begin
+//            test_packet_4[31:24] <= dds_route_ctrl[9:2];
+//            dds_route_ctrl <= dds_route_ctrl+1'b1;
+//        end
 //           if (data_counter == 8'hff) begin
 //             command_type <= command_type + 1;
 //             if (command_type == 2'b0) begin
