@@ -1,7 +1,7 @@
 chirp_type = 'lin';
 fs = 245.76e6;
 %n = 4096-512;
-n = 4096-512-20;  % subtract 17 for clock delay in FPGA
+n = 4096-512;  % subtract 17 for clock delay in FPGA
 f0 = 60e6; f1 = 110e6;
 t = linspace(0,n/fs,n);
 ti  = linspace(-n/(1*fs),n/(1*fs),n);
