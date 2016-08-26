@@ -63,10 +63,12 @@ module chirp_dds_top #
    );
 
    localparam DDS_LATENCY = 2;
+   localparam DDS_CHIRP_DELAY = 3;
+   localparam DDS_WFRM_DELAY = 19;
    localparam FCUTOFF_IND = FFT_LEN/2;
    localparam ADC_DELAY = 100;
 
-   integer i;
+   integer d;
 
   wire rd_fifo_clk;
   wire clk_245_76MHz;
@@ -123,9 +125,14 @@ module chirp_dds_top #
   reg [31:0] data_out_upper_r;
 //  reg data_out_lower_valid;
 //  reg data_out_upper_valid;
-  reg [3:0] dds_latency_counter;
+  reg [7:0] dds_latency_counter;
   reg [63:0] glbl_counter_reg;
   wire [63:0] glbl_counter;
+
+  reg [2:0] data_alignment_counter;
+ reg [2:0] data_word_counter;
+
+ wire align_data;
 
   wire [1:0] dds_route_ctrl_l;
   wire [1:0] dds_route_ctrl_u;
@@ -164,6 +171,7 @@ module chirp_dds_top #
      wire                      adc_fifo_wr_en;
      wire                      adc_fifo_rd_en;
      wire [ADC_AXI_DATA_WIDTH-1:0]  adc_fifo_data_out;
+     wire [ADC_AXI_DATA_WIDTH-1:0]  adc_fifo_data_out_reversed;
      wire                     adc_fifo_full;
      wire                     adc_fifo_empty;
 
@@ -294,13 +302,13 @@ always @(posedge clk_245_76MHz) begin
     end
 end
  always @(posedge clk_245_76MHz) begin
-    for (i=1;i<ADC_DELAY;i=i+1) begin
+    for (d=1;i<ADC_DELAY;d=d+1) begin
         if (clk_245_rst) begin
-            adc_data_i_delay[i] <= 'b0;
-            adc_data_q_delay[i] <= 'b0;
+            adc_data_i_delay[d] <= 'b0;
+            adc_data_q_delay[d] <= 'b0;
         end else begin
-            adc_data_i_delay[i] <= adc_data_i_delay[i-1];
-            adc_data_q_delay[i] <= adc_data_q_delay[i-1];
+            adc_data_i_delay[d] <= adc_data_i_delay[d-1];
+            adc_data_q_delay[d] <= adc_data_q_delay[d-1];
         end
     end
 end
@@ -456,16 +464,43 @@ assign dds_source_ctrl = dds_source_ctrl_r;
    end
 
 
+   always @(posedge clk_245_76MHz) begin
+     if (clk_245_rst)
+       dds_latency_counter <= 'b0;
+     else if( chirp_init) begin
+         if(dds_source_select )
+             dds_latency_counter <= DDS_WFRM_DELAY;
+          else
+             dds_latency_counter <= DDS_CHIRP_DELAY;
+    end else if(adc_enable_r & !adc_enable) begin
+       if(dds_source_select )
+         dds_latency_counter <= DDS_WFRM_DELAY;
+       else
+         dds_latency_counter <= DDS_CHIRP_DELAY;
+    end else if(|dds_latency_counter) begin
+       dds_latency_counter <= dds_latency_counter-1;
+    end
+   end
+
   always @(posedge clk_245_76MHz) begin
-    if (cpu_reset)
-      dds_latency_counter <= 'b0;
-    else if( chirp_init)
-      dds_latency_counter <= DDS_LATENCY;
-    else if(adc_enable_r & !adc_enable)
-        dds_latency_counter <= DDS_LATENCY;
-    else if(|dds_latency_counter)
-      dds_latency_counter <= dds_latency_counter-1;
+    if (clk_245_rst)
+      data_word_counter <= 'b0;
+   else if (!(|dds_latency_counter)&(adc_enable_r)&(!adc_enable_rr))
+      data_word_counter <= 'b0;
+    else if(adc_enable_rr & adc_data_valid)
+      data_word_counter <= data_word_counter + 1'b1;
   end
+
+   always @(posedge clk_245_76MHz) begin
+      if (clk_245_rst)
+        data_alignment_counter <= 'b0;
+     else if(adc_fifo_wr_pre_tlast)
+        data_alignment_counter <= data_word_counter^3'b111;
+      else if(|data_alignment_counter)
+        data_alignment_counter <= data_alignment_counter - 1'b1;
+    end
+
+    assign align_data = |data_alignment_counter;
 
 
    always @(posedge clk_245_76MHz) begin
@@ -559,6 +594,13 @@ assign dds_source_ctrl = dds_source_ctrl_r;
 
    );
 
+   genvar i;
+   generate
+   for (i=0;i<ADC_AXI_DATA_WIDTH;i=i+64) begin
+      assign adc_fifo_data_out_reversed[i+63-:64] = adc_fifo_data_out[ADC_AXI_DATA_WIDTH-i-1-:64];
+   end
+   endgenerate
+
    adc_data_axis_wrapper #(
      .ADC_AXI_DATA_WIDTH(ADC_AXI_DATA_WIDTH),
      .ADC_AXI_TID_WIDTH(ADC_AXI_TID_WIDTH),
@@ -570,7 +612,8 @@ assign dds_source_ctrl = dds_source_ctrl_r;
     adc_data_axis_wrapper_inst (
       .axi_tclk                   (aclk),
       .axi_tresetn                (aresetn),
-      .adc_data                   (adc_fifo_data_out),
+      // .adc_data                   (adc_fifo_data_out),
+      .adc_data                   (adc_fifo_data_out_reversed),
       .adc_fifo_data_valid        (adc_fifo_valid),
       .adc_fifo_empty             (adc_fifo_empty),
       .adc_fifo_almost_empty      (adc_fifo_almost_empty),

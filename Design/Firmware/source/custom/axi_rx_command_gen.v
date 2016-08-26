@@ -109,15 +109,16 @@ assign axi_treset = !axi_tresetn;
 always @(posedge axi_tclk)
 begin
    if (axi_treset) begin
-   cmd_axis_tvalid_reg <= 1'b0;
-   cmd_axis_tlast_reg <= 1'b0;
-   cmd_axis_tdata_reg <= 32'b0;
+      cmd_axis_tvalid_reg      <= 1'b0;
+      cmd_axis_tlast_reg       <= 1'b0;
+      cmd_axis_tdata_reg       <= 32'b0;
    end else begin
-   cmd_axis_tvalid_reg <= cmd_axis_tvalid;
-   cmd_axis_tlast_reg <= cmd_axis_tlast;
-   cmd_axis_tdata_reg[31:0] <= cmd_axis_tdata[31:0];
+      cmd_axis_tvalid_reg      <= cmd_axis_tvalid;
+      cmd_axis_tlast_reg       <= cmd_axis_tlast;
+      cmd_axis_tdata_reg[31:0] <= cmd_axis_tdata[31:0];
    end
 end
+
 
 
 
