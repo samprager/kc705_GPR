@@ -180,6 +180,7 @@ module fmc150_dac_adc #
   localparam DDS_LATENCY = 2;
   localparam DDS_CHIRP_DELAY = 3;
   localparam DDS_WFRM_DELAY = 19;
+  localparam DDS_WFRM_DELAY_END = 2;
   localparam FCUTOFF_IND = FFT_LEN/2;
 
   wire rd_fifo_clk;
@@ -484,7 +485,8 @@ assign dds_source_ctrl = dds_source_ctrl_r;
       adc_enable_rr <= 1'b0;
     end else begin
       adc_enable_r <= adc_enable;
-      if (!(|dds_latency_counter) & !align_data)
+//      if (!(|dds_latency_counter))
+      if (!(|dds_latency_counter) & (!align_data))
         adc_enable_rr <= adc_enable_r;
       else
         adc_enable_rr <=adc_enable_rr;
@@ -501,7 +503,7 @@ assign dds_source_ctrl = dds_source_ctrl_r;
             dds_latency_counter <= DDS_CHIRP_DELAY;
    end else if(adc_enable_r & !adc_enable) begin
       if(dds_source_select )
-        dds_latency_counter <= DDS_WFRM_DELAY;
+        dds_latency_counter <= DDS_WFRM_DELAY_END;
       else
         dds_latency_counter <= DDS_CHIRP_DELAY;
    end else if(|dds_latency_counter) begin
@@ -638,6 +640,8 @@ assign adc_counter = adc_counter_reg;
 
    assign adc_fifo_wr_first = adc_fifo_wr_first_r;
    assign adc_fifo_wr_tlast = (!(|dds_latency_counter))&(adc_enable_rr)&(!adc_enable_r)&(!align_data);
+//   assign adc_fifo_wr_tlast = (!(|dds_latency_counter))&(adc_enable_rr)&(!adc_enable_r);
+
    assign adc_fifo_wr_pre_tlast = (dds_latency_counter==1)&(adc_enable_rr)&(!adc_enable_r);
 
    assign adc_fifo_wr_en = adc_enable_rr & adc_data_valid;
