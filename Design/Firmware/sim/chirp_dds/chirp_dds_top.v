@@ -104,8 +104,8 @@ module chirp_dds_top #
   reg adc_data_valid_r;
   reg adc_data_valid_rr;
 
-  reg [31:0] adc_data_i_delay [ADC_DELAY-1:0];
-  reg [31:0] adc_data_q_delay [ADC_DELAY-1:0];
+  reg [15:0] adc_data_i_delay [ADC_DELAY-1:0];
+  reg [15:0] adc_data_q_delay [ADC_DELAY-1:0];
 
   wire [63:0] adc_fifo_wr_tdata;
   wire       adc_fifo_wr_tvalid;
@@ -446,7 +446,11 @@ assign dds_source_ctrl = dds_source_ctrl_r;
   always @(posedge clk_245_76MHz) begin
      dds_route_ctrl_l_r <= chirp_control_word[1:0];
      dds_route_ctrl_u_r <= chirp_control_word[5:4];
-     dds_source_ctrl_r <= chirp_control_word[9:8];
+  end
+
+  always @(posedge clk_245_76MHz) begin
+     if (!chirp_enable)
+         dds_source_ctrl_r <= chirp_control_word[9:8];
   end
 
 
@@ -456,7 +460,7 @@ assign dds_source_ctrl = dds_source_ctrl_r;
       adc_enable_rr <= 1'b0;
     end else begin
       adc_enable_r <= adc_enable;
-      if (!(|dds_latency_counter))
+      if (!(|dds_latency_counter) & !align_data)
         adc_enable_rr <= adc_enable_r;
       else
         adc_enable_rr <=adc_enable_rr;
@@ -495,7 +499,7 @@ assign dds_source_ctrl = dds_source_ctrl_r;
       if (clk_245_rst)
         data_alignment_counter <= 'b0;
      else if(adc_fifo_wr_pre_tlast)
-        data_alignment_counter <= data_word_counter^3'b111;
+        data_alignment_counter <= (data_word_counter+1'b1)^3'b111;
       else if(|data_alignment_counter)
         data_alignment_counter <= data_alignment_counter - 1'b1;
     end
@@ -643,7 +647,7 @@ assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_coun
 
    assign adc_fifo_wr_first = adc_fifo_wr_first_r;
 
-   assign adc_fifo_wr_tlast = (!(|dds_latency_counter))&(adc_enable_rr)&(!adc_enable_r);
+   assign adc_fifo_wr_tlast = (!(|dds_latency_counter))&(adc_enable_rr)&(!adc_enable_r)&(!align_data);
 
    assign adc_fifo_wr_pre_tlast = (dds_latency_counter==1)&(adc_enable_rr)&(!adc_enable_r);
 
