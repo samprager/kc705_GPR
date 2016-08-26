@@ -652,7 +652,8 @@ assign rd_fifo_clk = aclk;
 assign clk_out_245_76MHz = clk_245_76MHz;
 //assign clk_out_491_52MHz = clk_491_52MHz;
 
-assign data_iq_tvalid = adc_enable_rr & adc_data_valid & (!adc_fifo_wr_first);
+//assign data_iq_tvalid = adc_enable_rr & adc_data_valid & (!adc_fifo_wr_first);
+assign data_iq_tvalid = adc_enable_rr & adc_data_valid&(!adc_fifo_wr_first)&(!adc_fifo_wr_tlast)&(!align_data);
 assign data_iq_tlast = (dds_latency_counter==1)&(adc_enable_rr)&(!adc_enable_r);
 assign data_iq_first = adc_fifo_wr_first_r;
 assign data_counter_id = {glbl_counter[31:0],adc_counter};

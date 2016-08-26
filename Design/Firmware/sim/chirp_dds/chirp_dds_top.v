@@ -65,6 +65,7 @@ module chirp_dds_top #
    localparam DDS_LATENCY = 2;
    localparam DDS_CHIRP_DELAY = 3;
    localparam DDS_WFRM_DELAY = 19;
+   localparam DDS_WFRM_DELAY_END = 2;
    localparam FCUTOFF_IND = FFT_LEN/2;
    localparam ADC_DELAY = 100;
 
@@ -478,7 +479,8 @@ assign dds_source_ctrl = dds_source_ctrl_r;
              dds_latency_counter <= DDS_CHIRP_DELAY;
     end else if(adc_enable_r & !adc_enable) begin
        if(dds_source_select )
-         dds_latency_counter <= DDS_WFRM_DELAY;
+         // dds_latency_counter <= DDS_WFRM_DELAY;
+         dds_latency_counter <= DDS_WFRM_DELAY_END;
        else
          dds_latency_counter <= DDS_CHIRP_DELAY;
     end else if(|dds_latency_counter) begin
@@ -661,7 +663,8 @@ assign rd_fifo_clk = aclk;
 
 //assign clk_out_491_52MHz = clk_491_52MHz;
 
-assign data_iq_tvalid = adc_fifo_wr_en&(!adc_fifo_wr_first);
+assign data_iq_tvalid = adc_enable_rr & adc_data_valid & (!adc_fifo_wr_first) & (!adc_fifo_wr_tlast)&(!align_data);
+//assign data_iq_tvalid = adc_enable_rr & adc_data_valid & (!adc_fifo_wr_first);
 assign data_iq_tlast = (dds_latency_counter==1)&(adc_enable_rr)&(!adc_enable_r);
 assign data_iq_first = adc_fifo_wr_first_r;
 assign data_counter_id = {glbl_counter[31:0],adc_counter};
