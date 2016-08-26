@@ -129,8 +129,8 @@ module chirp_dds_top #
   reg [63:0] glbl_counter_reg;
   wire [63:0] glbl_counter;
 
-  reg [2:0] data_alignment_counter;
- reg [2:0] data_word_counter;
+  reg [5:0] data_alignment_counter;
+ reg [5:0] data_word_counter;
 
  wire align_data;
 
@@ -499,7 +499,7 @@ assign dds_source_ctrl = dds_source_ctrl_r;
       if (clk_245_rst)
         data_alignment_counter <= 'b0;
      else if(adc_fifo_wr_pre_tlast)
-        data_alignment_counter <= (data_word_counter+1'b1)^3'b111;
+        data_alignment_counter <= (data_word_counter+1'b1)^6'b111111;
       else if(|data_alignment_counter)
         data_alignment_counter <= data_alignment_counter - 1'b1;
     end

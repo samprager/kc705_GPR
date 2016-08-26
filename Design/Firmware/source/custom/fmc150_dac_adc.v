@@ -251,8 +251,8 @@ module fmc150_dac_adc #
 
      reg [7:0] dds_latency_counter;
      reg [31:0] glbl_counter_reg;
-     reg [2:0] data_alignment_counter;
-     reg [2:0] data_word_counter;
+     reg [5:0] data_alignment_counter;
+     reg [5:0] data_word_counter;
      wire align_data;
 
      reg [31:0] adc_counter_reg;
@@ -526,7 +526,7 @@ assign dds_source_ctrl = dds_source_ctrl_r;
    //   else if(adc_fifo_wr_tlast)
    //      data_alignment_counter <= data_word_counter^3'b111;
       else if(adc_fifo_wr_pre_tlast)
-         data_alignment_counter <= (data_word_counter+1'b1)^3'b111;
+         data_alignment_counter <= (data_word_counter+1'b1)^6'b111111;
       else if(|data_alignment_counter)
         data_alignment_counter <= data_alignment_counter - 1'b1;
     end

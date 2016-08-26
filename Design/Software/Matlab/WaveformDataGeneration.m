@@ -1,24 +1,29 @@
 chirp_type = 'lin';
 fs = 245.76e6;
 %n = 4096-512;
-n = 4096-512-17;  % subtract 17 for clock delay in FPGA
+n = 4096-512-20;  % subtract 17 for clock delay in FPGA
 f0 = 60e6; f1 = 110e6;
 t = linspace(0,n/fs,n);
 ti  = linspace(-n/(1*fs),n/(1*fs),n);
 f = 10;
 scale = double(intmax('int16'));
 %win = getBlackmanHarris(n)';
-win = getHamming(n)';
-%win = linspace(1,1,n);
+%win = getHamming(n)';
+win = 1;
 
 Q_gaus = gauspuls(ti,50E6,.1).*win;
 I_gaus = gauspuls(ti,50E6,.1).*win;
 I_quad =chirp(t,f0,t(end),f1,'q',[],'convex').*win;
-Q_quad =chirp(t,f0,t(end),f1,'q',[],'convex').*win;
+Q_quad =chirp(t,f0,t(end),f1,'q',-90,'convex').*win;
 I_log =chirp(t,f0,t(end),f1,'logarithmic').*win;
-Q_log =chirp(t,f0,t(end),f1,'logarithmic').*win;
-I_lin =chirp(t,f0,t(end),f1).*win;
-Q_lin =chirp(t,f0,t(end),f1).*win;
+Q_log =chirp(t,f0,t(end),f1,'logarithmic',-90).*win;
+I_lin =chirp(t,f0,t(end),f1,'linear').*win;
+Q_lin =chirp(t,f0,t(end),f1,'linear',-90).*win;
+
+I_test = zeros(1,n);
+Q_test = zeros(1,n);
+I_test(ceil(end/2)) = 1;
+Q_test(ceil(end/2)) = 1;
 
 % I = cos(2*pi*f*t);
 % Q = sin(2*pi*f*t);
@@ -35,7 +40,10 @@ switch chirp_type
        data_q = int16(scale*Q_log); 
     case 'quad'
        data_i = int16(scale*I_quad);
-       data_q = int16(scale*Q_quad);           
+       data_q = int16(scale*Q_quad); 
+    case 'test'
+        data_i = int16(scale*I_test);
+        data_q = int16(scale*Q_test);
 end
 
 data = reshape([data_i;data_q],1,2*n);
@@ -80,7 +88,7 @@ fclose(fileID);
 
 % figure; plot(I);title('I');
 % figure; plot(Q);title('Q');
-% figure; obw(Q,fs);
+% figure; obw(Q_lin,fs);
 
 %%
 packet_size = 552;
