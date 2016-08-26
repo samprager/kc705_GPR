@@ -302,7 +302,7 @@ always @(posedge clk_245_76MHz) begin
     end
 end
  always @(posedge clk_245_76MHz) begin
-    for (d=1;i<ADC_DELAY;d=d+1) begin
+    for (d=1;d<ADC_DELAY;d=d+1) begin
         if (clk_245_rst) begin
             adc_data_i_delay[d] <= 'b0;
             adc_data_q_delay[d] <= 'b0;
