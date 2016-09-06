@@ -640,7 +640,7 @@ assign adc_counter = adc_counter_reg;
 // assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_counter,adc_counter} : {data_out_upper,data_out_lower};
  assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_counter,data_command_word} : {data_out_upper,data_out_lower};
 
- assign data_command_word = (adc_fifo_wr_last & !adc_fifo_wr_first) ? {DATA_LAST_COMMAND} : {DATA_FIRST_COMMAND};
+ assign data_command_word = (adc_fifo_wr_tlast & !adc_fifo_wr_first) ? {DATA_LAST_COMMAND} : {DATA_FIRST_COMMAND};
 //   assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
 //   assign adc_fifo_wr_tvalid = data_out_upper_valid & data_out_lower_valid & adc_enable_rr;
 
