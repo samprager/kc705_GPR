@@ -182,6 +182,9 @@ module fmc150_dac_adc #
   localparam DDS_WFRM_DELAY = 19;
   localparam DDS_WFRM_DELAY_END = 2;
   localparam FCUTOFF_IND = FFT_LEN/2;
+  
+  localparam     DATA_FIRST_COMMAND = 32'h46525354;     //Ascii FRST
+  localparam     DATA_LAST_COMMAND = 32'h4c415354;     //Ascii LAST
 
   wire rd_fifo_clk;
   wire clk_245_76MHz;
@@ -257,6 +260,7 @@ module fmc150_dac_adc #
 
      reg [31:0] adc_counter_reg;
      wire [31:0] glbl_counter;
+     wire [31:0] data_command_word;
 
      wire [31:0] data_out_upper;
      wire [31:0] data_out_lower;
@@ -633,8 +637,10 @@ assign adc_counter = adc_counter_reg;
   // assign adc_fifo_wr_tdata = {adc_counter,adc_data_iq};
 
  //  assign adc_fifo_wr_tvalid = adc_data_valid & adc_enable_rr;
- assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_counter,adc_counter} : {data_out_upper,data_out_lower};
+// assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_counter,adc_counter} : {data_out_upper,data_out_lower};
+ assign adc_fifo_wr_tdata  = (adc_fifo_wr_first | adc_fifo_wr_tlast) ? {glbl_counter,data_command_word} : {data_out_upper,data_out_lower};
 
+ assign data_command_word = (adc_fifo_wr_last & !adc_fifo_wr_first) ? {DATA_LAST_COMMAND} : {DATA_FIRST_COMMAND};
 //   assign adc_fifo_wr_tdata = {data_out_upper,data_out_lower};
 //   assign adc_fifo_wr_tvalid = data_out_upper_valid & data_out_lower_valid & adc_enable_rr;
 
