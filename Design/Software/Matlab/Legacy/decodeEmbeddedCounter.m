@@ -1,18 +1,22 @@
 function [x_min,x_max,adcctr,glblctr] = decodeEmbeddedCounter(dataU,dataL)
 
+DATA_FIRST_COMMAND = hex2dec('46525354');       %Ascii FRST
+DATA_LAST_COMMAND = hex2dec('4c415354');      %Ascii LAST
 x_min = 1;
-for i=2:numel(dataU)
-    if ((dataU(i)==dataU(i-1)+1)&& (dataL(i)~=dataL(i-1)+1))
-        x_min = i+1;
+for i=1:numel(dataU)
+    if(dataU(i)==DATA_FIRST_COMMAND)
+        x_min = i;
         break;
-    elseif((dataL(i)==dataL(i-1)+1)&& (dataU(i)~=dataU(i-1)+1))
-        x_min = i+1;
+    elseif(dataL(i)==DATA_FIRST_COMMAND)
+        x_min = i;
         break;
     end
-end
+end   
 
-for i=x_min:numel(dataU)
-    if ((dataU(i)==(dataU(x_min-1)+(i-x_min+1)))&&(dataL(i)==(dataL(x_min-1)+(i-x_min+1))))
+for i=(x_min+1):numel(dataU)
+    if((dataU(i)==DATA_LAST_COMMAND)&&(dataL(i) == (dataL(x_min)+(i-x_min))))
+        break;
+    elseif((dataL(i)==DATA_LAST_COMMAND)&&(dataU(i) == (dataU(x_min)+(i-x_min)))) 
         break;
     end
 end

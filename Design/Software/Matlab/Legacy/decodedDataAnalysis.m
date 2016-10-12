@@ -1,12 +1,13 @@
-filenameC = '/Users/sam/outputs/en4_dataout_45C.bin';
-filenameIQ = '/Users/sam/outputs/en4_dataout_45IQ.bin';
+filename = '/Users/sam/outputs/en4_dataout_lin.bin';
+filenameC = '/Users/sam/outputs/en4_dataout_lin_blkC.bin';
+filenameIQ = '/Users/sam/outputs/en4_dataout_lin_blkIQ.bin';
 
-Fs = (1/2)*245.76e6;
+Fs = 245.76e6;
 chirpBW = 3*15.360000e6;
 %chirpT = 16.667e-6;
 %nsamples = Fs*chirpT;
 nsamples = 4096;
-chirpT = nsamples/Fs
+chirpT = nsamples/Fs;
 
 rel_perm = 4;
 vel = 3e8/sqrt(rel_perm);
@@ -14,13 +15,18 @@ vel = 3e8/sqrt(rel_perm);
 minAdcRes = (3e8)/(2*Fs);
 minChirpRes = (3e8)/(2*chirpBW);
 
-fileID_C = fopen(filenameC,'r');
-fileID_IQ = fopen(filenameIQ,'r');
-dataU = fread(fileID_C,'uint32');
-dataL = fread(fileID_IQ,'uint32');
-fclose(fileID_C);
-fclose(fileID_IQ);
+use_decoded = 0;
 
+if(use_decoded)
+    fileID_C = fopen(filenameC,'r');
+    fileID_IQ = fopen(filenameIQ,'r');
+    dataU = fread(fileID_C,'uint32');
+    dataL = fread(fileID_IQ,'uint32');
+    fclose(fileID_C);
+    fclose(fileID_IQ);
+else
+    [dataU,dataL] = decodeDataUL(filename,'uint32');
+end
 
 shift_il = 0; shift_ql =0;
 shift_iu = 0; shift_qu = 0;
@@ -257,7 +263,7 @@ I_cor_thresh = I_cor;
 I_cor_thresh(I_cor_thresh<cor_thresh) = 0;
 [I_cor_val, I_cor_ind] = findpeaks(I_cor_thresh);
 figure; 
-subplot(2,1,1); hold on; plot(I_cor); scatter(I_cor_ind,I_cor_val); hold off;
+subplot(2,1,1); hold on; plot(abs(I_cor)); scatter(I_cor_ind,I_cor_val); title('Icorr'); hold off;
 subplot(2,1,2); plot(abs(I_mixfft));
 fprintf('I correlation peak ind: %s\n',sprintf('%i. ',I_cor_ind));
 
@@ -266,7 +272,7 @@ Q_cor_thresh = Q_cor;
 Q_cor_thresh(Q_cor_thresh<cor_thresh) = 0;
 [Q_cor_val, Q_cor_ind] = findpeaks(Q_cor_thresh);
 figure; 
-subplot(2,1,1); hold on; plot(Q_cor); scatter(Q_cor_ind,Q_cor_val); hold off;
+subplot(2,1,1); hold on; plot(abs(Q_cor)); scatter(Q_cor_ind,Q_cor_val);title('Qcorr'); hold off;
 subplot(2,1,2); plot(abs(Q_mixfft));
 fprintf('Q correlation peak ind: %s\n',sprintf('%i. ',Q_cor_ind));
 
@@ -276,7 +282,7 @@ IQ_cor_thresh = abs(IQ_cor);
 IQ_cor_thresh(IQ_cor_thresh<cor_thresh) = 0;
 [IQ_cor_val, IQ_cor_ind] = findpeaks(IQ_cor_thresh);
 figure; 
-subplot(2,1,1); hold on; plot(abs(IQ_cor)); scatter(IQ_cor_ind,IQ_cor_val); hold off;
+subplot(2,1,1); hold on; plot(abs(IQ_cor)); scatter(IQ_cor_ind,IQ_cor_val);title('IQcorr'); hold off;
 subplot(2,1,2); hold on; plot(abs(I_mixfft)); plot(abs(Q_mixfft));
 fprintf('IQ correlation peak ind: %s\n',sprintf('%i. ',IQ_cor_ind));
 

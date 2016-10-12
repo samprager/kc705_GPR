@@ -13,7 +13,6 @@ sMix = sDAC.*sADC;
 SfMix = fft(sMix,fftlen);
 Sf = SfMix(1:ceil(end/2));
 [val ind] = max(abs(Sf));
-ind
 fshift = (ind-1)*(Fs/2)/numel(Sf);
 tshift = fshift/chirpSlope;
 end

@@ -8,13 +8,13 @@ if (numel(sDAC)~= numel(sADC))
     return;
 end
 
-lpf_cutoff = round((chirpBW/Fs)*fftlen)
+lpf_cutoff = round((chirpBW/Fs)*fftlen);
 chirpSlope = chirpBW/chirpT;     
 sMix = sDAC.*sADC;
 SfMix = fft(sMix,fftlen);
 Sf = SfMix(1:end/2);
 Sf_sq = zeros(numel(Sf),1);
-size(Sf)
+size(Sf);
 Sf_sq(1:lpf_cutoff)= abs(Sf(1:lpf_cutoff)).^2;
 medval = (median(abs(Sf)))^2;
 threshval = medval*(10^(threshDB/10));
